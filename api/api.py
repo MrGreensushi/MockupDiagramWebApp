@@ -27,13 +27,10 @@ def user(node_id):
         parsed_content = parseXml.parse_defibrillation_xml(file_path)
         return jsonify(parsed_content)
     if request.method == 'POST':
-        """modify/update the information for <user_id>"""
-        # you can use <user_id>, which is a str but could
-        # changed to be int or whatever you want, along
-        # with your lxml knowledge to make the required
-        # changes
+        
         data = request.json # a multidict containing POST data
         parseXml.write_node_to_xml(data,folder_path)
+        
         return jsonify({"message": "Data received successfully", "received": data}), 200
         
     if request.method == 'DELETE':

@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import xml.dom.minidom as minidom
 import os
 # Function to parse the XML file
 def parse_defibrillation_xml(file_path):
@@ -71,4 +72,11 @@ def write_node_to_xml(node,filepath):
 
     # Create the XML tree and write it to file
     tree = ET.ElementTree(root)
-    tree.write(filename, encoding='utf-8', xml_declaration=True)
+    
+    # Convert the tree to a string and prettify it using minidom
+    xml_str = ET.tostring(root, encoding='utf-8', method='xml')
+    pretty_xml = minidom.parseString(xml_str).toprettyxml(indent="  ")
+
+    # Write the prettified XML to file
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(pretty_xml)
