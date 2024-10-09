@@ -1,5 +1,6 @@
 import time
 import parseXml
+import os
 from flask import Flask,jsonify,request
 
 app = Flask(__name__)
@@ -18,22 +19,30 @@ def get_all_parsed_xml():
 
 @app.route('/nodes/<node_id>', methods = ['GET', 'POST', 'DELETE'])
 def user(node_id):
-    print(node_id)
-     #return the information for <node_id>
-    if request.method == 'GET':
-        # Path to the XML file
-        file_path = f"{folder_path}\\{node_id}.xml" 
-        # Call the function and print parsed data
-        parsed_content = parseXml.parse_defibrillation_xml(file_path)
-        return jsonify(parsed_content)
-    if request.method == 'POST':
-        
-        data = request.json # a multidict containing POST data
-        parseXml.write_node_to_xml(data,folder_path)
-        
-        return jsonify({"message": "Data received successfully", "received": data}), 200
-        
-    if request.method == 'DELETE':
-        """delete user with ID <user_id>"""
+    try:
+         #return the information for <node_id>
+        if request.method == 'GET':
+            # Path to the XML file
+            file_path = f"{folder_path}\\{node_id}.xml" 
+            if not os.path.exists(file_path):
+                return jsonify({"error": "File not found"}), 404
+            # Call the function and print parsed data
+            parsed_content = parseXml.parse_defibrillation_xml(file_path)
+            return jsonify(parsed_content)
+        if request.method == 'POST':
+
+            data = request.json 
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+
+            parseXml.write_node_to_xml(data,folder_path)
+
+            return jsonify({"message": "Data received successfully", "received": data}), 200
+
+        if request.method == 'DELETE':
+            return jsonify({"message": f"Node {node_id} deleted"}), 200
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     
