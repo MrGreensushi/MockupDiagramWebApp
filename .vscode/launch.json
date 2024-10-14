@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Launch React",
+            "command": "npm start",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "name": "Launch Flask",
+            "command": "cd api; C:\\Users\\mattc\\miniconda3\\envs\\flowchart\\Scripts\\flask.exe run --no-debugger",
+            "request": "launch",
+            "type": "node-terminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch All",
+            "configurations": ["Launch React", "Launch Flask"]
+        }
+    ]
+}

@@ -1,16 +1,18 @@
-import { useCallback, useState,useEffect } from "react";
+import { useCallback, useState } from "react";
 import {
   addEdge,
   ReactFlow,
   Controls,
   Background,
-  applyNodeChanges,
+  useNodesState,
+  useEdgesState,
 } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
 import ResizableNode from "./ResizableNode";
 import NodeEditor from "./NodeEditing/NodeEditor";
 import "@xyflow/react/dist/style.css";
 import NodeImporter from "./NodeImporting/NodeImporter";
+import SaveLoadManager from "./SaveLoad";
 
 const nodeTypes = {
   ResizableNode,
@@ -23,11 +25,11 @@ const BaseStyle = {
 };
 
 const FlowDiagram = () => {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const [selectedNode, setSelectedNode] = useState(null); // Nodo selezionato
-
+  const [rfInstance, setRfInstance] = useState(null);
 
   const addNode = () => {
     const newNode = {
@@ -100,13 +102,9 @@ const FlowDiagram = () => {
     setEdges((eds) => addEdge(connection, eds));
   }, []);
 
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
-  );
-
   const onNodeClick = (ev, element) => {
     if (element.type === "ResizableNode") setSelectedNode(element);
+    console.log(element)
   };
 
   const onSelectionEnd = () => {
@@ -161,38 +159,41 @@ const FlowDiagram = () => {
 
 
   return (
-    <div style={{ display: "flex", height: 600 }}>
-      <div style={{ width: "75%" }}>
-        <button onClick={addNode} style={{ marginBottom: "10px" }}>
-          Aggiungi Nodo
-        </button>
-        <NodeImporter addExistingNode={addExistingNode} />
+      <div style={{ display: "flex", height: 600 }}>
+        <div style={{ width: "75%" }}>
+          <button onClick={addNode} style={{ marginBottom: "10px" }}>
+            Aggiungi Nodo
+          </button>
+          <NodeImporter addExistingNode={addExistingNode} />
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onNodeClick={onNodeClick}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onSelectionEnd={onSelectionEnd}
+            onInit={setRfInstance}
+            deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
+            style={{ width: "100%", height: "500px", border: "1px solid black" }}
+            fitView
+            >
+            <SaveLoadManager
+              rfInstance={rfInstance}
+              />
+            <Controls />
+            <Background />
+          </ReactFlow>
+        </div>
 
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onNodeClick={onNodeClick}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          onSelectionEnd={onSelectionEnd}
-          deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
-          style={{ width: "100%", height: "500px", border: "1px solid black" }}
-          fitView
-        >
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
-
-      {selectedNode && (
-        <NodeEditor
+        {selectedNode && (
+          <NodeEditor
           selectedNode={selectedNode} // Pass the selected node
           handleNameChange={handleNameChange} // Pass the name change handler
           handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
-        />
-      )}
-    </div>
+          />
+        )}
+      </div>
   );
 };
 
