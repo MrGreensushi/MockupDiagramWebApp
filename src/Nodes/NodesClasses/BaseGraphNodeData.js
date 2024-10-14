@@ -31,9 +31,9 @@ class BaseGraphNodeData {
     return Object.values(this.Languages).includes(language);
   }
 
-  constructor(id,name) {
+  constructor(id, name) {
     this.label = name;
-    this.id=id;
+    this.id = id;
     this._descriptions = new Description();
     this._nodePhrases = new NodePhrase();
   }
@@ -64,71 +64,101 @@ class BaseGraphNodeData {
    * @param {BaseGraphNodeData} nodeInfo
    */
   assign(nodeInfo) {
-    if(!nodeInfo)
-      return;
+    if (!nodeInfo) return;
 
     this.label = nodeInfo.label;
     this.descriptions.assign(nodeInfo.descriptions);
     this.nodePhrases.assign(nodeInfo.nodePhrases);
-    if(nodeInfo.id)
-      this.id = nodeInfo.id;
+    if (nodeInfo.id) this.id = nodeInfo.id;
   }
 
- /**
+  /**
    * @param {BaseGraphNodeData} initializeFrom
    */
-  static initialize(initializeFrom){
+  static initialize(initializeFrom) {
     const newBasNode = new BaseGraphNodeData(initializeFrom.name);
     newBasNode.assign(initializeFrom);
     return newBasNode;
   }
 
- static initializeFromImportedInfo(initializeFromImportedInfo){
-  const id=initializeFromImportedInfo.id;
-  const newBasNode = new BaseGraphNodeData(id,initializeFromImportedInfo.Name);
-  newBasNode.initializeDescriptionsFromImportedInfo({ ITA: initializeFromImportedInfo.ITA.descriptions });
-  newBasNode.initializeNodePhrasesFromImportedInfo({ ITA: initializeFromImportedInfo.ITA.nodePhrases })
-  return newBasNode;
-}
-
-initializeDescriptionsFromImportedInfo(descriptions) {
-  const newDescription = new Description();
-  //per ogni linguaggio
-  Object.keys(descriptions).map((language) => {
-    //per ogni livello
-    Object.keys(descriptions[language]).map((level) => {
-      //aggiungi la descrizione
-      newDescription.updateDescription(
-        language,
-        level,
-        descriptions[language][level]
-      );
+  static initializeFromImportedInfo(initializeFromImportedInfo) {
+    const id = initializeFromImportedInfo.id;
+    const newBasNode = new BaseGraphNodeData(
+      id,
+      initializeFromImportedInfo.Name
+    );
+    newBasNode.assignDescriptionsFromImportedInfo({
+      ITA: initializeFromImportedInfo.ITA.descriptions,
     });
-  });
+    newBasNode.assignNodePhrasesFromImportedInfo({
+      ITA: initializeFromImportedInfo.ITA.nodePhrases,
+    });
+    return newBasNode;
+  }
 
-  this.descriptions = newDescription;
-}
-
-initializeNodePhrasesFromImportedInfo(nodePhrases) {
-  const newnodePhrases = new NodePhrase();
-  //per ogni linguaggio
-  Object.keys(nodePhrases).map((language) => {
-    //per ogni livello
-    Object.keys(nodePhrases[language]).map((level) => {
-      //per ogni clipId
-      Object.keys(nodePhrases[language][level]).map((clipId) => {
-        newnodePhrases.updateNodePhrase(
+  assignDescriptionsFromImportedInfo(descriptions) {
+    const newDescription = new Description();
+    //per ogni linguaggio
+    Object.keys(descriptions).map((language) => {
+      //per ogni livello
+      Object.keys(descriptions[language]).map((level) => {
+        //aggiungi la descrizione
+        newDescription.updateDescription(
           language,
           level,
-          clipId,
-          nodePhrases[language][level][clipId]
+          descriptions[language][level]
         );
       });
     });
-  });
-  this.nodePhrases = newnodePhrases;
-}
 
+    this.descriptions = newDescription;
+  }
+
+  assignNodePhrasesFromImportedInfo(nodePhrases) {
+    const newnodePhrases = new NodePhrase();
+    //per ogni linguaggio
+    Object.keys(nodePhrases).map((language) => {
+      //per ogni livello
+      Object.keys(nodePhrases[language]).map((level) => {
+        //per ogni clipId
+        Object.keys(nodePhrases[language][level]).map((clipId) => {
+          newnodePhrases.updateNodePhrase(
+            language,
+            level,
+            clipId,
+            nodePhrases[language][level][clipId]
+          );
+        });
+      });
+    });
+    this.nodePhrases = newnodePhrases;
+  }
+
+  stringify() {
+    const result = {
+      label: this.label,
+      descriptions: this.descriptions,
+      nodePhrases: {
+        ITA: {
+          Novice: this.nodePhrases.ITA.Novice.reduce((acc, phrase) => {
+            acc[phrase.clipId] = phrase.text;
+            return acc;
+          }, {}),
+          Intermediate: this.nodePhrases.ITA.Intermediate.reduce((acc, phrase) => {
+            acc[phrase.clipId] = phrase.text;
+            return acc;
+          }, {}),
+          Expert: this.nodePhrases.ITA.Expert.reduce((acc, phrase) => {
+            acc[phrase.clipId] = phrase.text;
+            return acc;
+          }, {}),
+        },
+      },
+    };
+
+    // Restituisci la rappresentazione dell'oggetto in formato JSON
+    return JSON.stringify(result, null, 2); // 'null, 2' per formattare con indentazione
+  }
 }
 
 class Description {
@@ -205,7 +235,7 @@ class NodePhrase {
     //this.ENG=new DescriptionLevel();
   }
 
-  static intialize(initializeFrom){
+  static intialize(initializeFrom) {
     const nodePhrase = new NodePhrase();
     nodePhrase.assign(initializeFrom);
     return nodePhrase;
@@ -215,7 +245,7 @@ class NodePhrase {
    * @param {NodePhrases} newPhrases
    */
   assign(newPhrases) {
-     if (!newPhrases) return;
+    if (!newPhrases) return;
 
     // Clonazione profonda di ITA
     this.ITA = new NodePhrasesLevel();
@@ -233,9 +263,8 @@ class NodePhrase {
     }
   }
 
-  count(language,level){
-    if(language==="ITA")
-      return this.ITA.count(level)
+  count(language, level) {
+    if (language === "ITA") return this.ITA.count(level);
   }
 }
 
@@ -246,13 +275,12 @@ class NodePhrasesLevel {
     this.Expert = [];
   }
 
-   /**
+  /**
    * Clonazione profonda di un oggetto NodePhrasesLevel
    * @param {NodePhrasesLevel} toAssign
    */
-   assign(toAssign) {
-    if (!toAssign || !(toAssign instanceof NodePhrasesLevel)) 
-      return;
+  assign(toAssign) {
+    if (!toAssign || !(toAssign instanceof NodePhrasesLevel)) return;
     // Clonazione profonda degli array
     this.Novice = toAssign.Novice.map(
       (phrase) => new NodePhraseValue(phrase.clipId, phrase.text)
@@ -266,38 +294,33 @@ class NodePhrasesLevel {
   }
 
   addOrUpdateLevel(level, newPhraseValue) {
-
-    const array=this.getLevelArray(level)
-    this.addOrUpdateToArray(array,newPhraseValue)
-
+    const array = this.getLevelArray(level);
+    this.addOrUpdateToArray(array, newPhraseValue);
   }
 
   count(level) {
-    return this.getLevelArray(level).length
+    return this.getLevelArray(level).length;
   }
 
-  getLevelArray(level){
+  getLevelArray(level) {
     switch (level) {
       case "Novice":
-        return this.Novice
+        return this.Novice;
       case "Intermediate":
-        return this.Intermediate
+        return this.Intermediate;
       case "Expert":
-        return this.Expert
+        return this.Expert;
     }
   }
 
-
-  addOrUpdateToArray(array,newValue){
-    const index=array.findIndex(x=>x.clipId===newValue.clipId)
-    if(index>=0 && index<array.length)
-    {
-      array[index]=newValue;
-    }
-    else{
+  addOrUpdateToArray(array, newValue) {
+    const index = array.findIndex((x) => x.clipId === newValue.clipId);
+    if (index >= 0 && index < array.length) {
+      array[index] = newValue;
+    } else {
       array.push(newValue);
     }
-    return array
+    return array;
   }
 }
 

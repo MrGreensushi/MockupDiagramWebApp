@@ -41,8 +41,15 @@ const FlowDiagram = () => {
         return res.json(); // Parse the JSON response
       })
       .then((data) => {
-        setImportedNodes(data);
-        console.log(data); // Set the nodes with the fetched data
+        //Creo un array di BaseGraphNodeData a partire dalla risposta dal server
+        var nodeArray = [];
+        data.map((importedInfo) => {
+          const newGraphNode =
+            BaseGraphNodeData.initializeFromImportedInfo(importedInfo);
+          nodeArray.push(newGraphNode);
+        });
+        setImportedNodes(nodeArray);
+        console.log(nodeArray); // Set the nodes with the fetched data
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -53,7 +60,7 @@ const FlowDiagram = () => {
     const id = uuidv4();
     return {
       id: id,
-      data: new BaseGraphNodeData(id, "Nodo " + nodes.length + 1),
+      data: new BaseGraphNodeData(id, "Nodo " + (nodes.length + 1)),
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: "ResizableNode",
       style: BaseStyle,
@@ -67,11 +74,11 @@ const FlowDiagram = () => {
   };
 
   const addExistingNode = (node) => {
-    const importedNodeInfo = BaseGraphNodeData.initializeFromImportedInfo(node);
-    console.log("Imported Node Info: ", importedNodeInfo);
+    if (!(node instanceof BaseGraphNodeData))
+      console.error("Node to Add is not an instace of BaseGraphNodeData");
 
     const newGraphNode = createNewNode();
-    newGraphNode.data.assign(importedNodeInfo);
+    newGraphNode.data.assign(node);
     console.log("New Graph Node: ", newGraphNode);
 
     setNodes((oldNodes) => [...oldNodes, newGraphNode]);
@@ -133,51 +140,61 @@ const FlowDiagram = () => {
         el.id === updatedNode.id ? { ...el, data: updatedNode } : el
       )
     );
-    //setSelectedNode(updatedNode); // Also update the selected node in state
-    //updateImportedNodes(updatedNode.data); //Updated the button of the node importer
-    //updateNodeServer(updatedNode);
+
+    //Se il nodo modificato faceva parte di quelli prefatti, aggiorna il server!
+    //Successivamente aggiorna anche i nodi importati se era uno dei nodi sel server
+    checkIfNodeIsOnServer(updatedNode, updateNodeServer);
+    
   };
 
-  const updateImportedNodes = (updatedNode) => {
-    console.log("ImportedNodes ", importedNodes);
-    console.log("Node to update: ", updatedNode);
-
-    setImportedNodes((els) =>
-      els.map((el) =>
-        el.Name === updatedNode.label
-          ? {
-              ...el,
-              descriptions: { ...updatedNode.descriptions },
-              nodePhrases: { ...updatedNode.nodePhrases },
-            }
-          : el
-      )
-    );
-  };
-
-  const updateImportedNode = (oldNode, updatedNode) => {
-    return {
-      ...oldNode,
-      ENG: {},
-    };
+  const checkIfNodeIsOnServer = (updatedNode, func) => {
+    fetch("/nodes/" + updatedNode.label)
+      .then((res) => {
+        // Check if the response is OK (status code 200-299)
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json(); // Parse the JSON response
+      })
+      .then((data) => {
+        console.log("Updated Node was on the server: ", data);
+        if (func) func(updatedNode);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   };
 
   const updateNodeServer = (updatedNode) => {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedNode.data),
+      body: updatedNode.stringify(),
     };
-    console.log(requestOptions);
+    console.log("Update server node Request: ", requestOptions);
 
-    fetch("/nodes/" + updatedNode["data"]["label"], requestOptions)
+    fetch("/nodes/" + updatedNode.label, requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        console.log("Success: ", data);
+        console.log("The update on the server was a Success: ", data);
+        updateImportedNode(updatedNode); //Aggiorna il nodo importato sul frontend
       })
       .catch((error) => {
         console.error("Error:", error);
       });
+  };
+
+  const updateImportedNode = (updateNode) => {
+    updateNode.id = undefined;
+
+    var newNodes = [];
+    importedNodes.forEach((node) => {
+      if (node.label === updateNode.label) newNodes.push(updateNode);
+      else newNodes.push(node);
+    });
+
+    setImportedNodes(newNodes)
+    console.log("Updated imported Nodes: ", newNodes);
   };
 
   return (

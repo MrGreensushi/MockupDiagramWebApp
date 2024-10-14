@@ -11,7 +11,7 @@ const NodeImporter = ({ addExistingNode,importedNodes }) => {
       {importedNodes.length > 0 &&
         importedNodes.map((node) => (
           <ImportedNodeButton
-            key = {node.Name}
+            key = {node.label}
             addExistingNode={addExistingNode}
             importedNode={node}
           />
