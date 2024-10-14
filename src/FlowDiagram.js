@@ -12,6 +12,7 @@ import NodeEditor from "./Nodes/NodeEditing/NodeEditor";
 import "@xyflow/react/dist/style.css";
 import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
 import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
+import SaveLoadManager from "./SaveLoad";
 
 const nodeTypes = {
   ResizableNode,
@@ -29,6 +30,8 @@ const FlowDiagram = () => {
 
   const [selectedNode, setSelectedNode] = useState(null); // Nodo selezionato
   const [importedNodes, setImportedNodes] = useState([]);
+
+  const [rfInstance, setRfInstance] = useState(null);
 
   //Initialize importedNodes
   useEffect(() => {
@@ -149,20 +152,20 @@ const FlowDiagram = () => {
 
   const checkIfNodeIsOnServer = (updatedNode, func) => {
     fetch("/nodes/" + updatedNode.label)
-      .then((res) => {
-        // Check if the response is OK (status code 200-299)
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json(); // Parse the JSON response
-      })
-      .then((data) => {
+    .then((res) => {
+      // Check if the response is OK (status code 200-299)
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      return res.json(); // Parse the JSON response
+    })
+    .then((data) => {
         console.log("Updated Node was on the server: ", data);
         if (func) func(updatedNode);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+    });
   };
 
   const updateNodeServer = (updatedNode) => {
@@ -216,10 +219,16 @@ const FlowDiagram = () => {
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           onSelectionEnd={onSelectionEnd}
+          onInit={setRfInstance}
           deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
           style={{ width: "100%", height: "500px", border: "1px solid black" }}
           fitView
         >
+        <SaveLoadManager
+          rfInstance={rfInstance}
+          setEdges={setEdges}
+          setNodes={setNodes}
+        />
           <Controls />
           <Background />
         </ReactFlow>
