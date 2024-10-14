@@ -1,9 +1,9 @@
 const DescriptionEditor = ({ language, levels, descriptions, handleDescriptionChange }) => {
   return (
-    <div key={language}>
+    <div key={"Description:"+language}>
       <h5>Lingua: {language}</h5>
       {levels.map((level) => (
-        <div key={level}>
+        <div key={"Description:"+level}>
           <label>{level} Description:</label>
           <textarea
             value={descriptions[language]?.[level] || ""}

@@ -4,7 +4,7 @@ import os
 from flask import Flask,jsonify,request
 
 app = Flask(__name__)
-folder_path = r"..\public\xmls\Educational-Contents\BLSDPro"
+folder_path = r".\xmls\Educational-Contents\BLSDPro"
 
 @app.route('/time')
 def get_current_time():
@@ -45,4 +45,3 @@ def user(node_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    

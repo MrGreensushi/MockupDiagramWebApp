@@ -6,16 +6,10 @@ const NodePhraseEditor = ({
   nodePhrases,
   handleNodePhraseChange,
 }) => {
-  const booleanValues = {};
-  levels.forEach((element) => {
-    booleanValues[element] = false;
-  });
-
-  const [clipIdToAdd, SetClipIdToAdd] = useState(booleanValues);
   const [selectedClipId,setSelectedClipId]=useState({})
 
   const HandleAddingClipId = (level) => {
-    handleNodePhraseChange(language, level, "New Clip " + Object.keys(nodePhrases[language][level]).length, "...")
+    handleNodePhraseChange(language, level, "New Clip " + nodePhrases.count(language,level), "...")
   };
 
   const HandleSelectedClipId=(text)=>{
@@ -28,18 +22,18 @@ const NodePhraseEditor = ({
   return (
     <div>
       {levels.map((level) => (
-        <div key={level}>
+        <div key={language+":PhraseEditor:"+level}>
           <h6>{level}:</h6>
-          {Object.keys(nodePhrases[language][level] || {}).map((clipId) => (
-            <div key={clipId}>
-              <label>{clipId}</label>
+          {nodePhrases[language][level].map((element,index) => (
+            <div key={language+":PhraseEditor:"+level+":"+element["clipId"]||index}>
+              <label>{element["clipId"]}</label>
               <textarea
-                value={nodePhrases[language][level][clipId] || ""}
+                value={element.text || ""}
                 onChange={(e) =>
                   handleNodePhraseChange(
                     language,
                     level,
-                    clipId,
+                    element.clipId,
                     e.target.value
                   )
                 }
