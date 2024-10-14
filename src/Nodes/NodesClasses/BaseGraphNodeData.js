@@ -1,4 +1,4 @@
-class BaseCustomNode {
+class BaseGraphNodeData {
   // enum per Section e Level
   static Sections = Object.freeze({
     DESCRIPTIONS: "descriptions",
@@ -31,8 +31,9 @@ class BaseCustomNode {
     return Object.values(this.Languages).includes(language);
   }
 
-  constructor(name) {
+  constructor(id,name) {
     this.label = name;
+    this.id=id;
     this._descriptions = new Description();
     this._nodePhrases = new NodePhrase();
   }
@@ -60,7 +61,7 @@ class BaseCustomNode {
   }
 
   /**
-   * @param {BaseCustomNode} nodeInfo
+   * @param {BaseGraphNodeData} nodeInfo
    */
   assign(nodeInfo) {
     if(!nodeInfo)
@@ -69,16 +70,65 @@ class BaseCustomNode {
     this.label = nodeInfo.label;
     this.descriptions.assign(nodeInfo.descriptions);
     this.nodePhrases.assign(nodeInfo.nodePhrases);
+    if(nodeInfo.id)
+      this.id = nodeInfo.id;
   }
 
  /**
-   * @param {BaseCustomNode} initializeFrom
+   * @param {BaseGraphNodeData} initializeFrom
    */
   static initialize(initializeFrom){
-    const newBasNode = new BaseCustomNode(initializeFrom.name);
+    const newBasNode = new BaseGraphNodeData(initializeFrom.name);
     newBasNode.assign(initializeFrom);
     return newBasNode;
   }
+
+ static initializeFromImportedInfo(initializeFromImportedInfo){
+  const id=initializeFromImportedInfo.id;
+  const newBasNode = new BaseGraphNodeData(id,initializeFromImportedInfo.Name);
+  newBasNode.initializeDescriptionsFromImportedInfo({ ITA: initializeFromImportedInfo.ITA.descriptions });
+  newBasNode.initializeNodePhrasesFromImportedInfo({ ITA: initializeFromImportedInfo.ITA.nodePhrases })
+  return newBasNode;
+}
+
+initializeDescriptionsFromImportedInfo(descriptions) {
+  const newDescription = new Description();
+  //per ogni linguaggio
+  Object.keys(descriptions).map((language) => {
+    //per ogni livello
+    Object.keys(descriptions[language]).map((level) => {
+      //aggiungi la descrizione
+      newDescription.updateDescription(
+        language,
+        level,
+        descriptions[language][level]
+      );
+    });
+  });
+
+  this.descriptions = newDescription;
+}
+
+initializeNodePhrasesFromImportedInfo(nodePhrases) {
+  const newnodePhrases = new NodePhrase();
+  //per ogni linguaggio
+  Object.keys(nodePhrases).map((language) => {
+    //per ogni livello
+    Object.keys(nodePhrases[language]).map((level) => {
+      //per ogni clipId
+      Object.keys(nodePhrases[language][level]).map((clipId) => {
+        newnodePhrases.updateNodePhrase(
+          language,
+          level,
+          clipId,
+          nodePhrases[language][level][clipId]
+        );
+      });
+    });
+  });
+  this.nodePhrases = newnodePhrases;
+}
+
 }
 
 class Description {
@@ -269,4 +319,4 @@ class NodePhraseValue {
   }
 }
 
-export { BaseCustomNode, Description, NodePhrase };
+export { BaseGraphNodeData, Description, NodePhrase };

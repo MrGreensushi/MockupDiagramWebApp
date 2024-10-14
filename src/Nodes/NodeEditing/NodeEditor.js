@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import DescriptionEditor from "./DescriptionEditor";
 import NodePhraseEditor from "./NodePhrasesEditor";
-import { BaseCustomNode,Description,NodePhrase } from "../NodesClasses/BaseCustomNode";
-import GraphNodeData from "../NodesClasses/GraphNodeData";
+import { BaseGraphNodeData,Description,NodePhrase } from "../NodesClasses/BaseGraphNodeData";
 
 const LEVELS = ["Novice", "Intermediate", "Expert"];
 
-//selectedNode è un GraphNodeData!
+//selectedNode è un BaseGraphNodeData!
 const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
   const [descriptions, setDescriptions] = useState(
     Description.intialize(selectedNode.descriptions) || new Description()
@@ -24,7 +23,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
     console.log("SelectedNode Chnaged: ", selectedNode);
     console.log(
       "Is selectedNode a baseCustoNode? ",
-      selectedNode instanceof GraphNodeData
+      selectedNode instanceof BaseGraphNodeData
     );
   }, [selectedNode]);
 
@@ -54,7 +53,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
   };
 
   const saveChanges = () => {
-    const updatedNode= GraphNodeData.initialize(selectedNode);
+    const updatedNode= BaseGraphNodeData.initialize(selectedNode);
     updatedNode.descriptions=descriptions;
     updatedNode.nodePhrases=nodePhrases;
 

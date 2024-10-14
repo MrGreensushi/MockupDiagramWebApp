@@ -7,13 +7,11 @@ import {
   applyNodeChanges,
 } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
-import ResizableNode from "./ResizableNode";
+import ResizableNode from "./Nodes/ResizableNode";
 import NodeEditor from "./Nodes/NodeEditing/NodeEditor";
 import "@xyflow/react/dist/style.css";
 import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
-import ImportedNodeInfo from "./Nodes/NodesClasses/ImportedNodeInfo";
-import GraphNodeData  from "./Nodes/NodesClasses/GraphNodeData";
-import { BaseCustomNode } from "./Nodes/NodesClasses/BaseCustomNode";
+import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
 
 const nodeTypes = {
   ResizableNode,
@@ -52,10 +50,10 @@ const FlowDiagram = () => {
   }, []);
 
   const createNewNode = () => {
-    const id=uuidv4();
+    const id = uuidv4();
     return {
       id: id,
-      data: new GraphNodeData(id,"Nodo "+nodes.length + 1),
+      data: new BaseGraphNodeData(id, "Nodo " + nodes.length + 1),
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: "ResizableNode",
       style: BaseStyle,
@@ -69,7 +67,7 @@ const FlowDiagram = () => {
   };
 
   const addExistingNode = (node) => {
-    const importedNodeInfo = new ImportedNodeInfo(node);
+    const importedNodeInfo = BaseGraphNodeData.initializeFromImportedInfo(node);
     console.log("Imported Node Info: ", importedNodeInfo);
 
     const newGraphNode = createNewNode();
@@ -89,13 +87,11 @@ const FlowDiagram = () => {
   );
 
   const onNodeClick = (ev, element) => {
-    if (element.type === "ResizableNode"){
-
-      const clickedNode=nodes.find((x) => x.id === element.id)
-      console.log("ClickedNode: ",clickedNode)
+    if (element.type === "ResizableNode") {
+      const clickedNode = nodes.find((x) => x.id === element.id);
+      console.log("ClickedNode: ", clickedNode);
       setSelectedNode(clickedNode.data);
     }
-      
   };
 
   const onSelectionEnd = () => {
@@ -106,38 +102,35 @@ const FlowDiagram = () => {
   const handleNameChange = (e) => {
     const newLabel = e.target.value;
 
-     // update nodes
-  const newNodes = nodes.map((node) => {
-    if (node.id === selectedNode.id) {
-      return {
-        ...node,  // Copia il nodo esistente
-        data: {
-          ...node.data,  // Copia i dati esistenti
-          label: newLabel  // Modifica il label
-        }
-      };
-    }
-    return node;
-  });
+    // update nodes
+    const newNodes = nodes.map((node) => {
+      if (node.id === selectedNode.id) {
+        return {
+          ...node, // Copia il nodo esistente
+          data: {
+            ...node.data, // Copia i dati esistenti
+            label: newLabel, // Modifica il label
+          },
+        };
+      }
+      return node;
+    });
     setNodes(newNodes);
 
-    //selectedNode is a BaseCustomNode!
+    //selectedNode is a BaseGraphNodeData!
     selectedNode.label = newLabel;
     console.log("Nodes Updated: ", selectedNode);
   };
 
   // Function to handle node updates (descriptions and nodePhrases)
   const handleNodeUpdate = (updatedNode) => {
-
-    if(!(updatedNode instanceof GraphNodeData)){
-      throw new Error(updatedNode,' is not an instanceof BaseCustomNode');
+    if (!(updatedNode instanceof BaseGraphNodeData)) {
+      throw new Error(updatedNode, " is not an instanceof BaseGraphNodeData");
     }
 
     setNodes((els) =>
       els.map((el) =>
-        el.id === updatedNode.id
-          ? { ...el, data: updatedNode }
-          : el
+        el.id === updatedNode.id ? { ...el, data: updatedNode } : el
       )
     );
     //setSelectedNode(updatedNode); // Also update the selected node in state
