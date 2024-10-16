@@ -13,9 +13,15 @@ import "@xyflow/react/dist/style.css";
 import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
 import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
 import SaveLoadManager from "./SaveLoad";
+import CustomEdge from "./Edges/CustomEdge";
+import BaseEdgeData from "./Edges/BaseEdgeData";
 
 const nodeTypes = {
   ResizableNode,
+};
+
+const EdgeTypes = {
+  CustomEdge,
 };
 const BaseStyle = {
   background: "#fff",
@@ -88,8 +94,19 @@ const FlowDiagram = () => {
   };
 
   const onConnect = useCallback((connection) => {
+    connection.type = "CustomEdge";
+    connection.data = new BaseEdgeData(null, null);
+
     setEdges((eds) => addEdge(connection, eds));
   }, []);
+
+  const handleEdgeDataUpdate = (edgeId, newData) => {
+    setEdges((eds) =>
+      eds.map((edge) =>
+        edge.id === edgeId ? { ...edge, data: newData } : edge
+      )
+    );
+  };
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -147,25 +164,24 @@ const FlowDiagram = () => {
     //Se il nodo modificato faceva parte di quelli prefatti, aggiorna il server!
     //Successivamente aggiorna anche i nodi importati se era uno dei nodi sel server
     checkIfNodeIsOnServer(updatedNode, updateNodeServer);
-    
   };
 
   const checkIfNodeIsOnServer = (updatedNode, func) => {
     fetch("/nodes/" + updatedNode.label)
-    .then((res) => {
-      // Check if the response is OK (status code 200-299)
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json(); // Parse the JSON response
-    })
-    .then((data) => {
+      .then((res) => {
+        // Check if the response is OK (status code 200-299)
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json(); // Parse the JSON response
+      })
+      .then((data) => {
         console.log("Updated Node was on the server: ", data);
         if (func) func(updatedNode);
-    })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-    });
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      });
   };
 
   const updateNodeServer = (updatedNode) => {
@@ -196,7 +212,7 @@ const FlowDiagram = () => {
       else newNodes.push(node);
     });
 
-    setImportedNodes(newNodes)
+    setImportedNodes(newNodes);
     console.log("Updated imported Nodes: ", newNodes);
   };
 
@@ -218,17 +234,25 @@ const FlowDiagram = () => {
           onNodeClick={onNodeClick}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          edgeTypes={{
+            CustomEdge: (edgeProps) => (
+              <CustomEdge
+                {...edgeProps}
+                handleEdgeDataUpdate={handleEdgeDataUpdate}
+              />
+            ),
+          }}
           onSelectionEnd={onSelectionEnd}
           onInit={setRfInstance}
           deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
           style={{ width: "100%", height: "500px", border: "1px solid black" }}
           fitView
         >
-        <SaveLoadManager
-          rfInstance={rfInstance}
-          setEdges={setEdges}
-          setNodes={setNodes}
-        />
+          <SaveLoadManager
+            rfInstance={rfInstance}
+            setEdges={setEdges}
+            setNodes={setNodes}
+          />
           <Controls />
           <Background />
         </ReactFlow>

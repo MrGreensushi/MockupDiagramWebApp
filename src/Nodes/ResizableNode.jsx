@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo } from 'react';
 import { Handle, Position, NodeResizer } from '@xyflow/react';
 
 const ResizableNode =  ({data, selected }) => {
