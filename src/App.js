@@ -2,6 +2,7 @@
 import React from 'react';
 import FlowDiagram from './FlowDiagram';
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (

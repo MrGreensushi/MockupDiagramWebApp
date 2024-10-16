@@ -1,15 +1,18 @@
 import { useCallback, useState, useEffect } from "react";
+import { Container, Row, Col } from "react-bootstrap";
 import {
   addEdge,
   ReactFlow,
   Controls,
   Background,
   applyNodeChanges,
+  Panel,
+  useOnSelectionChange
 } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
 import ResizableNode from "./Nodes/ResizableNode";
 import NodeEditor from "./Nodes/NodeEditing/NodeEditor";
-import "@xyflow/react/dist/style.css";
 import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
 import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
 import SaveLoadManager from "./SaveLoad";
@@ -92,7 +95,18 @@ const FlowDiagram = () => {
   }, []);
 
   const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes) => {
+      console.log(changes);
+      let idOfSelected = null;
+      changes.map((change) => {if (change.selected) idOfSelected = change.id});
+
+      if (idOfSelected) {
+        setSelectedNode(nodes.find(node => node.id === idOfSelected));
+      } else {
+        setSelectedNode(null);
+      }
+
+      setNodes(nds => applyNodeChanges(changes, nds))},
     [setNodes]
   );
 
@@ -102,10 +116,6 @@ const FlowDiagram = () => {
       console.log("ClickedNode: ", clickedNode);
       setSelectedNode(clickedNode.data);
     }
-  };
-
-  const onSelectionEnd = () => {
-    setSelectedNode(null);
   };
 
   // Funzione per aggiornare il nome del nodo selezionato
@@ -201,47 +211,52 @@ const FlowDiagram = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: 600 }}>
-      <div style={{ width: "75%" }}>
-        <button onClick={addNode} style={{ marginBottom: "10px" }}>
-          Aggiungi Nodo
-        </button>
-        <NodeImporter
-          addExistingNode={addExistingNode}
-          importedNodes={importedNodes}
-        />
+    <Container fluid style={{height:"90vh", padding:"1%"}}>
+      <Row style={{height:"100%"}}>
+        <Col style={{height:"100%"}}>
+          <NodeImporter
+            addExistingNode={addExistingNode}
+            importedNodes={importedNodes}
+            />
 
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onNodeClick={onNodeClick}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          onSelectionEnd={onSelectionEnd}
-          onInit={setRfInstance}
-          deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
-          style={{ width: "100%", height: "500px", border: "1px solid black" }}
-          fitView
-        >
-        <SaveLoadManager
-          rfInstance={rfInstance}
-          setEdges={setEdges}
-          setNodes={setNodes}
-        />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onNodeClick={onNodeClick}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onInit={setRfInstance}
+            deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
+            style={{ border: "1px solid black" }}
+            fitView
+            >
+            <Panel>
+              <button onClick={addNode} style={{ marginBottom: "10px" }}>
+                Aggiungi Nodo
+              </button>
+            </Panel>
+            <SaveLoadManager
+              rfInstance={rfInstance}
+              setEdges={setEdges}
+              setNodes={setNodes}
+              />
+            <Controls />
+            <Background />
+          </ReactFlow>
+        </Col>
 
-      {selectedNode && (
-        <NodeEditor
-          selectedNode={selectedNode} // Pass the selected node
-          handleNameChange={handleNameChange} // Pass the name change handler
-          handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
-        />
-      )}
-    </div>
+        {selectedNode && (
+          <Col md="3">
+            <NodeEditor
+              selectedNode={selectedNode} // Pass the selected node
+              handleNameChange={handleNameChange} // Pass the name change handler
+              handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
+            />
+          </Col>
+        )}
+      </Row>
+    </Container>
   );
 };
 
