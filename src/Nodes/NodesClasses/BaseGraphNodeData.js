@@ -256,10 +256,10 @@ class NodePhrase {
     // this.ENG.assign(newPhrases.ENG);
   }
 
-  updateNodePhrase(language, level, clipId, text) {
-    const newPhraseValue = new NodePhraseValue(clipId, text);
+  updateNodePhrase(language, level, newClipId, text, oldClipId) {
+    const newPhraseValue = new NodePhraseValue(newClipId, text);
     if (language === "ITA") {
-      this.ITA.addOrUpdateLevel(level, newPhraseValue);
+      this.ITA.addOrUpdateLevel(level ,newPhraseValue, oldClipId==null?newClipId:oldClipId);
     }
   }
 
@@ -293,9 +293,9 @@ class NodePhrasesLevel {
     );
   }
 
-  addOrUpdateLevel(level, newPhraseValue) {
+  addOrUpdateLevel(level, newPhraseValue, oldClipId) {
     const array = this.getLevelArray(level);
-    this.addOrUpdateToArray(array, newPhraseValue);
+    this.addOrUpdateToArray(array, newPhraseValue, oldClipId);
   }
 
   count(level) {
@@ -313,8 +313,8 @@ class NodePhrasesLevel {
     }
   }
 
-  addOrUpdateToArray(array, newValue) {
-    const index = array.findIndex((x) => x.clipId === newValue.clipId);
+  addOrUpdateToArray(array, newValue,oldClipId) {
+    const index = array.findIndex((x) => x.clipId === oldClipId);
     if (index >= 0 && index < array.length) {
       array[index] = newValue;
     } else {

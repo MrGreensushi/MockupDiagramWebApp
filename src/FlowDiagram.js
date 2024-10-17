@@ -171,13 +171,23 @@ const FlowDiagram = () => {
       .then((res) => {
         // Check if the response is OK (status code 200-299)
         if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+          //Se l'errore è 404 vuol dire che il nodo non esisteva
+          if(res.status==404){
+            console.warn(updatedNode," Is not on the server")
+            return false;
+          }
+          else
+            throw new Error(`HTTP error! status: ${res.status}`);
         }
         return res.json(); // Parse the JSON response
       })
       .then((data) => {
+        if(!data) 
+          return;
+
         console.log("Updated Node was on the server: ", data);
-        if (func) func(updatedNode);
+        if (func) 
+          func(updatedNode);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);

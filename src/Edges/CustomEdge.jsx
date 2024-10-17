@@ -1,6 +1,7 @@
 import { React, memo, useEffect, useState } from "react";
 import { getBezierPath, EdgeLabelRenderer, BaseEdge } from "@xyflow/react";
 import BaseEdgeData from "./BaseEdgeData";
+import DoubleClickModifies from "../Features/DoubleClickModifies";
 
 const EdgeLabel = ({
   transform,
@@ -9,15 +10,14 @@ const EdgeLabel = ({
   handleAddLabel,
   isStartLabel,
 }) => {
-  const [isEditing, setIsEditing] = useState(false); // Stato per modalità di modifica
-  const [newLabel, setNewLabel] = useState(label); // Stato per il nuovo testo del label
+  // const [isEditing, setIsEditing] = useState(false); // Stato per modalità di modifica
+  // const [newLabel, setNewLabel] = useState(label); // Stato per il nuovo testo del label
 
-  useEffect(()=>{
-    setNewLabel(label); //keep NewLabel updated
-  },[label])
+  // useEffect(()=>{
+  //   setNewLabel(label); //keep NewLabel updated
+  // },[label])
 
   const handleNewLabel = () => {
-    
     handleAddLabel("new Label", isStartLabel);
   };
 
@@ -25,7 +25,7 @@ const EdgeLabel = ({
     var newStyle = {
       ...style,
       transform: transform,
-      pointerEvents: "all"
+      pointerEvents: "all",
     };
 
     //if (label == null) newStyle = { ...newStyle, pointerEvents: "all" };
@@ -33,47 +33,66 @@ const EdgeLabel = ({
   };
 
   // Quando si fa doppio click, attiva la modalità di modifica
-  const handleDoubleClick = () => {
-    console.log("DoubleClick")
-    if (newLabel != null) setIsEditing(true);
-  };
+  // const handleDoubleClick = () => {
+  //   console.log("DoubleClick")
+  //   if (newLabel != null) setIsEditing(true);
+  // };
 
   // Gestisce l'aggiornamento del testo quando si esce dall'input o si preme invio
-  const handleBlur = () => {
-    setIsEditing(false); // Esce dalla modalità di modifica
-    if (newLabel !== label) {
-      handleAddLabel(newLabel, isStartLabel); // Aggiorna il testo del label
-    }
-  };
+  // const handleBlur = () => {
+  //   setIsEditing(false); // Esce dalla modalità di modifica
+  //   if (newLabel !== label) {
+  //     handleAddLabel(newLabel, isStartLabel); // Aggiorna il testo del label
+  //   }
+  // };
 
   // Gestisce il tasto "Invio" per confermare il testo
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleBlur();
-    }
-  };
+  // const handleKeyDown = (event) => {
+  //   if (event.key === "Enter") {
+  //     handleBlur();
+  //   }
+  // };
 
   return (
-    <div
-      style={modifiedStyle()}
-      className="nodrag nopan"
-      onDoubleClick={handleDoubleClick} // Aggiungi l'evento di doppio click
-    >
-      {isEditing ? (
-        <input
-          type="text"
-          value={newLabel}
-          onChange={(e) => setNewLabel(e.target.value)}
-          onBlur={handleBlur} // Quando si perde il focus, conferma il nuovo testo
-          onKeyDown={handleKeyDown} // Gestisce il tasto "Enter"
-          autoFocus // Imposta automaticamente il focus sull'input
+    // <div
+    //   style={modifiedStyle()}
+    //   className="nodrag nopan"
+    //   onDoubleClick={handleDoubleClick} // Aggiungi l'evento di doppio click
+    // >
+    //   {isEditing ? (
+    //     <input
+    //       type="text"
+    //       value={newLabel}
+    //       onChange={(e) => setNewLabel(e.target.value)}
+    //       onBlur={handleBlur} // Quando si perde il focus, conferma il nuovo testo
+    //       onKeyDown={handleKeyDown} // Gestisce il tasto "Enter"
+    //       autoFocus // Imposta automaticamente il focus sull'input
+    //     />
+    //   ) : (
+    //     label != null && label
+    //   )}
+
+    //   {label == null && <button onClick={handleNewLabel}>+</button>}
+    // </div>
+
+    <>
+      {label != null && (
+        <DoubleClickModifies
+          style={modifiedStyle()}
+          divClassName={"nodrag nopan"}
+          updateFunction={(newValue) => {
+            handleAddLabel(newValue, isStartLabel);
+          }}
+          value={label}
         />
-      ) : (
-        label != null && label
       )}
 
-      {label == null && <button onClick={handleNewLabel}>+</button>}
-    </div>
+      {label == null && (
+        <div style={modifiedStyle()} className="nodrag nopan">
+          <button onClick={handleNewLabel}>+</button>
+        </div>
+      )}
+    </>
   );
 };
 

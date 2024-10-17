@@ -1,60 +1,106 @@
 import { useState } from "react";
+import DoubleClickModifies from "../../Features/DoubleClickModifies";
 
-const NodePhraseEditor = ({
+const NodePhrasesEditor = ({
   language,
   levels,
   nodePhrases,
   handleNodePhraseChange,
 }) => {
-  const [selectedClipId,setSelectedClipId]=useState({})
-
-  const HandleAddingClipId = (level) => {
-    handleNodePhraseChange(language, level, "New Clip " + nodePhrases.count(language,level), "...")
+  const handleNodePhraseUpdate = (level, newClipId, text, oldClipId) => {
+    handleNodePhraseChange(language, level, newClipId, text, oldClipId);
   };
-
-  const HandleSelectedClipId=(text)=>{
-    setSelectedClipId((previousSelectedClipId)=>({
-      ...previousSelectedClipId,
-      //[clipId]:text
-    }));
-  }
 
   return (
     <div>
       {levels.map((level) => (
-        <div key={language+":PhraseEditor:"+level}>
+        <div key={language + ":PhraseEditor:" + level}>
           <h6>{level}:</h6>
-          {nodePhrases[language][level].map((element,index) => (
-            <div key={language+":PhraseEditor:"+level+":"+element["clipId"]||index}>
-              <label>{element["clipId"]}</label>
-              <textarea
-                value={element.text || ""}
-                onChange={(e) =>
-                  handleNodePhraseChange(
-                    language,
-                    level,
-                    element.clipId,
-                    e.target.value
-                  )
-                }
-                style={{
-                  width: "100%",
-                  padding: "5px",
-                  marginBottom: "10px",
-                }}
-              />
-            </div>
+          {nodePhrases[language][level].map((element, index) => (
+            /* <div
+               key={
+                 language + ":PhraseEditor:" + level + ":" + element["clipId"] ||
+                 index
+               }
+             >
+               <label>{element["clipId"]}</label>
+               <textarea
+                 value={element.text || ""}
+                 onChange={(e) =>
+                   handleNodePhraseChange(
+                     language,
+                     level,
+                     element.clipId,
+                     e.target.value
+                   )
+                 }
+                 style={{
+                   width: "100%",
+                   padding: "5px",
+                   marginBottom: "10px",
+                 }}
+               />
+             </div>*/
+            <NodePhraseEditor
+              key={
+                language + ":PhraseEditor:" + level + ":" + element["clipId"] ||
+                language + ":PhraseEditor:" + level + ":" + index
+              }
+              clipId={element["clipId"]}
+              phraseText={element.text}
+              handlePhraseChange={(newClipId, newText) =>
+                handleNodePhraseChange(
+                  language,
+                  level,
+                  newClipId,
+                  newText,
+                  element["clipId"]
+                )
+              }
+            />
           ))}
 
-      
-          <button onClick={() => HandleAddingClipId(level)}>Add Clip Id</button>
+          <button
+            onClick={() =>
+              handleNodePhraseUpdate(
+                level,
+                "New Clip " + nodePhrases.count(language, level),
+                "...",
+                null
+              )
+            }
+          >
+            Add Clip Id
+          </button>
         </div>
       ))}
     </div>
   );
 };
 
-export default NodePhraseEditor;
+const NodePhraseEditor = ({ clipId, phraseText, handlePhraseChange }) => {
+  const style = { width: "100%", padding: "5px", marginBottom: "10px" };
+
+  return (
+    <div>
+      <DoubleClickModifies
+        value={clipId}
+        style={style}
+        updateFunction={(newClipId) =>
+          handlePhraseChange(newClipId, phraseText)
+        }
+        divClassName={""}
+      />
+      <textarea
+        value={phraseText || ""}
+        onChange={(e) => handlePhraseChange(clipId, e.target.value)}
+        style={style}
+      />
+    </div>
+  );
+};
+
+export default NodePhrasesEditor;
 
 /*{ <h4>Node Phrases</h4>;
 {

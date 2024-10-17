@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DescriptionEditor from "./DescriptionEditor";
-import NodePhraseEditor from "./NodePhrasesEditor";
+import NodePhrasesEditor from "./NodePhrasesEditor";
 import { BaseGraphNodeData,Description,NodePhrase } from "../NodesClasses/BaseGraphNodeData";
 
 const LEVELS = ["Novice", "Intermediate", "Expert"];
@@ -40,16 +40,16 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
   };
 
   // Handle node phrase changes
-  const handleNodePhraseChange = (language, level, clipId, value) => {
+  const handleNodePhraseChange = (language, level, clipId, value,oldClipId) => {
   
     //per far aggiornare il frontend bisogna creare una nuova variabile e poi usare Set..
     //1. creo una nuova variabile con gli stess valori di nodePhrases
     const newPhrases=NodePhrase.intialize(nodePhrases)
     //2. assegno i dati aggiornati 
-    newPhrases.updateNodePhrase(language, level, clipId, value);
+    newPhrases.updateNodePhrase(language, level, clipId, value,oldClipId);
     //3. uso Set per far aggiornare su schermo i dati
     setNodePhrases(newPhrases);
-    console.log("NodePhrase updated: ", selectedNode);
+    console.log("NodePhrases updated: ", newPhrases);
   };
 
   const saveChanges = () => {
@@ -92,7 +92,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
 
       <h4>Node Phrases</h4>
       {Object.keys(descriptions).map((language) => (
-        <NodePhraseEditor
+        <NodePhrasesEditor
           key={language + ":PhraseEditor"}
           language={language}
           levels={LEVELS}
