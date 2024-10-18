@@ -73,12 +73,7 @@ const FlowDiagram = () => {
     const id = uuidv4();
     return {
       id: id,
-      data: {
-        ...new BaseGraphNodeData(id, "Nodo " + (nodes.length + 1)),
-        onClickCopy: onClickCopy,
-        onClickEdit: onClickEdit,
-        onClickDelete: onClickDelete,
-      },
+      data: new BaseGraphNodeData(id, "Nodo " + (nodes.length + 1)),
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: "ResizableNode",
       style: BaseStyle,
@@ -87,23 +82,25 @@ const FlowDiagram = () => {
 
   const addNode = () => {
     const newNode = createNewNode();
-    
+
     console.log("New Graph node: ", newNode);
     setNodes((els) => [...els, newNode]);
   };
 
   const addExistingNode = (node) => {
-    if (!(node instanceof BaseGraphNodeData || typeof(node) == "string")) {
-      console.error("Node to Add is not an instance of BaseGraphNodeData nor a String");
+    if (!(node instanceof BaseGraphNodeData || typeof node == "string")) {
+      console.error(
+        "Node to Add is not an instance of BaseGraphNodeData nor a String"
+      );
       return;
     }
 
     const newGraphNode = createNewNode();
-    
+
     if (node instanceof BaseGraphNodeData) {
       newGraphNode.data.assign(node);
     } else if (node instanceof String) {
-      const existingNode = nodes.find(n => n.id === node);
+      const existingNode = nodes.find((n) => n.id === node);
       newGraphNode = existingNode?.data.assign(existingNode);
     }
 
@@ -129,17 +126,20 @@ const FlowDiagram = () => {
 
   const onNodesChange = useCallback(
     (changes) => {
-      console.log(changes);
-      let idOfSelected = null;
-      changes.map((change) => {if (change.selected) idOfSelected = change.id});
+      // console.log("Changes: ",changes);
+      // let idOfSelected = null;
+      // changes.map((change) => {
+      //   if (change.selected) idOfSelected = change.id;
+      // });
 
-      if (idOfSelected) {
-        setSelectedNode(nodes.find(node => node.id === idOfSelected));
-      } else {
-        setSelectedNode(null);
-      }
+      // if (idOfSelected) {
+      //   setSelectedNode(nodes.find((node) => node.id === idOfSelected));
+      // } else {
+      //   setSelectedNode(null);
+      // }
 
-      setNodes(nds => applyNodeChanges(changes, nds))},
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
     [setNodes]
   );
 
@@ -198,22 +198,18 @@ const FlowDiagram = () => {
         // Check if the response is OK (status code 200-299)
         if (!res.ok) {
           //Se l'errore è 404 vuol dire che il nodo non esisteva
-          if(res.status==404){
-            console.warn(updatedNode," Is not on the server")
+          if (res.status == 404) {
+            console.warn(updatedNode, " Is not on the server");
             return false;
-          }
-          else
-            throw new Error(`HTTP error! status: ${res.status}`);
+          } else throw new Error(`HTTP error! status: ${res.status}`);
         }
         return res.json(); // Parse the JSON response
       })
       .then((data) => {
-        if(!data) 
-          return;
+        if (!data) return;
 
         console.log("Updated Node was on the server: ", data);
-        if (func) 
-          func(updatedNode);
+        if (func) func(updatedNode);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
@@ -254,31 +250,43 @@ const FlowDiagram = () => {
 
   const onClickCopy = (node) => {
     addExistingNode(node);
-  }
-  
+  };
+
   const onClickEdit = () => {
     setShowSideTab(true);
   };
 
-  const onClickDelete = useCallback((nodeId) => {
-    rfInstance.deleteElements(nodes.find(n => n.id === nodeId));
-  }, [rfInstance]);
+  const onClickDelete = useCallback(
+    (nodeId) => {
+      rfInstance.deleteElements(nodes.find((n) => n.id === nodeId));
+    },
+    [rfInstance]
+  );
 
   return (
-    <Container fluid style={{height:"90vh", padding:"1%"}}>
-      <Row style={{height:"100%"}}>
-          {/*<NodeImporter
+    <Container fluid style={{ height: "90vh", padding: "1%" }}>
+      <Row style={{ height: "100%" }}>
+        {/*<NodeImporter
             addExistingNode={addExistingNode}
             importedNodes={importedNodes}
             />*/}
 
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onNodeClick={onNodeClick}
-            onConnect={onConnect}
-            nodeTypes={nodeTypes}
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onNodeClick={onNodeClick}
+          onConnect={onConnect}
+          nodeTypes={{
+            ResizableNode: (nodeProps) => (
+              <ResizableNode
+                {...nodeProps}
+                onClickCopy={onClickCopy}
+                onClickDelete={onClickDelete}
+                onClickEdit={onClickEdit}
+              />
+            ),
+          }}
           edgeTypes={{
             CustomEdge: (edgeProps) => (
               <CustomEdge
@@ -287,34 +295,31 @@ const FlowDiagram = () => {
               />
             ),
           }}
-            onInit={setRfInstance}
-            deleteKeyCode={"Backspace"} /* Cancella con il tasto Canc */
-            style={{ border: "1px solid black" }}
-            fitView
-            >
-              <Panel>
-              <button onClick={addNode} style={{ marginBottom: "10px" }}>
-                Aggiungi Nodo
-              </button>
-            </Panel>
-            <SaveLoadManager
-                rfInstance={rfInstance}
-                setEdges={setEdges}
-                setNodes={setNodes}
-                />
-            <Controls />
-            <Background />
-          </ReactFlow>
+          onInit={setRfInstance}
+          deleteKeyCode={"Backspace"} /* Cancella con il tasto Backspace */
+          style={{ border: "1px solid black" }}
+          fitView
+        >
+          <Panel>
+            <button onClick={addNode} style={{ marginBottom: "10px" }}>
+              Aggiungi Nodo
+            </button>
+          </Panel>
+          <SaveLoadManager
+            rfInstance={rfInstance}
+            setEdges={setEdges}
+            setNodes={setNodes}
+          />
+          <Controls />
+          <Background />
+        </ReactFlow>
 
-        <SideTab
-          showSideTab={showSideTab}
-          setShowSideTab={setShowSideTab}
-          >
-            <NodeEditor
-              selectedNode={selectedNode} // Pass the selected node
-              handleNameChange={handleNameChange} // Pass the name change handler
-              handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
-            />
+        <SideTab showSideTab={showSideTab} setShowSideTab={setShowSideTab}>
+          <NodeEditor
+            selectedNode={selectedNode} // Pass the selected node
+            handleNameChange={handleNameChange} // Pass the name change handler
+            handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
+          />
         </SideTab>
       </Row>
     </Container>
