@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Offcanvas } from "react-bootstrap";
 import {
   addEdge,
   ReactFlow,
@@ -7,7 +7,6 @@ import {
   Background,
   applyNodeChanges,
   Panel,
-  useOnSelectionChange
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
@@ -16,6 +15,7 @@ import NodeEditor from "./Nodes/NodeEditing/NodeEditor";
 import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
 import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
 import SaveLoadManager from "./SaveLoad";
+import SideTab from "./Layout/SideTab";
 
 const nodeTypes = {
   ResizableNode,
@@ -30,11 +30,12 @@ const BaseStyle = {
 const FlowDiagram = () => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
+  const [rfInstance, setRfInstance] = useState(null);
 
   const [selectedNode, setSelectedNode] = useState(null); // Nodo selezionato
   const [importedNodes, setImportedNodes] = useState([]);
 
-  const [rfInstance, setRfInstance] = useState(null);
+  const [showSideTab, setShowSideTab] = useState(false);
 
   //Initialize importedNodes
   useEffect(() => {
@@ -66,7 +67,12 @@ const FlowDiagram = () => {
     const id = uuidv4();
     return {
       id: id,
-      data: new BaseGraphNodeData(id, "Nodo " + (nodes.length + 1)),
+      data: {
+        ...new BaseGraphNodeData(id, "Nodo " + (nodes.length + 1)),
+        onClickCopy: onClickCopy,
+        onClickEdit: onClickEdit,
+        onClickDelete: onClickDelete,
+      },
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       type: "ResizableNode",
       style: BaseStyle,
@@ -75,16 +81,26 @@ const FlowDiagram = () => {
 
   const addNode = () => {
     const newNode = createNewNode();
+    
     console.log("New Graph node: ", newNode);
     setNodes((els) => [...els, newNode]);
   };
 
   const addExistingNode = (node) => {
-    if (!(node instanceof BaseGraphNodeData))
-      console.error("Node to Add is not an instace of BaseGraphNodeData");
+    if (!(node instanceof BaseGraphNodeData || typeof(node) == "string")) {
+      console.error("Node to Add is not an instance of BaseGraphNodeData nor a String");
+      return;
+    }
 
     const newGraphNode = createNewNode();
-    newGraphNode.data.assign(node);
+    
+    if (node instanceof BaseGraphNodeData) {
+      newGraphNode.data.assign(node);
+    } else if (node instanceof String) {
+      const existingNode = nodes.find(n => n.id === node);
+      newGraphNode = existingNode?.data.assign(existingNode);
+    }
+
     console.log("New Graph Node: ", newGraphNode);
 
     setNodes((oldNodes) => [...oldNodes, newGraphNode]);
@@ -113,7 +129,7 @@ const FlowDiagram = () => {
   const onNodeClick = (ev, element) => {
     if (element.type === "ResizableNode") {
       const clickedNode = nodes.find((x) => x.id === element.id);
-      console.log("ClickedNode: ", clickedNode);
+      //console.log("ClickedNode: ", clickedNode);
       setSelectedNode(clickedNode.data);
     }
   };
@@ -210,14 +226,25 @@ const FlowDiagram = () => {
     console.log("Updated imported Nodes: ", newNodes);
   };
 
+  const onClickCopy = (node) => {
+    addExistingNode(node);
+  }
+  
+  const onClickEdit = () => {
+    setShowSideTab(true);
+  };
+
+  const onClickDelete = useCallback((nodeId) => {
+    rfInstance.deleteElements(nodes.find(n => n.id === nodeId));
+  }, [rfInstance]);
+
   return (
     <Container fluid style={{height:"90vh", padding:"1%"}}>
       <Row style={{height:"100%"}}>
-        <Col style={{height:"100%"}}>
-          <NodeImporter
+          {/*<NodeImporter
             addExistingNode={addExistingNode}
             importedNodes={importedNodes}
-            />
+            />*/}
 
           <ReactFlow
             nodes={nodes}
@@ -244,17 +271,17 @@ const FlowDiagram = () => {
             <Controls />
             <Background />
           </ReactFlow>
-        </Col>
 
-        {selectedNode && (
-          <Col md="3">
+        <SideTab
+          showSideTab={showSideTab}
+          setShowSideTab={setShowSideTab}
+          >
             <NodeEditor
               selectedNode={selectedNode} // Pass the selected node
               handleNameChange={handleNameChange} // Pass the name change handler
               handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
             />
-          </Col>
-        )}
+        </SideTab>
       </Row>
     </Container>
   );

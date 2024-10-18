@@ -21,7 +21,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
       setDescriptions(Description.intialize(selectedNode.descriptions) || new Description());
       setNodePhrases(NodePhrase.intialize(selectedNode.nodePhrases) || new NodePhrase());
     }
-    console.log("SelectedNode Chnaged: ", selectedNode);
+    console.log("SelectedNode Changed: ", selectedNode);
     console.log(
       "Is selectedNode a baseCustoNode? ",
       selectedNode instanceof BaseGraphNodeData
