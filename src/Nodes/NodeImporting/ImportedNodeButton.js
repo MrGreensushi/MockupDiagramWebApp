@@ -6,7 +6,7 @@ const ImportedNodeButton=({addExistingNode,importedNode})=>{
               onClick={() => addExistingNode(importedNode)}
               style={{ marginBottom: "10px" }}
             >
-              {importedNode.Name}
+              {importedNode.label}
             </button>
           )}
         </>
