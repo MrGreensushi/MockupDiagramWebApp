@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import DescriptionEditor from "./DescriptionEditor";
 import NodePhrasesEditor from "./NodePhrasesEditor";
 import { BaseGraphNodeData,Description,NodePhrase } from "../NodesClasses/BaseGraphNodeData";
+import { Col } from "react-bootstrap";
 
 const LEVELS = ["Novice", "Intermediate", "Expert"];
 
@@ -20,7 +21,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
       setDescriptions(Description.intialize(selectedNode.descriptions) || new Description());
       setNodePhrases(NodePhrase.intialize(selectedNode.nodePhrases) || new NodePhrase());
     }
-    console.log("SelectedNode Chnaged: ", selectedNode);
+    console.log("SelectedNode Changed: ", selectedNode);
     console.log(
       "Is selectedNode a baseCustoNode? ",
       selectedNode instanceof BaseGraphNodeData
@@ -62,10 +63,9 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
   };
 
   return (
-    <div
+    <Col
       style={{
-        width: "25%",
-        padding: "20px",
+        padding: "1%",
         borderLeft: "1px solid #ddd",
         backgroundColor: "#f4f4f4",
       }}
@@ -76,7 +76,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
         type="text"
         value={selectedNode.label}
         onChange={handleNameChange}
-        style={{ width: "100%", padding: "5px", marginTop: "10px" }}
+        style={{ padding: "5px", marginTop: "10px" }}
       />
 
       <h4>Descrizioni</h4>
@@ -104,7 +104,7 @@ const NodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
       <button onClick={saveChanges} style={{ marginTop: "20px" }}>
         Save Changes
       </button>
-    </div>
+    </Col>
   );
 };
 
