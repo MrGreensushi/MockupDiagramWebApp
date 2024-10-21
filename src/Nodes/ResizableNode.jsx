@@ -34,7 +34,7 @@ onClickOpenSubFlow
               <i className="bi bi-trash3" aria-label='delete'/>
             </Button>
             <Button variant="secondary" onClick={() => onClickOpenSubFlow(data.id)}>
-              <i className="bi  bi-zoom-in" aria-label='delete'/>
+              <i className="bi  bi-zoom-in" aria-label='add'/>
             </Button>
            
           </ButtonGroup>

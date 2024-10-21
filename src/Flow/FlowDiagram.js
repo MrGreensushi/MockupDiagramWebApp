@@ -10,16 +10,17 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
-import ResizableNode from "./Nodes/ResizableNode";
-import NodeEditor from "./Nodes/NodeEditing/NodeEditor";
-import NodeImporter from "./Nodes/NodeImporting/NodeImporter";
-import { BaseGraphNodeData } from "./Nodes/NodesClasses/BaseGraphNodeData";
-import SaveLoadManager from "./SaveLoad";
-import CustomEdge from "./Edges/CustomEdge";
-import BaseEdgeData from "./Edges/BaseEdgeData";
-import SideTab from "./Layout/SideTab";
-import BackendComm from "./BackEndCommunication/BackendComm";
-import FlowDescriptor from "./Flow/FlowDescriptor";
+import ResizableNode from "../Nodes/ResizableNode";
+import NodeEditor from "../Nodes/NodeEditing/NodeEditor";
+import NodeImporter from "../Nodes/NodeImporting/NodeImporter";
+import { BaseGraphNodeData } from "../Nodes/NodesClasses/BaseGraphNodeData";
+import SaveLoadManager from "../SaveLoad";
+import CustomEdge from "../Edges/CustomEdge";
+import BaseEdgeData from "../Edges/BaseEdgeData";
+import SideTab from "../Layout/SideTab";
+import BackendComm from "../BackEndCommunication/BackendComm";
+import FlowDescriptor from "./FlowDescriptor";
+import StartEndNode from "../Nodes/StartEndNode";
 
 // const nodeTypes = {
 //   ResizableNode,
@@ -61,8 +62,8 @@ const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
   }, []);
 
   useEffect(() => {
-    setEdges(flow.edges);
-    setNodes(flow.nodes);
+    setEdges([...flow.edges]);
+    setNodes([...flow.nodes]);
   }, [flow]);
 
   const createNewNode = () => {
@@ -224,12 +225,69 @@ const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
     const node = nodes.find((x) => x.id === nodeId);
     if (!node) throw new Error("NodeId not found: ", nodeId);
 
+    const newFlow = createStartEndNodes(node);
+
     const subflow = node.data.subFlow
       ? node.subFlow
-      : new FlowDescriptor([], [], node.data.label);
+      : new FlowDescriptor(newFlow.edges, newFlow.nodes, node.data.label);
 
-    const updatedFlow=new FlowDescriptor(edges,nodes,flow.name, flow.isMainFlow)
+    const updatedFlow = new FlowDescriptor(
+      edges,
+      nodes,
+      flow.name,
+      flow.isMainFlow
+    );
+
+    console.log("Subflot to setActive: ", subflow);
+
     onClickSetSubFlow(updatedFlow, subflow);
+  };
+
+  const createStartEndNodes = (initialNode) => {
+    const idStart = uuidv4();
+    const idEnd = uuidv4();
+    const xPos = 200;
+
+    // // Ottieni le dimensioni del viewport
+    // const viewportWidth = rfInstance.getViewport().x;
+    // const viewportHeight = window.innerHeight;
+
+    // // Margini di sicurezza per i nodi rispetto ai bordi del viewport
+    // const margin = 50;
+    // // Calcola la posizione X dei nodi, rispettando i bound del viewport
+    // const startX = Math.max(-viewportWidth / 2 + margin, -300); // Massima posizione X per startNode, non oltre -300
+    // const endX = Math.min(viewportWidth / 2 - margin, 300); // Massima posizione X per endNode, non oltre 300
+
+    const startNode = {
+      id: idStart,
+      data: { isStart: true },
+      position: { x: -xPos, y: 0 },
+      type: "StartEndNode",
+      style: BaseStyle,
+    };
+    const endNode = {
+      id: idEnd,
+      data: { isStart: false },
+      position: { x: xPos, y: 0 },
+      type: "StartEndNode",
+      style: BaseStyle,
+    };
+
+    const edge = {
+      id: "Start-End-Edge",
+      source: idStart,
+      target: idEnd,
+      type: "CustomEdge",
+      data: new BaseEdgeData(null, null),
+    };
+
+    const toRet = {
+      nodes: [startNode, endNode],
+      edges: [edge],
+    };
+
+    console.log("Start End initial Flow: ", toRet);
+    return toRet;
   };
 
   return (
@@ -256,6 +314,7 @@ const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
                 onClickOpenSubFlow={onClickOpenSubFlow}
               />
             ),
+            StartEndNode: (nodeProps) => <StartEndNode {...nodeProps} />,
           }}
           edgeTypes={{
             CustomEdge: (edgeProps) => (
@@ -275,11 +334,13 @@ const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
               Aggiungi Nodo
             </button>
           </Panel>
-         { flow.isMainFlow && (<SaveLoadManager
-            rfInstance={rfInstance}
-            setEdges={setEdges}
-            setNodes={setNodes}
-          />)}
+          {flow.isMainFlow && (
+            <SaveLoadManager
+              rfInstance={rfInstance}
+              setEdges={setEdges}
+              setNodes={setNodes}
+            />
+          )}
           <Controls />
           <Background />
         </ReactFlow>

@@ -1,6 +1,6 @@
 // src/App.js
 import React, { useState } from "react";
-import FlowDiagram from "./FlowDiagram";
+import FlowDiagram from "./Flow/FlowDiagram";
 import FlowDescriptor from "./Flow/FlowDescriptor";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
