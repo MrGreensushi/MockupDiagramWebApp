@@ -7,7 +7,9 @@ const ResizableNode = ({
   selected,
 onClickCopy,
 onClickEdit,
-onClickDelete}) => {
+onClickDelete,
+onClickOpenSubFlow
+}) => {
 
     return (
       <>
@@ -31,6 +33,10 @@ onClickDelete}) => {
             <Button variant="secondary" onClick={() => onClickDelete(data.id)}>
               <i className="bi bi-trash3" aria-label='delete'/>
             </Button>
+            <Button variant="secondary" onClick={() => onClickOpenSubFlow(data.id)}>
+              <i className="bi  bi-zoom-in" aria-label='delete'/>
+            </Button>
+           
           </ButtonGroup>
         </NodeToolbar>
       </>

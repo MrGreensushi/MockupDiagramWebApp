@@ -18,14 +18,16 @@ import SaveLoadManager from "./SaveLoad";
 import CustomEdge from "./Edges/CustomEdge";
 import BaseEdgeData from "./Edges/BaseEdgeData";
 import SideTab from "./Layout/SideTab";
+import BackendComm from "./BackEndCommunication/BackendComm";
+import FlowDescriptor from "./Flow/FlowDescriptor";
 
-const nodeTypes = {
-  ResizableNode,
-};
+// const nodeTypes = {
+//   ResizableNode,
+// };
 
-const EdgeTypes = {
-  CustomEdge,
-};
+// const EdgeTypes = {
+//   CustomEdge,
+// };
 const BaseStyle = {
   background: "#fff",
   border: "1px solid black",
@@ -33,9 +35,9 @@ const BaseStyle = {
   fontSize: 12,
 };
 
-const FlowDiagram = () => {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
+const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
+  const [nodes, setNodes] = useState(flow.nodes);
+  const [edges, setEdges] = useState(flow.edges);
   const [rfInstance, setRfInstance] = useState(null);
 
   const [selectedNode, setSelectedNode] = useState(null); // Nodo selezionato
@@ -45,29 +47,23 @@ const FlowDiagram = () => {
 
   //Initialize importedNodes
   useEffect(() => {
-    fetch("/nodes")
-      .then((res) => {
-        // Check if the response is OK (status code 200-299)
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json(); // Parse the JSON response
-      })
-      .then((data) => {
-        //Creo un array di BaseGraphNodeData a partire dalla risposta dal server
-        var nodeArray = [];
-        data.map((importedInfo) => {
-          const newGraphNode =
-            BaseGraphNodeData.initializeFromImportedInfo(importedInfo);
-          nodeArray.push(newGraphNode);
-        });
-        setImportedNodes(nodeArray);
-        console.log(nodeArray); // Set the nodes with the fetched data
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
+    BackendComm.getNodes((data) => {
+      //Creo un array di BaseGraphNodeData a partire dalla risposta dal server
+      var nodeArray = [];
+      data.map((importedInfo) => {
+        const newGraphNode =
+          BaseGraphNodeData.initializeFromImportedInfo(importedInfo);
+        nodeArray.push(newGraphNode);
       });
+      setImportedNodes(nodeArray);
+      console.log(nodeArray); // Set the nodes with the fetched data
+    });
   }, []);
+
+  useEffect(() => {
+    setEdges(flow.edges);
+    setNodes(flow.nodes);
+  }, [flow]);
 
   const createNewNode = () => {
     const id = uuidv4();
@@ -189,50 +185,9 @@ const FlowDiagram = () => {
 
     //Se il nodo modificato faceva parte di quelli prefatti, aggiorna il server!
     //Successivamente aggiorna anche i nodi importati se era uno dei nodi sel server
-    checkIfNodeIsOnServer(updatedNode, updateNodeServer);
-  };
-
-  const checkIfNodeIsOnServer = (updatedNode, func) => {
-    fetch("/nodes/" + updatedNode.label)
-      .then((res) => {
-        // Check if the response is OK (status code 200-299)
-        if (!res.ok) {
-          //Se l'errore è 404 vuol dire che il nodo non esisteva
-          if (res.status == 404) {
-            console.warn(updatedNode, " Is not on the server");
-            return false;
-          } else throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json(); // Parse the JSON response
-      })
-      .then((data) => {
-        if (!data) return;
-
-        console.log("Updated Node was on the server: ", data);
-        if (func) func(updatedNode);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-  };
-
-  const updateNodeServer = (updatedNode) => {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: updatedNode.stringify(),
-    };
-    console.log("Update server node Request: ", requestOptions);
-
-    fetch("/nodes/" + updatedNode.label, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("The update on the server was a Success: ", data);
-        updateImportedNode(updatedNode); //Aggiorna il nodo importato sul frontend
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    BackendComm.getNode(updatedNode, () => {
+      BackendComm.postNode(updatedNode, updateImportedNode);
+    });
   };
 
   const updateImportedNode = (updateNode) => {
@@ -256,12 +211,26 @@ const FlowDiagram = () => {
     setShowSideTab(true);
   };
 
-  const onClickDelete = useCallback(
-    (nodeId) => {
-      rfInstance.deleteElements(nodes.find((n) => n.id === nodeId));
-    },
-    [rfInstance]
-  );
+  const onClickDelete = (nodeId) => {
+    var newNodes = [];
+    nodes.forEach((node) => {
+      if (node.id !== nodeId) newNodes.push(node);
+    });
+    setNodes(newNodes);
+  };
+
+  const onClickOpenSubFlow = (nodeId) => {
+    //
+    const node = nodes.find((x) => x.id === nodeId);
+    if (!node) throw new Error("NodeId not found: ", nodeId);
+
+    const subflow = node.data.subFlow
+      ? node.subFlow
+      : new FlowDescriptor([], [], node.data.label);
+
+    const updatedFlow=new FlowDescriptor(edges,nodes,flow.name, flow.isMainFlow)
+    onClickSetSubFlow(updatedFlow, subflow);
+  };
 
   return (
     <Container fluid style={{ height: "90vh", padding: "1%" }}>
@@ -284,6 +253,7 @@ const FlowDiagram = () => {
                 onClickCopy={onClickCopy}
                 onClickDelete={onClickDelete}
                 onClickEdit={onClickEdit}
+                onClickOpenSubFlow={onClickOpenSubFlow}
               />
             ),
           }}
@@ -305,11 +275,11 @@ const FlowDiagram = () => {
               Aggiungi Nodo
             </button>
           </Panel>
-          <SaveLoadManager
+         { flow.isMainFlow && (<SaveLoadManager
             rfInstance={rfInstance}
             setEdges={setEdges}
             setNodes={setNodes}
-          />
+          />)}
           <Controls />
           <Background />
         </ReactFlow>

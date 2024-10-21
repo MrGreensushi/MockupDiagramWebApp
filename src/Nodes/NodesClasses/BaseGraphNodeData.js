@@ -36,6 +36,7 @@ class BaseGraphNodeData {
     this.id = id;
     this._descriptions = new Description();
     this._nodePhrases = new NodePhrase();
+    this.subFlow=null;
   }
 
   get descriptions() {
