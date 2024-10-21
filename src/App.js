@@ -1,37 +1,112 @@
 // src/App.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FlowDiagram from "./Flow/FlowDiagram";
 import FlowDescriptor from "./Flow/FlowDescriptor";
+import NarrativeFlowDiagram from "./Flow/NarrativeFlowDiagram";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
+import CharacterData from "./StoryElements/CharacterData";
+import ObjectData from "./StoryElements/ObjectData";
+import LocationtData from "./StoryElements/LocationData";
 
 function App() {
   const [mainFlow, setMainFlow] = useState(
-    new FlowDescriptor([], [], "React Diagram",true)
+    new FlowDescriptor([], [], "React Diagram", true)
   );
   const [activeFlow, setActiveFlow] = useState(mainFlow);
 
-  const onClickSetSubFlow = (
-    currentFlow,
-    newFlow
-  ) => {
+  useEffect(() => {
+    const manager = NarrativeDataManager.getInstance();
+    manager.addCharacter(
+      new CharacterData(
+        "Amun",
+        "Principale, scriba",
+        "tornare in possesso dei vestiti"
+      )
+    );
+    manager.addCharacter(
+      new CharacterData(
+        "Semeb",
+        "Principale, ladro, scriba",
+        "rubare i vestiti per mantenere la famiglia"
+      )
+    );
+    manager.addCharacter(
+      new CharacterData(
+        "Imhotep",
+        "Secondario, capo scriba",
+        "Far rispettare le regole"
+      )
+    );
+    manager.addCharacter(
+      new CharacterData(
+        "Tia",
+        "Tia, moglie di Semeb",
+        "mantenere la famiglia"
+      )
+    );
+    manager.addCharacter(
+      new CharacterData(
+        "Oracolo",
+        "Secondario, oracolo",
+        "dire la verità"
+      )
+    );
+    manager.addCharacter(
+      new CharacterData(
+        "Scienziati",
+        "Secondario",
+        "trovare reperti"
+      )
+    );
+    manager.addObject(
+      new ObjectData(
+        "Vestiti",
+        "",
+        ""
+      )
+    );
+    manager.addObject(
+      new ObjectData(
+        "Vestiti1",
+        "",
+        ""
+      )
+    );
+    manager.addBackground(
+      new LocationtData(
+        "Biblioteca del tempio di Karnak",
+        "",
+        ""
+      )
+    );
+    manager.addBackground(
+      new LocationtData(
+        "1Biblioteca del tempio di Karnak",
+        "",
+        ""
+      )
+    );
+  }, []);
+
+  const onClickSetSubFlow = (currentFlow, newFlow) => {
     //aggiorna mainFlow
     setMainFlow(
-      (prevFlow) => new FlowDescriptor(currentFlow.nodes, currentFlow.edges, prevFlow.name)
+      (prevFlow) =>
+        new FlowDescriptor(currentFlow.nodes, currentFlow.edges, prevFlow.name)
     );
     //Setta il nuovo active flow
     setActiveFlow(newFlow);
   };
 
-  const returnToMainFlow=()=>{
-
-  }
+  const returnToMainFlow = () => {};
 
   return (
     <div className="App">
       <h1>{activeFlow.name}</h1>
-      <FlowDiagram
+      <NarrativeFlowDiagram
         flow={activeFlow}
         onClickSetSubFlow={onClickSetSubFlow}
       />
