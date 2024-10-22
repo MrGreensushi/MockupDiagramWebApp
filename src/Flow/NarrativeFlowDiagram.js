@@ -19,6 +19,7 @@ import BaseEdgeData from "../Edges/BaseEdgeData";
 import SideTab from "../Layout/SideTab";
 import NarratorNode from "../Nodes/NodesClasses/NarratorNode";
 import NarratorNodeEditor from "../Nodes/NodeEditing/NarratorNodes/NarratorNodeEditor";
+import CharacterForm from "../Features/CharacterForm";
 
 // const nodeTypes = {
 //   ResizableNode,
@@ -152,7 +153,7 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
 
   // Function to handle node updates (descriptions and nodePhrases)
   const handleNodeUpdate = (updatedNode) => {
-    if (!(updatedNode instanceof BaseGraphNodeData)) {
+    if (!(updatedNode instanceof NarratorNode)) {
       throw new Error(updatedNode, " is not an instanceof BaseGraphNodeData");
     }
 
@@ -223,6 +224,7 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
             <button onClick={addNode} style={{ marginBottom: "10px" }}>
               Aggiungi Nodo
             </button>
+            <CharacterForm />
           </Panel>
           {flow.isMainFlow && (
             <SaveLoadManager

@@ -1,6 +1,8 @@
-class ObjectData {
-    constructor(name, use, notes = "") {
-        this.name = name;
+import StoryElement from "./StoryElement";
+
+class ObjectData extends StoryElement{
+    constructor(isVariable, type,id, use, notes = "") {
+        super(isVariable, type,id)
         this.use = use;
         this.notes = notes;
     }

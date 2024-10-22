@@ -21,70 +21,84 @@ function App() {
     const manager = NarrativeDataManager.getInstance();
     manager.addCharacter(
       new CharacterData(
+        false,
         "Amun",
+        "0",
         "Principale, scriba",
         "tornare in possesso dei vestiti"
       )
     );
     manager.addCharacter(
       new CharacterData(
+        false,
         "Semeb",
+        "1",
         "Principale, ladro, scriba",
         "rubare i vestiti per mantenere la famiglia"
       )
     );
     manager.addCharacter(
       new CharacterData(
+        true,
         "Imhotep",
+        "2",
         "Secondario, capo scriba",
         "Far rispettare le regole"
       )
     );
-    manager.addCharacter(
-      new CharacterData(
-        "Tia",
-        "Tia, moglie di Semeb",
-        "mantenere la famiglia"
-      )
-    );
-    manager.addCharacter(
-      new CharacterData(
-        "Oracolo",
-        "Secondario, oracolo",
-        "dire la verità"
-      )
-    );
-    manager.addCharacter(
-      new CharacterData(
-        "Scienziati",
-        "Secondario",
-        "trovare reperti"
-      )
-    );
+    // manager.addCharacter(
+    //   new CharacterData(
+    //     "Tia",
+    //     "Tia, moglie di Semeb",
+    //     "mantenere la famiglia"
+    //   )
+    // );
+    // manager.addCharacter(
+    //   new CharacterData(
+    //     "Oracolo",
+    //     "Secondario, oracolo",
+    //     "dire la verità"
+    //   )
+    // );
+    // manager.addCharacter(
+    //   new CharacterData(
+    //     "Scienziati",
+    //     "Secondario",
+    //     "trovare reperti"
+    //   )
+    // );
     manager.addObject(
       new ObjectData(
+        false,
         "Vestiti",
+        "3",
         "",
         ""
       )
     );
     manager.addObject(
       new ObjectData(
+        true,
         "Vestiti1",
+        "4",
         "",
         ""
       )
     );
     manager.addBackground(
       new LocationtData(
+        false,
         "Biblioteca del tempio di Karnak",
+        "5",
         "",
         ""
       )
     );
     manager.addBackground(
       new LocationtData(
+        true,
         "1Biblioteca del tempio di Karnak",
+        "6",
         "",
         ""
       )

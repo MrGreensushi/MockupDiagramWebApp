@@ -1,6 +1,8 @@
-class CharacterData {
-  constructor(name, bio, objective) {
-    this.name = name;
+import StoryElement from "./StoryElement";
+
+class CharacterData extends StoryElement {
+  constructor(isVariable, type,id,bio, objective) {
+    super(isVariable, type,id);
     this.bio = bio;
     this.objective = objective;
   }

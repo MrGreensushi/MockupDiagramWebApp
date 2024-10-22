@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
-import CharacterEditor from "./CharacterEditor";  // Un editor simile a DescriptionEditor
-import ObjectEditor from "./ObjectEditor";  // Un editor simile a NodePhrasesEditor
+import ElementPicker from "./ElementPicker";
 import NarrativeDataManager from "../../../StoryElements/NarrativeDataManager";
 import { Col } from "react-bootstrap";
 import NarratorNode from "../../NodesClasses/NarratorNode";
-import BackgroundSelector from "./BackgroundSelector";
+import StoryElementComponent from "./StoryElementComponent";
 
 // selectedNode è un NarratorNode
-const NarratorNodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }) => {
+const NarratorNodeEditor = ({ selectedNode, handleNodeUpdate }) => {
+  const [nodeLabel,setNodeLabel] = useState(selectedNode.label||"")
   const [mainCharacters, setMainCharacters] = useState(selectedNode.mainCharacters || []);
   const [backgroundCharacters, setBackgroundCharacters] = useState(selectedNode.BackgroundCharacters || []);
   const [objects, setObjects] = useState(selectedNode.Objects || []);
-  const [background, setBackground] = useState(selectedNode.Background || "");
+  const [background, setBackground] = useState(selectedNode.Background || null);
   const narrativeDataManager = NarrativeDataManager.getInstance();
 
   // Aggiorna i valori quando selectedNode cambia
@@ -20,7 +20,7 @@ const NarratorNodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }
       setMainCharacters(selectedNode.mainCharacters || []);
       setBackgroundCharacters(selectedNode.BackgroundCharacters || []);
       setObjects(selectedNode.Objects || []);
-      setBackground(selectedNode.Background || "");
+      setBackground(selectedNode.Background || null);
     }
     console.log("SelectedNode Changed: ", selectedNode);
   }, [selectedNode]);
@@ -53,7 +53,12 @@ const NarratorNodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }
   };
 
   // Funzioni per aggiornare il background
-  const handleBackgroundChange = (newBackground) => {
+  const handleBackgroundChange = (updatedBackgrounds) => {
+
+    //Voglio solamente 1 possibile background e voglio che sia l'ultimo che sia stato selezionato!
+    const newBackground=updatedBackgrounds[updatedBackgrounds.length-1]
+    console.log("New background: ",newBackground, updatedBackgrounds)
+
     if (narrativeDataManager.backgrounds.includes(newBackground)) {
       setBackground(newBackground);
     } else {
@@ -64,7 +69,8 @@ const NarratorNodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }
   // Salva le modifiche
   const saveChanges = () => {
     const updatedNode = new NarratorNode(
-      selectedNode.name,
+      nodeLabel,
+      selectedNode.id,
       mainCharacters,
       backgroundCharacters,
       objects,
@@ -93,37 +99,37 @@ const NarratorNodeEditor = ({ selectedNode, handleNameChange, handleNodeUpdate }
       <label>Nome del nodo:</label>
       <input
         type="text"
-        value={selectedNode.label}
-        onChange={(e) => handleNameChange(e.target.value)}
+        value={nodeLabel}
+        onChange={(e) => setNodeLabel(e.target.value)}
         style={{ padding: "5px", marginTop: "10px" }}
       />
 
       <h4>Main Characters</h4>
-      <CharacterEditor
-        characters={mainCharacters}
-        availableCharacters={narrativeDataManager.characters}
-        handleCharactersChange={handleMainCharactersChange}
+      <ElementPicker
+        elements={mainCharacters}
+        availableElements={narrativeDataManager.characters}
+        handleElementsChange={handleMainCharactersChange}
       />
 
       <h4>Background Characters</h4>
-      <CharacterEditor
-        characters={backgroundCharacters}
-        availableCharacters={narrativeDataManager.characters}
-        handleCharactersChange={handleBackgroundCharactersChange}
+      <ElementPicker
+        elements={backgroundCharacters}
+        availableElements={narrativeDataManager.characters}
+        handleElementsChange={handleBackgroundCharactersChange}
       />
 
       <h4>Objects</h4>
-      <CharacterEditor
-        characters={objects}
-        availableCharacters={narrativeDataManager.objects}
-        handleCharactersChange={handleObjectsChange}
+      <ElementPicker
+        elements={objects}
+        availableElements={narrativeDataManager.objects}
+        handleElementsChange={handleObjectsChange}
       />
 
       <h4>Background</h4>
-      <CharacterEditor
-        characters={[background]}
-        availableCharacters={narrativeDataManager.backgrounds}
-        handleCharactersChange={handleBackgroundChange}
+      <ElementPicker
+        elements={background==null?[]:[background]}
+        availableElements={narrativeDataManager.backgrounds}
+        handleElementsChange={handleBackgroundChange}
       />
 
       <button onClick={saveChanges} style={{ marginTop: "20px" }}>

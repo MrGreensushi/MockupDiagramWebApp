@@ -1,6 +1,8 @@
-class LocationtData {
-    constructor(name, purpose, notes = "") {
-        this.name = name;
+import StoryElement from "./StoryElement";
+
+class LocationtData extends StoryElement{
+    constructor(isVariable, type,id, purpose, notes = "") {
+        super(isVariable, type, id)
         this.purpose = purpose;
         this.notes = notes;
     }
