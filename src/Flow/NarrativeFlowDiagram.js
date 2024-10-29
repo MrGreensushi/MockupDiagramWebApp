@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { Container, Row, Col, Offcanvas } from "react-bootstrap";
 import {
   addEdge,
@@ -7,19 +7,17 @@ import {
   Background,
   applyNodeChanges,
   Panel,
+  getIncomers,
+  useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
-import ResizableNode from "../Nodes/ResizableNode";
-import NodeEditor from "../Nodes/NodeEditing/NodeEditor";
-import { BaseGraphNodeData } from "../Nodes/NodesClasses/BaseGraphNodeData";
 import SaveLoadManager from "../SaveLoad";
-import CustomEdge from "../Edges/CustomEdge";
-import BaseEdgeData from "../Edges/BaseEdgeData";
 import SideTab from "../Layout/SideTab";
 import NarratorNode from "../Nodes/NodesClasses/NarratorNode";
-import NarratorNodeEditor from "../Nodes/NodeEditing/NarratorNodes/NarratorNodeEditor";
-import CharacterForm from "../Features/CharacterForm";
+import NarratorNodeEditor from "../Features/NarratorNodeEditor";
+import NarrativeNodeDiv from "../Nodes/NarrativeNodeDiv";
+import OneLabelEdge from "../Edges/OneLabelEdge";
 
 // const nodeTypes = {
 //   ResizableNode,
@@ -28,12 +26,32 @@ import CharacterForm from "../Features/CharacterForm";
 // const EdgeTypes = {
 //   CustomEdge,
 // };
-const BaseStyle = {
-  background: "#fff",
-  border: "1px solid black",
-  borderRadius: 2,
-  fontSize: 12,
-};
+// const BaseStyle = {
+//   background: "#fff",
+//   border: "1px solid black",
+//   borderRadius: 2,
+//   fontSize: 12,
+// };
+const TYPENAME = "CustomNode";
+
+// const nodeTypes = (onClickDelete, onClickEdit,updateEdges) => ({
+//   CustomNode: (nodeProps) => (
+//     <NarrativeNodeDiv
+//       {...nodeProps}
+//       onClickDelete={onClickDelete}
+//       onClickEdit={onClickEdit}
+//       updateEdges={updateEdges}
+//       //updateEdgesSourceHandles={updateEdgesSourceHandles}
+//     />
+//   ),
+// });
+
+const EDGETYPENAME = "CustomEdge";
+// const edgeTypes = (handleEdgeDataUpdate) => ({
+//   CustomEdge: (edgeProps) => (
+//     <OneLabelEdge {...edgeProps} handleEdgeDataUpdate={handleEdgeDataUpdate} />
+//   ),
+// });
 
 const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
   const [nodes, setNodes] = useState([]);
@@ -42,23 +60,21 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
 
   const [selectedNode, setSelectedNode] = useState(null); // Nodo selezionato
   const [showSideTab, setShowSideTab] = useState(false);
-
   // useEffect(() => {
   //   setEdges([...flow.edges]);
   //   setNodes([...flow.nodes]);
   // }, [flow]);
 
-  const createNewNode = () => {
+  const createNewNode = useCallback(() => {
     const id = uuidv4();
-    const name="Node " + nodes.length;
+    const name = "Node " + nodes.length;
     return {
       id: id,
-      data: new NarratorNode(name,id),
+      data: new NarratorNode(name, id),
       position: { x: Math.random() * 200, y: Math.random() * 200 },
-      type: "ResizableNode",
-      style: BaseStyle,
+      type: TYPENAME,
     };
-  };
+  }, [nodes.length]);
 
   const addNode = () => {
     const newNode = createNewNode();
@@ -67,63 +83,77 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
     setNodes((els) => [...els, newNode]);
   };
 
-   const addExistingNode = (node) => {
-     if (!(node instanceof NarratorNode || typeof node == "string")) {
-       console.error(
-         "Node to Add is not an instance of NarratorNode nor a String"
-       );
-       return;
-     }
-     const newGraphNode = createNewNode();
-     if (node instanceof NarratorNode) {
-       newGraphNode.data = node.copy();
-     } else if (node instanceof String) {
-       const existingNode = nodes.find((n) => n.id === node);
-       newGraphNode.data= existingNode?.data.copy();
-     }
-     console.log("New Node: ", newGraphNode);
-     setNodes((oldNodes) => [...oldNodes, newGraphNode]);
-   };
+  const addExistingNode = (node) => {
+    if (!(node instanceof NarratorNode || typeof node == "string")) {
+      console.error(
+        "Node to Add is not an instance of NarratorNode nor a String"
+      );
+      return;
+    }
+    const newGraphNode = createNewNode();
+    if (node instanceof NarratorNode) {
+      newGraphNode.data = node.copy();
+    } else if (node instanceof String) {
+      try {
+        const existingNodeData = getNodeDataFromId(node);
+        newGraphNode.data = existingNodeData.copy();
+      } catch (error) {
+        console.error(error);
+        return;
+      }
+    }
+    console.log("New Node: ", newGraphNode);
+    setNodes((oldNodes) => [...oldNodes, newGraphNode]);
+  };
 
-  const onConnect = useCallback((connection) => {
-    connection.type = "CustomEdge";
-    connection.data = new BaseEdgeData(null, null);
+  const onConnect = useCallback(
+    (connection) => {
+      connection.type = EDGETYPENAME;
+      connection.label = null;
 
-    setEdges((eds) => addEdge(connection, eds));
-  }, []);
+      //Trova una sourceHandle che non è gia occupata
+      connection.sourceHandle = getFreeHandleId(connection.source);
+
+      //update the NextNodes parametere inside the source Narrator node
+      try {
+        const sourceNodeData = getNodeDataFromId(connection.source);
+        console.log("Source node data: ", sourceNodeData);
+        sourceNodeData.NextNodes.push(connection.target);
+
+        updateEdgesSourceHandles(sourceNodeData.id);
+      } catch (error) {
+        console.error(error);
+      }
+
+      console.log("Connection: ", connection);
+      setEdges((eds) => addEdge(connection, eds));
+    },
+    [nodes, edges]
+  );
 
   const handleEdgeDataUpdate = (edgeId, newData) => {
     setEdges((eds) =>
       eds.map((edge) =>
-        edge.id === edgeId ? { ...edge, data: newData } : edge
+        edge.id === edgeId ? { ...edge, label: newData } : edge
       )
     );
   };
 
   const onNodesChange = useCallback(
     (changes) => {
-      // console.log("Changes: ",changes);
-      // let idOfSelected = null;
-      // changes.map((change) => {
-      //   if (change.selected) idOfSelected = change.id;
-      // });
-
-      // if (idOfSelected) {
-      //   setSelectedNode(nodes.find((node) => node.id === idOfSelected));
-      // } else {
-      //   setSelectedNode(null);
-      // }
-
       setNodes((nds) => applyNodeChanges(changes, nds));
     },
     [setNodes]
   );
 
   const onNodeClick = (ev, element) => {
-    if (element.type === "ResizableNode") {
-      const clickedNode = nodes.find((x) => x.id === element.id);
-      //console.log("ClickedNode: ", clickedNode);
-      setSelectedNode(clickedNode.data);
+    if (element.type === TYPENAME) {
+      try {
+        const clickedNodeData = getNodeDataFromId(element.id);
+        setSelectedNode(clickedNodeData);
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
@@ -179,13 +209,127 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
   };
 
   const onClickDelete = (nodeId) => {
-    console.log("Deleting node: ",nodeId)
-    var newNodes = [];
-    nodes.forEach((node) => {
-      if (node.id !== nodeId) newNodes.push(node);
+    console.log("Deleting node: ", nodeId);
+    rfInstance.deleteElements({
+      nodes: [{ id: nodeId }],
     });
-    setNodes(newNodes);
   };
+
+  const getNodeDataFromId = useCallback(
+    (nodeId, checkForErrors = true) => {
+      const node = nodes.find((x) => x.id === nodeId);
+
+      if (!checkForErrors) return node;
+
+      if (node === null || node === undefined)
+        throw new Error("Node not found: ", nodeId);
+      else if (!(node.data instanceof NarratorNode))
+        throw new Error(
+          "Node data is not an instance of NarratorNode: ",
+          node.data
+        );
+      else return node.data;
+    },
+    [nodes]
+  );
+
+  const getOutgoingConnectionsFromNodeId = useCallback(
+    (nodeId) => {
+      return edges.filter((x) => x.source === nodeId);
+    },
+    [edges]
+  );
+
+  const onNodeDelete = useCallback(
+    //for each node deleted remove its ID from the NEXT NODES array of the parents
+    (deletedArray) => {
+      deletedArray.forEach((deleted) => {
+        console.log("deleted", deleted);
+        const incomers = getIncomers(deleted, nodes, edges);
+
+        incomers.forEach((node) => {
+          node.data.removeNextNodeId(deleted.id);
+        });
+
+        //delete outgoing and ingoing edges:
+        const newEdges = edges.filter(
+          (x) => x.target !== deleted.id && x.source !== deleted.id
+        );
+
+        setEdges([...newEdges]);
+      });
+    },
+    [nodes, edges]
+  );
+
+  const updateEdgesSourceHandles = (nodeId) => {
+    const outgoingEdges = getOutgoingConnectionsFromNodeId(nodeId);
+
+    // Controlla e aggiorna i sourceHandle duplicati
+    const updatedEdges = outgoingEdges.map((edge, index) => {
+      let newSourceHandle = edge.sourceHandle;
+      let duplicateExists = false;
+
+      // Incrementa finché non è unico
+      do {
+        duplicateExists = outgoingEdges.some(
+          (otherEdge, otherIndex) =>
+            otherIndex !== index && otherEdge.sourceHandle === newSourceHandle
+        );
+        if (duplicateExists) {
+          newSourceHandle = String(parseInt(newSourceHandle, 10) + 1); // Incrementa il valore
+        }
+      } while (duplicateExists);
+
+      return { ...edge, sourceHandle: newSourceHandle };
+    });
+
+    // Aggiorna gli edges con lo useState setEdges
+    setEdges((prevEdges) =>
+      prevEdges.map(
+        (edge) =>
+          updatedEdges.find((updatedEdge) => updatedEdge.id === edge.id) || edge
+      )
+    );
+  };
+
+  const getFreeHandleId = (nodeId) => {
+    const outgoing = getOutgoingConnectionsFromNodeId(nodeId);
+    var freeHandleId = undefined;
+    var idCounter = 0;
+    console.log("Outgoin: ", outgoing);
+    while (freeHandleId === undefined && idCounter < 5) {
+      if (!outgoing.some((x) => x.sourceHandle === `${idCounter}`))
+        freeHandleId = `${idCounter}`;
+      idCounter++;
+    }
+    return freeHandleId;
+  };
+
+  const nodeTypes = useMemo(
+    () => ({
+      CustomNode: (nodeProps) => (
+        <NarrativeNodeDiv
+          {...nodeProps}
+          onClickDelete={onClickDelete}
+          onClickEdit={onClickEdit}
+        />
+      ),
+    }),
+    [onClickDelete, onClickEdit]
+  );
+
+  const edgeTypes = useMemo(
+    () => ({
+      CustomEdge: (edgeProps) => (
+        <OneLabelEdge
+          {...edgeProps}
+          handleEdgeDataUpdate={handleEdgeDataUpdate}
+        />
+      ),
+    }),
+    [handleEdgeDataUpdate]
+  );
 
   return (
     <Container fluid style={{ height: "90vh", padding: "1%" }}>
@@ -196,35 +340,18 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
           onNodesChange={onNodesChange}
           onNodeClick={onNodeClick}
           onConnect={onConnect}
-          nodeTypes={{
-            ResizableNode: (nodeProps) => (
-              <ResizableNode
-                {...nodeProps}
-                onClickCopy={onClickCopy}
-                onClickDelete={onClickDelete}
-                onClickEdit={onClickEdit}
-                onClickOpenSubFlow={null}
-              />
-            ),
-          }}
-          edgeTypes={{
-            CustomEdge: (edgeProps) => (
-              <CustomEdge
-                {...edgeProps}
-                handleEdgeDataUpdate={handleEdgeDataUpdate}
-              />
-            ),
-          }}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           onInit={setRfInstance}
           deleteKeyCode={"Backspace"} /* Cancella con il tasto Backspace */
           style={{ border: "1px solid black" }}
+          onNodesDelete={onNodeDelete}
           fitView
         >
           <Panel>
             <button onClick={addNode} style={{ marginBottom: "10px" }}>
               Aggiungi Nodo
             </button>
-            <CharacterForm />
           </Panel>
           {flow.isMainFlow && (
             <SaveLoadManager
@@ -242,6 +369,8 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
             selectedNode={selectedNode} // Pass the selected node
             handleNameChange={handleNameChange} // Pass the name change handler
             handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
+            getNodeDataFromId={getNodeDataFromId}
+            getOutgoingConnectionsFromNodeId={getOutgoingConnectionsFromNodeId}
           />
         </SideTab>
       </Row>

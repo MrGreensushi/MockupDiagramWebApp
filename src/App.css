@@ -36,3 +36,30 @@
     transform: rotate(360deg);
   }
 }
+
+/* DecisionalNarrativeNode.css */
+
+.narrative-node {
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #f2f2f5; /* corrisponde a theme.nodeBg */
+  color: #222; /* corrisponde a theme.nodeColor */
+  border: 1px solid #222; /* corrisponde a theme.nodeBorder */
+}
+
+.narrative-node.selected {
+  border-color: #ff0072; /* corrisponde a theme.primary */
+}
+
+.handleDiv:hover .handle {
+  opacity: 1;
+}
+
+.handle:show {
+  opacity: 1;
+}
+
+.handle {
+  opacity: 0;
+}
+

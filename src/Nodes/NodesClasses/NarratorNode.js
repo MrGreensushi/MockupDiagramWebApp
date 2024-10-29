@@ -11,7 +11,7 @@ class NarratorNode {
     Tones = null,
     Values = null,
     Prompt = "",
-    NextNodes = null
+    NextNodes = []
   ) {
     this.label = name;
     this.id = id;
@@ -24,7 +24,7 @@ class NarratorNode {
     this.Tones = Tones;
     this.Values = Values;
     this.Prompt = Prompt;
-    this.NextNodes = NextNodes;
+    this.NextNodes = [...NextNodes];
   }
 
   static inizialize(node) {
@@ -40,7 +40,7 @@ class NarratorNode {
       node.Tones,
       node.Values,
       node.Prompt,
-      node.NextNodes ? [...node.NextNodes] : null // Copia dell'array di NextNodes, se presente
+      node.NextNodes ? [...node.NextNodes] : [] // Copia dell'array di NextNodes, se presente
     );
   }
 
@@ -58,8 +58,13 @@ class NarratorNode {
       this.Tones,
       this.Values,
       this.Prompt,
-      this.NextNodes ? [...this.NextNodes] : null
+      this.NextNodes ? [...this.NextNodes] : []
     );
+  }
+
+  removeNextNodeId(nodeId){
+    this.NextNodes= this.NextNodes.filter(id=>id!==nodeId)
+
   }
 }
 

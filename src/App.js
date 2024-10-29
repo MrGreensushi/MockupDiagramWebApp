@@ -7,9 +7,35 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
-import CharacterData from "./StoryElements/CharacterData";
-import ObjectData from "./StoryElements/ObjectData";
-import LocationtData from "./StoryElements/LocationData";
+import StoryElementDescriptor from "./StoryElements/StoryElementDescriptor";
+import StoryElementFormsTab from "./Features/StoryElementFormsTab";
+import { Col, Row } from "react-bootstrap";
+
+const characterDescriptors = [
+  new StoryElementDescriptor(false, "Amun", "Scriba per il faraone Ramses II"),
+  new StoryElementDescriptor(false, "Semeb", "Scriba per il faraone Ramses II"),
+  new StoryElementDescriptor(
+    false,
+    "Imhotep",
+    "Capo Scriba per il faraone Ramses II"
+  ),
+  new StoryElementDescriptor(false, "Tia", "Moglie di Semeb"),
+  new StoryElementDescriptor(true, "Oracolo"),
+  new StoryElementDescriptor(true, "Scienziati"),
+];
+
+const objectDescriptors = [
+  new StoryElementDescriptor(true, "Oggetti_generici"),
+];
+
+const backgroundDescriptors = [
+  new StoryElementDescriptor(true, "Tombe"),
+  new StoryElementDescriptor(true, "Case"),
+  new StoryElementDescriptor(true, "Biblioteche"),
+  new StoryElementDescriptor(false, "Riva del Nilo"),
+  new StoryElementDescriptor(false, "Tempio di Karnak"),
+  new StoryElementDescriptor(false, "Pizza di Tebe"),
+];
 
 function App() {
   const [mainFlow, setMainFlow] = useState(
@@ -17,93 +43,20 @@ function App() {
   );
   const [activeFlow, setActiveFlow] = useState(mainFlow);
 
-  useEffect(() => {
-    const manager = NarrativeDataManager.getInstance();
-    manager.addCharacter(
-      new CharacterData(
-        false,
-        "Amun",
-        "0",
-        "Principale, scriba",
-        "tornare in possesso dei vestiti"
-      )
-    );
-    manager.addCharacter(
-      new CharacterData(
-        false,
-        "Semeb",
-        "1",
-        "Principale, ladro, scriba",
-        "rubare i vestiti per mantenere la famiglia"
-      )
-    );
-    manager.addCharacter(
-      new CharacterData(
-        true,
-        "Imhotep",
-        "2",
-        "Secondario, capo scriba",
-        "Far rispettare le regole"
-      )
-    );
-    // manager.addCharacter(
-    //   new CharacterData(
-    //     "Tia",
-    //     "Tia, moglie di Semeb",
-    //     "mantenere la famiglia"
-    //   )
-    // );
-    // manager.addCharacter(
-    //   new CharacterData(
-    //     "Oracolo",
-    //     "Secondario, oracolo",
-    //     "dire la verità"
-    //   )
-    // );
-    // manager.addCharacter(
-    //   new CharacterData(
-    //     "Scienziati",
-    //     "Secondario",
-    //     "trovare reperti"
-    //   )
-    // );
-    manager.addObject(
-      new ObjectData(
-        false,
-        "Vestiti",
-        "3",
-        "",
-        ""
-      )
-    );
-    manager.addObject(
-      new ObjectData(
-        true,
-        "Vestiti1",
-        "4",
-        "",
-        ""
-      )
-    );
-    manager.addBackground(
-      new LocationtData(
-        false,
-        "Biblioteca del tempio di Karnak",
-        "5",
-        "",
-        ""
-      )
-    );
-    manager.addBackground(
-      new LocationtData(
-        true,
-        "1Biblioteca del tempio di Karnak",
-        "6",
-        "",
-        ""
-      )
-    );
-  }, []);
+  const manager = NarrativeDataManager.getInstance();
+  characterDescriptors.forEach((element) => {
+    manager.addCharacterDescriptor(element);
+  });
+
+  objectDescriptors.forEach((element) => {
+    manager.addObjectDescriptor(element);
+  });
+
+  backgroundDescriptors.forEach((element) => {
+    manager.addBackgroundDescriptor(element);
+  });
+
+  console.log("Manager ", manager);
 
   const onClickSetSubFlow = (currentFlow, newFlow) => {
     //aggiorna mainFlow
@@ -120,10 +73,17 @@ function App() {
   return (
     <div className="App">
       <h1>{activeFlow.name}</h1>
-      <NarrativeFlowDiagram
-        flow={activeFlow}
-        onClickSetSubFlow={onClickSetSubFlow}
-      />
+      <Row>
+        <Col xs={3}>
+          <StoryElementFormsTab />
+        </Col>
+        <Col>
+          <NarrativeFlowDiagram
+            flow={activeFlow}
+            onClickSetSubFlow={onClickSetSubFlow}
+          />
+        </Col>
+      </Row>
     </div>
   );
 }

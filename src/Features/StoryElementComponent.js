@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Col, Row, ToggleButton, ButtonGroup } from "react-bootstrap";
 
-const StoryElementComponent = ({ element }) => {
+const StoryElementComponent = ({ element,additionalName="" }) => {
   const [radioValue, setRadioValue] = useState(element.isVariable?2:1);
 
   useEffect(()=>{
@@ -21,9 +21,9 @@ const StoryElementComponent = ({ element }) => {
           {radios.map((radio, idx) => (
             <ToggleButton
               key={"Toggle:"+element.id+idx}
-              id={`radio-${element.id}:${idx}`}
+              id={`radio-${element.id}:${idx}:${additionalName}`}
               type="radio"
-              name={`radio-${element.id}:${idx}`}
+              name={`radio-${element.id}:${idx}:${additionalName}`}
               value={radio.value}
               checked={radioValue===radio.value}
               variant={idx % 2 ? 'outline-success' : 'outline-danger'}
