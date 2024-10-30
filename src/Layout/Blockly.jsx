@@ -1,10 +1,9 @@
 import { BlocklyWorkspace } from "react-blockly";
 import "../CustomBlocks/Blocks"
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { javascriptGenerator } from 'blockly/javascript';
 
-function BlocklyCanvas() {
-  const [code, setCode] = useState("");
+function BlocklyCanvas({elements, setElements}) {
     
     const toolboxCategories = {
         kind: "categoryToolbox",
@@ -57,26 +56,30 @@ function BlocklyCanvas() {
       };
 
   const handleWorkspaceChange = useCallback((workspace) => {
-    const newCode = javascriptGenerator.workspaceToCode(workspace);
-    setCode(newCode.trim());
-  }, []);
+    let workspaceString = javascriptGenerator.workspaceToCode(workspace);
+    if (workspaceString.endsWith(",")) {
+      workspaceString = workspaceString.slice(0, -1);
+    }
+
+    const workspaceObject = JSON.parse("[" + workspaceString + "]");
+    setElements(workspaceObject);
+  }, [setElements]);
 
     return (
       <>
         <BlocklyWorkspace
-            toolboxConfiguration={toolboxCategories}
-            className="fill-height"
-            onWorkspaceChange={handleWorkspaceChange}
-            workspaceConfiguration={{
-              grid: {
-                spacing: 20,
-                length: 3,
-                colour: "#ccc",
-                snap: true,
-              },
-            }}
-            />
-        <pre>{code}</pre> {/* Mostra il codice generato */}
+          toolboxConfiguration={toolboxCategories}
+          className="fill-height"
+          onWorkspaceChange={handleWorkspaceChange}
+          workspaceConfiguration={{
+            grid: {
+              spacing: 20,
+              length: 3,
+              colour: "#ccc",
+              snap: true,
+            },
+          }}
+        />
       </>
     );
 }

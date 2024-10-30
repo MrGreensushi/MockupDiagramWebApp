@@ -12,8 +12,8 @@ const SceneObject = {
         this.setColour("#BC6400");
     },
 
-    generate: (block) => {
-        return `${block.getFieldValue("SceneObjectName")} `;
+    generateOutputText: (block) => {
+        return `${block.getFieldValue("SceneObjectName")}`;
     }
 };
 
@@ -29,8 +29,8 @@ const TextInput = {
         this.setColour("#CCCCCC");
     },
 
-    generate: (block) => {
-        return `${block.getFieldValue('TextContent')} `;
+    generateOutputText: (block) => {
+        return `${block.getFieldValue('TextContent')}`;
     }
 };        
 
@@ -41,6 +41,15 @@ const blocks = {
 
 Blockly.common.defineBlocks(blocks);
 
-for (let [blockName, block] of Object.entries(blocks)) {
-    javascriptGenerator.forBlock[blockName] = block.generate ?? (() => {""});
+for (const blockName in blocks) {
+    javascriptGenerator.forBlock[blockName] = GenerateCommonBlockData;
+}
+
+function GenerateCommonBlockData(block) {
+    const data = {
+        id: block.id,
+        type: block.type,
+        outputText: block.generateOutputText(block) ?? ""
+    };
+    return JSON.stringify(data) + ",";
 }

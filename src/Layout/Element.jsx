@@ -5,7 +5,6 @@ function Element({
     name,
     onClick,
     key}) {
-    console.log(image)
     const imgSrc = image ?? "logo512.png";
     
     return(
