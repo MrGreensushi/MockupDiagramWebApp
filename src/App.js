@@ -10,6 +10,9 @@ import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
 import CharacterData from "./StoryElements/CharacterData";
 import ObjectData from "./StoryElements/ObjectData";
 import LocationtData from "./StoryElements/LocationData";
+import BlocklyCanvas from "./Layout/Blockly";
+import GlobalElements from "./Layout/GlobalElements";
+import SceneEditor from "./Layout/SceneEditor";
 
 function App() {
   const [mainFlow, setMainFlow] = useState(
@@ -117,13 +120,19 @@ function App() {
 
   const returnToMainFlow = () => {};
 
-  return (
+  /*return (
     <div className="App">
       <h1>{activeFlow.name}</h1>
       <NarrativeFlowDiagram
         flow={activeFlow}
         onClickSetSubFlow={onClickSetSubFlow}
       />
+    </div>
+  );*/
+
+  return(
+    <div className="App">
+      <SceneEditor />
     </div>
   );
 }
