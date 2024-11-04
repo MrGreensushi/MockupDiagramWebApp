@@ -1,6 +1,8 @@
-import { Card, CloseButton, Row } from "react-bootstrap";
+import { useState } from "react";
+import { Card, CloseButton, Form, Row } from "react-bootstrap";
 
-function PromptElements({elements}) {
+function PromptElements({elements, workspace}) {
+    const [clicked, setClicked] = useState(false);
     if (!elements || elements.length === 0) return;
     
     let pendingSpace = false;
@@ -8,11 +10,15 @@ function PromptElements({elements}) {
     
     let processedList = [];
     
+    const setText = (id, text) => {
+        const b = workspace.getBlockById(id);
+        b.setOutputText(b, text);
+    }
+    
     for (let i = 0; i < elements.length; i++) {
         if (elements[i].type === "SceneObject") {
             const listElements = [elements[i]];
-            for (let j=i+1; j < elements.length; j++) {
-                i = j;
+            for (let j=i+1; j < elements.length; j++, i++) {
                 if (elements[j].type === "SceneObject") {
                     listElements.push(elements[j]);
                 } else {
@@ -28,17 +34,17 @@ function PromptElements({elements}) {
             processedList.push(elements[i]);
         }
     }
-    console.log(processedList);
 
     return(
         <div>
-            {processedList.map(e => ManagePromptElement(e, pendingSpace, setPendingSpace))}
+            {processedList.map(e => ManagePromptElement(e, pendingSpace, setPendingSpace, clicked, setClicked, setText))}
         </div>
     )
 }
 
-function ManagePromptElement(element, pendingSpace, setPendingSpace) {
+function ManagePromptElement(element, pendingSpace, setPendingSpace, clicked, setClicked, setText) {
     const maybeSpace = pendingSpace ? " " : "";
+
     switch (element.type) {
         case "List":
             setPendingSpace(true);
@@ -85,11 +91,27 @@ function ManagePromptElement(element, pendingSpace, setPendingSpace) {
         
         case "TextInput":
             setPendingSpace(false);
-            return(
-                <span key={element.id} style={{display:"inline"}}>
-                    {maybeSpace + element.outputText + " "}
-                </span>
-            );
+            if (clicked) {
+                return(
+                    <>
+                        <span>{maybeSpace}</span>
+                        <Form.Control type="text"
+                            defaultValue={element.outputText}
+                            onChange={(event) => setText(element.id, event.target.value)}
+                            onBlur={() => setClicked(false)}
+                            style={{display:"inline-block", width:`${element.outputText.length/2}em`, padding:"0"}}/>
+                        <span> </span>
+                    </>
+                );
+            } else {
+                return(
+                    <>
+                        <span key={element.id} style={{display:"inline"}} onClick={() => setClicked(true)}>
+                            {maybeSpace + element.outputText + " "}
+                        </span>
+                    </>
+                );
+            }
         default:
             return;
     }

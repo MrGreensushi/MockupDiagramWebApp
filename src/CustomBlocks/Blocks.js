@@ -12,7 +12,7 @@ const SceneObject = {
         this.setColour("#BC6400");
     },
 
-    generateOutputText: (block) => {
+    getOutputText: (block) => {
         return `${block.getFieldValue("SceneObjectName")}`;
     }
 };
@@ -29,8 +29,12 @@ const TextInput = {
         this.setColour("#CCCCCC");
     },
 
-    generateOutputText: (block) => {
+    getOutputText: (block) => {
         return `${block.getFieldValue('TextContent')}`;
+    },
+
+    setOutputText: (block, text) => {
+        block.setFieldValue(text, 'TextContent');
     }
 };        
 
@@ -49,7 +53,7 @@ function GenerateCommonBlockData(block) {
     const data = {
         id: block.id,
         type: block.type,
-        outputText: block.generateOutputText(block) ?? ""
+        outputText: block.getOutputText(block) ?? ""
     };
     return JSON.stringify(data) + ",";
 }
