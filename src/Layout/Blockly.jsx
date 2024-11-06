@@ -1,7 +1,7 @@
 const customBlockData = {
   characters: {
+    objectName: "SceneCharacterObject",
     names: ["Faraone", "Scriba", "Schiavo"],
-    color: "#BC6400",
     button: {
       kind: "BUTTON",
       text: "Add Character",
@@ -9,8 +9,8 @@ const customBlockData = {
     }
   },
   objects: {
+    objectName: "SceneObjectObject",
     names: ["Sasso", "Pietra", "Roccia", "Sabbia"],
-    color: "#5B80A5",
     button: {
       kind: "BUTTON",
       text: "Add Object",
@@ -18,8 +18,8 @@ const customBlockData = {
     }
   },
   locations: {
+    objectName: "SceneLocationObject",
     names: ["Deserto", "Casa", "Piramide"],
-    color: "#5CA699",
     button: {
       kind: "BUTTON",
       text: "Add Location",
@@ -95,11 +95,10 @@ function flyoutCallback(type) {
   for (const name of customBlockData[type].names) {
     blockList.push({
       kind:"block",
-      type:"SceneObject",
+      type: customBlockData[type].objectName,
       fields: {
-        SceneObjectName: name
+        SceneObjectName: name,
       },
-      colour: customBlockData[type].color
     });
   }
   return blockList;

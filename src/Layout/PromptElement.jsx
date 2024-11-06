@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, Form } from "react-bootstrap";
 
 function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
@@ -32,14 +32,14 @@ function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
                             (e, idx, array) => {
                                 if (idx < array.length - 1) {
                                     return (
-                                        <>
+                                        <React.Fragment key = {idx}>
                                             <PromptElement
                                                 element = {e}
                                                 pendingSpace = {pendingSpace}
                                                 setPendingSpace = {setPendingSpace}
-                                                key = {e.id + idx} />
+                                                />
                                             {", "}
-                                        </>
+                                        </React.Fragment>
                                     );
                                 }
                             }
@@ -52,7 +52,9 @@ function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
                     </>
                 )
             }
-        case "SceneObject":
+        case "SceneCharacterObject":
+        case "SceneObjectObject":
+        case "SceneLocationObject":
             setPendingSpace(true);
             return(
                 <>
@@ -69,12 +71,16 @@ function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
                 return(
                     <>
                         {maybeSpace}
-                        <Form.Control type="text"
-                            defaultValue={element.outputText}
-                            onChange={(event) => setText(element.id, event.target.value)}
-                            onBlur={() => setFocus(false)}
-                            autoFocus={true}
-                            style={{display:"inline-block", width:`${element.outputText.length/2}em`, padding:"0"}}/>
+                        <Form onSubmit={(e) => {e.preventDefault(); setFocus(false)}}>
+                            <Form.Control
+                                type="text"
+                                defaultValue={element.outputText}
+                                onChange={(event) => setText(element.id, event.target.value)}
+                                onBlur={() => setFocus(false)}
+                                onSubmit={() => {console.log("Enter");}}
+                                autoFocus={true}
+                                style={{display:"inline-block", width:`${element.outputText.length/2}em`, padding:"0"}}/>
+                        </Form>
                         {" "}
                     </>
                 );

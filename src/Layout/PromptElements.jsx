@@ -3,6 +3,11 @@ import PromptElement from "./PromptElement";
 function PromptElements({elements, workspace}) {
     if (!elements || elements.length === 0) return;
     
+    const checkType = (type) => 
+        type === "SceneCharacterObject" ||
+        type === "SceneObjectObject" ||
+        type === "SceneLocationObject"
+
     let pendingSpace = false;
     const setPendingSpace = (state) => pendingSpace = state;
     
@@ -14,10 +19,10 @@ function PromptElements({elements, workspace}) {
     }
     
     for (let i = 0; i < elements.length; i++) {
-        if (elements[i].type === "SceneObject") {
+        if (checkType(elements[i].type)) {
             const listElements = [elements[i]];
             for (let j=i+1; j < elements.length; j++, i++) {
-                if (elements[j].type === "SceneObject") {
+                if (checkType(elements[j].type)) {
                     listElements.push(elements[j]);
                 } else {
                     break;

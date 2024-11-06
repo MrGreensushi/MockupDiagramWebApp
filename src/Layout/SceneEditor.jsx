@@ -44,7 +44,6 @@ function SceneEditor() {
             workspace.registerButtonCallback('createObjectInstance', () => setModal("objects"));
             workspace.registerButtonCallback('createLocationInstance', () => setModal("locations"));
             workspace.updateToolbox(customToolboxCategories);
-            console.log(workspace);
         }
     }, [workspace]);
 

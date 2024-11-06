@@ -2,18 +2,29 @@ import * as Blockly from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
 
 function initBlocks() {
-    const SceneObject = {
+    const SceneCharacterObject = {
         init: function () {
-            this.appendDummyInput('')
-                .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName');
-            this.setPreviousStatement(true, null);
-            this.setNextStatement(true, null);
-            //this.setColour("#BC6400");
+            commonInit(this);
+            this.setColour("#BC6400");
         },
 
-        getOutputText: (block) => {
-            return `${block.getFieldValue("SceneObjectName")}`;
-        }
+        getOutputText: commonGetOutputText
+    };
+    const SceneObjectObject = {
+        init: function () {
+            commonInit(this);
+            this.setColour("#5B80A5");
+        },
+
+        getOutputText: commonGetOutputText
+    };
+    const SceneLocationObject = {
+        init: function () {
+            commonInit(this);
+            this.setColour("#5CA699");
+        },
+
+        getOutputText: commonGetOutputText
     };
 
     const TextInput = {
@@ -36,7 +47,9 @@ function initBlocks() {
     };        
 
     const blocks = {
-        SceneObject: SceneObject,
+        SceneCharacterObject: SceneCharacterObject,
+        SceneObjectObject: SceneObjectObject,
+        SceneLocationObject: SceneLocationObject,
         TextInput: TextInput
     };
 
@@ -53,6 +66,17 @@ function initBlocks() {
             outputText: block.getOutputText(block) ?? ""
         };
         return JSON.stringify(data) + ",";
+    }
+
+    function commonInit(object) {
+        object.appendDummyInput('')
+                .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
+        object.setPreviousStatement(true, null);
+        object.setNextStatement(true, null);
+    }
+
+    function commonGetOutputText(block) {
+        return `${block.getFieldValue("SceneObjectName")}`;
     }
 }
 
