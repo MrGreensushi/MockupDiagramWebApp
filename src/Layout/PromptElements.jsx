@@ -1,21 +1,25 @@
+import { Col } from "react-bootstrap";
 import PromptElement from "./PromptElement";
 
 function PromptElements({elements, workspace}) {
-    if (!elements || elements.length === 0) return;
+    if (!elements || elements.length === 0) return(
+        <Col>
+            <h3>
+                Prompt Generato
+            </h3>
+        </Col>
+    );
+    
+    let processedList = [];
     
     const checkType = (type) => 
         type === "SceneCharacterObject" ||
         type === "SceneObjectObject" ||
         type === "SceneLocationObject"
-
-    let pendingSpace = false;
-    const setPendingSpace = (state) => pendingSpace = state;
-    
-    let processedList = [];
     
     const setText = (id, text) => {
-        const b = workspace.getBlockById(id);
-        b.setOutputText(b, text);
+        const block = workspace.getBlockById(id);
+        block.setOutputText(block, text);
     }
     
     for (let i = 0; i < elements.length; i++) {
@@ -39,15 +43,16 @@ function PromptElements({elements, workspace}) {
     }
 
     return(
-        <div>
+        <Col>
+            <h3>
+                Prompt Generato
+            </h3>
             {processedList.map((e, idx) => <PromptElement
-                element={e}
-                pendingSpace = {pendingSpace}
-                setPendingSpace = {setPendingSpace}
+                element = {e}
                 setText = {setText}
                 key = {idx} />
             )}
-        </div>
+        </Col>
     )
 }
 

@@ -10,8 +10,6 @@ import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
 import CharacterData from "./StoryElements/CharacterData";
 import ObjectData from "./StoryElements/ObjectData";
 import LocationtData from "./StoryElements/LocationData";
-import BlocklyCanvas from "./Layout/Blockly";
-import GlobalElements from "./Layout/GlobalElements";
 import SceneEditor from "./Layout/SceneEditor";
 
 function App() {

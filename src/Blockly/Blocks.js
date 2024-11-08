@@ -10,6 +10,7 @@ function initBlocks() {
 
         getOutputText: commonGetOutputText
     };
+
     const SceneObjectObject = {
         init: function () {
             commonInit(this);
@@ -18,6 +19,7 @@ function initBlocks() {
 
         getOutputText: commonGetOutputText
     };
+
     const SceneLocationObject = {
         init: function () {
             commonInit(this);
@@ -57,27 +59,27 @@ function initBlocks() {
 
     for (const blockName in blocks) {
         javascriptGenerator.forBlock[blockName] = generateCommonBlockData;
-    }
+    }    
+}
 
-    function generateCommonBlockData(block) {
-        const data = {
-            id: block.id,
-            type: block.type,
-            outputText: block.getOutputText(block) ?? ""
-        };
-        return JSON.stringify(data) + ",";
-    }
+function generateCommonBlockData(block) {
+    const data = {
+        id: block.id,
+        type: block.type,
+        outputText: block.getOutputText(block) ?? ""
+    };
+    return JSON.stringify(data) + ",";
+}
 
-    function commonInit(object) {
-        object.appendDummyInput('')
-                .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
-        object.setPreviousStatement(true, null);
-        object.setNextStatement(true, null);
-    }
+function commonInit(object) {
+    object.appendDummyInput('')
+            .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
+    object.setPreviousStatement(true, null);
+    object.setNextStatement(true, null);
+}
 
-    function commonGetOutputText(block) {
-        return `${block.getFieldValue("SceneObjectName")}`;
-    }
+function commonGetOutputText(block) {
+    return `${block.getFieldValue("SceneObjectName")}`;
 }
 
 export default initBlocks;

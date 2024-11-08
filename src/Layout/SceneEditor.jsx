@@ -1,17 +1,20 @@
-import { Button, Col, Form, Modal, Row } from "react-bootstrap";
-import GlobalElements from "./GlobalElements";
-import { addToCustomBlocks, addToLocations, baseToolboxCategories, BlocklyCanvas, customToolboxCategories, flyoutCallback, workspaceConfiguration } from "./Blockly";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration";
 import { useCallback, useEffect, useRef, useState } from "react";
-import PromptElements from "./PromptElements";
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
-import initBlocks from "../CustomBlocks/Blocks";
+import initBlocks from "../Blockly/Blocks";
+import PromptElements from "./PromptElements";
+import AddElementsModal from "./AddElementsModal";
+import SceneDetails from "./SceneDetails";
+import SceneDescription from "../StoryElements/SceneDescription";
+import saveToDisc from "../Misc/SaveToDisc";
 
 function SceneEditor() {
     const [promptElements, setPromptElements] = useState([]);
-    const [blockName, setBlockName] = useState("");
     const [modal, setModal] = useState("");
-    useEffect(() => initBlocks(), []);
+    
+    const blocklyRef = useRef(null);
 
     const handleWorkspaceChange = useCallback((workspace) => {
         let workspaceString = javascriptGenerator.workspaceToCode(workspace);
@@ -22,12 +25,6 @@ function SceneEditor() {
         setPromptElements(workspaceObject);
     }, []);
 
-    const handleModalClose = () => {
-        setModal("");
-        setBlockName("");
-    }
-
-    const blocklyRef = useRef(null);
     const {workspace} = useBlocklyWorkspace({
         ref: blocklyRef,
         toolboxConfiguration: baseToolboxCategories,
@@ -35,54 +32,59 @@ function SceneEditor() {
         onWorkspaceChange: handleWorkspaceChange
     });
 
+    const sceneDescription = new SceneDescription(workspace);
+    
+    [sceneDescription.summary, sceneDescription.setSummary] = useState("");
+    [sceneDescription.time, sceneDescription.setTime] = useState("");
+    [sceneDescription.weather, sceneDescription.setWeather] = useState("");
+    [sceneDescription.tone, sceneDescription.setTone] = useState("");
+    [sceneDescription.value, sceneDescription.setValue] = useState("");
+    
+    const handleSave = () => {
+        saveToDisc(sceneDescription.toJSON(), "Scene", "application/json");
+    }
+
+    const handleLoad = async (file) => {
+        if (!file) return;
+        sceneDescription.fromJSON(await file.text());
+    }
+
+    useEffect(() => initBlocks(), []);
     useEffect(() => {
-        if (workspace) {
-            workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback("characters"));
-            workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback("objects"));
-            workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback("locations"));
-            workspace.registerButtonCallback('createCharacterInstance', () => setModal("characters"));
-            workspace.registerButtonCallback('createObjectInstance', () => setModal("objects"));
-            workspace.registerButtonCallback('createLocationInstance', () => setModal("locations"));
-            workspace.updateToolbox(customToolboxCategories);
-        }
+        if (workspace) populateCustomToolbox(workspace, setModal);
     }, [workspace]);
 
     return(
         <Col>
             <Row>
+                <AddElementsModal
+                    workspace={workspace}
+                    modal={modal} 
+                    setModal={setModal} />
                 <Col>
                     <BlocklyCanvas 
                         setElements={setPromptElements}
                         blocklyRef={blocklyRef}
-                    />
-                    <Modal show={modal} onHide={handleModalClose}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Add {modal}</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            <Form.Label>Inserisci il nome</Form.Label>
-                            <Form.Control value={blockName} onChange={(e) => setBlockName(e.target.value)}></Form.Control>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={handleModalClose}>
-                                Close
-                            </Button>
-                            <Button variant="primary" onClick={() => {
-                                addToCustomBlocks(modal, blockName);
-                                workspace.refreshToolboxSelection();
-                                handleModalClose();
-                            }}>
-                                Add
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
+                        />
+                </Col>
+                <Col>
+                    <Card style={{height:"75%"}}>
+                        <SceneDetails 
+                            sceneDescription={sceneDescription} />
+                    </Card>
+                    <Card style={{height:"25%"}}>
+                        <PromptElements
+                            elements={promptElements}
+                            workspace={workspace} />
+                    </Card>
                 </Col>
             </Row>
             <Row>
-                <PromptElements
-                    elements={promptElements}
-                    workspace={workspace}
-                />
+                <Button onClick={()=> handleSave()}>SALVA</Button>
+                <Form.Control
+                    type="file"
+                    accept="application/json"
+                    onChange={event => handleLoad(event.target.files[0])} />
             </Row>
         </Col>
     );

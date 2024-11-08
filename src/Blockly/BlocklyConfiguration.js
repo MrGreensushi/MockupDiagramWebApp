@@ -28,10 +28,6 @@ const customBlockData = {
   }
 };
 
-function addToCustomBlocks(type, newName) {
-  customBlockData[type].names.push(newName);
-}
-
 const baseToolboxCategories = {
   kind: "categoryToolbox",
   contents: [
@@ -84,6 +80,19 @@ const customToolboxCategories = {
   ],
 };
 
+const workspaceConfiguration = {
+  grid: {
+    spacing: 20,
+    length: 3,
+    colour: "#ccc",
+    snap: true,
+  }
+};
+
+function addToCustomBlocks(type, newName) {
+  customBlockData[type].names.push(newName);
+}
+
 function flyoutCallback(type) {
   if (!Object.keys(customBlockData).includes(type)) {
     console.error(`"${type}" is not a valid SceneObject type.`);
@@ -104,14 +113,15 @@ function flyoutCallback(type) {
   return blockList;
 }
 
-const workspaceConfiguration = {
-  grid: {
-    spacing: 20,
-    length: 3,
-    colour: "#ccc",
-    snap: true,
-  }
-};
+function populateCustomToolbox(workspace, buttonCallback) {
+  workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback("characters"));
+  workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback("objects"));
+  workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback("locations"));
+  workspace.registerButtonCallback('createCharacterInstance', () => buttonCallback("characters"));
+  workspace.registerButtonCallback('createObjectInstance', () => buttonCallback("objects"));
+  workspace.registerButtonCallback('createLocationInstance', () => buttonCallback("locations"));
+  workspace.updateToolbox(customToolboxCategories);
+}
 
 function BlocklyCanvas({ blocklyRef }) {
   return (
@@ -119,4 +129,4 @@ function BlocklyCanvas({ blocklyRef }) {
   );
 }
 
-export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, flyoutCallback, addToCustomBlocks};
+export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, populateCustomToolbox, addToCustomBlocks};

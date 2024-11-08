@@ -1,76 +1,58 @@
 import React, { useState } from "react";
 import { Card, Form } from "react-bootstrap";
 
-function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
-    const maybeSpace = pendingSpace ? " " : "";
-
+function PromptElement({element, setText}) {
     const [focus, setFocus] = useState(false);
 
     switch (element.type) {
         case "List":
-            setPendingSpace(true);
-            if (element.elements.length == 2) {
+            if (element.elements.length === 2) {
                 return(
                     <>
-                        {maybeSpace}
-                        <PromptElement
-                            element = {element.elements[0]}
-                            pendingSpace = {pendingSpace}
-                            setPendingSpace = {setPendingSpace} />
+                        <PromptElement element = {element.elements[0]} />
                         {" e "}
-                        <PromptElement
-                            element = {element.elements[1]}
-                            pendingSpace = {pendingSpace}
-                            setPendingSpace = {setPendingSpace} />
+                        <PromptElement element = {element.elements[1]} />
+                        {" "}
                     </>
                 )
             } else {
                 return(
                     <>
-                        {maybeSpace}
                         {element.elements.map(
                             (e, idx, array) => {
                                 if (idx < array.length - 1) {
                                     return (
                                         <React.Fragment key = {idx}>
-                                            <PromptElement
-                                                element = {e}
-                                                pendingSpace = {pendingSpace}
-                                                setPendingSpace = {setPendingSpace}
-                                                />
-                                            {", "}
+                                            <PromptElement element = {e} />
+                                            {idx < array.length - 2 ? ", " : ""}
                                         </React.Fragment>
                                     );
                                 }
+                                return "";
                             }
                         )}
                         {" e "}
-                        <PromptElement
-                            element = {element.elements.pop()}
-                            pendingSpace = {pendingSpace}
-                            setPendingSpace = {setPendingSpace} />
+                        <PromptElement element = {element.elements.pop()} />
+                        {" "}
                     </>
                 )
             }
         case "SceneCharacterObject":
         case "SceneObjectObject":
         case "SceneLocationObject":
-            setPendingSpace(true);
             return(
                 <>
-                    <span>{maybeSpace}</span>
                     <Card style={{display:"inline"}} >
                         {element.outputText}
                     </Card>
+                    {" "}
                 </>
             );
         
         case "TextInput":
-            setPendingSpace(false);
             if (focus) {
                 return(
                     <>
-                        {maybeSpace}
                         <Form onSubmit={(e) => {e.preventDefault(); setFocus(false)}}>
                             <Form.Control
                                 type="text"
@@ -86,11 +68,9 @@ function PromptElement({element, pendingSpace, setPendingSpace, setText}) {
                 );
             } else {
                 return(
-                    <>
-                        <span key={element.id} style={{display:"inline"}} onClick={() => setFocus(true)}>
-                            {maybeSpace + element.outputText + " "}
-                        </span>
-                    </>
+                    <span key={element.id} style={{display:"inline"}} onClick={() => setFocus(true)}>
+                        {element.outputText + " "}
+                    </span>
                 );
             }
         default:
