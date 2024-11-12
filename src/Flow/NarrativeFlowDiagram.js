@@ -12,7 +12,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
-import SaveLoadManager from "../SaveLoad";
+import SaveLoadManager from "./SaveLoad";
 import SideTab from "../Layout/SideTab";
 import NarratorNode from "../Nodes/NodesClasses/NarratorNode";
 import NarratorNodeEditor from "../Features/NarratorNodeEditor";

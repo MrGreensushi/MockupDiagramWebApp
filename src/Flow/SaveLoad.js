@@ -1,10 +1,10 @@
 import { useCallback, useState } from "react";
 import { Builder, Parser } from "xml2js";
 import { Panel } from "@xyflow/react";
+import saveToDisk from "../Misc/SaveToDisk.ts";
 
 const SaveLoadManager = ({ rfInstance, setNodes, setEdges }) => {
-  const [loadedFile, setLoadedFile] = useState(null);
-
+  
   const fixSingleElementArrays = (obj) => {
     const nodes = obj["nodes"];
     const edges = obj["edges"];
@@ -23,26 +23,18 @@ const SaveLoadManager = ({ rfInstance, setNodes, setEdges }) => {
 
     const builder = new Builder();
     const xmlString = builder.buildObject(rfInstance.toObject());
-    const blob = new Blob([xmlString], { type: "application/xml" });
-
-    const flowURL = window.URL.createObjectURL(blob);
-
-    let link = document.createElement("a");
-    link.href = flowURL;
-    link.download = "Download";
-    link.click();
-    link.remove();
+    saveToDisk(xmlString, "Flow", "application/xml");
   }, [rfInstance]);
 
-  const onLoad = useCallback(async () => {
-    if (!loadedFile) return;
+  const onLoad = useCallback(async (file) => {
+    if (!file) return;
 
     const parser = new Parser({ explicitRoot: false, explicitArray: false });
     parser
-      .parseStringPromise(await loadedFile.text())
-      .then((unfixedFlow) => restoreFlow(fixSingleElementArrays(unfixedFlow)))
-      .catch((err) => console.log(err));
-  }, [loadedFile]);
+      .parseStringPromise(await file.text())
+      .then(unfixedFlow => {const f = fixSingleElementArrays(unfixedFlow); console.log(f); restoreFlow(f);})
+      .catch(err => console.log(err));
+  }, [rfInstance]);
 
   const restoreFlow = useCallback(
     (flow) => {
@@ -61,9 +53,8 @@ const SaveLoadManager = ({ rfInstance, setNodes, setEdges }) => {
       <input
         type="file"
         accept="application/xml"
-        onChange={(event) => setLoadedFile(event.target.files[0])}
+        onChange={(event) => onLoad(event.target.files[0])}
       />
-      <button onClick={onLoad}>Load</button>
     </Panel>
   );
 };

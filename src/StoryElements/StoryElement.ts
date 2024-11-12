@@ -12,9 +12,10 @@ class StoryElement {
     readonly id: string;
 
     protected constructor(isVariable: boolean, name: string, notes?: string) {
+        this.name = name;
+        this.notes = notes ?? "";
         this.isVariable = isVariable;
         this.id = uuidv4();
-        this.notes = notes ?? "";
     }
 
     getDescription(): string {

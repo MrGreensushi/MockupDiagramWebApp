@@ -14,7 +14,7 @@ import ResizableNode from "../Nodes/ResizableNode";
 import NodeEditor from "../Nodes/NodeEditing/NodeEditor";
 import NodeImporter from "../Nodes/NodeImporting/NodeImporter";
 import { BaseGraphNodeData } from "../Nodes/NodesClasses/BaseGraphNodeData";
-import SaveLoadManager from "../SaveLoad";
+import SaveLoadManager from "./SaveLoad";
 import CustomEdge from "../Edges/CustomEdge";
 import BaseEdgeData from "../Edges/BaseEdgeData";
 import SideTab from "../Layout/SideTab";

@@ -1,4 +1,4 @@
-import { CharacterElement, LocationElement, ObjectElement } from "./StoryElement";
+import { CharacterElement, LocationElement, ObjectElement, StoryElement } from "./StoryElement";
 
 class NarrativeDataManager {
   // Variabile statica per memorizzare l'istanza del Singleton
@@ -30,17 +30,24 @@ class NarrativeDataManager {
 
   // Metodo per aggiungere un personaggio principale
   addCharacter(character: CharacterElement) {
-    this.characters.push(character);
+    if (!this.characters.includes(character)) {
+      this.characters.push(character);
+    }
   }
 
   // Metodo per aggiungere un oggetto
   addObject(object: ObjectElement) {
-    this.objects.push(object);
+    if (!this.objects.includes(object)) {
+      this.objects.push(object);
+    }
+
   }
 
   // Metodo per aggiungere un background
   addBackground(background: LocationElement) {
-    this.backgrounds.push(background);
+    if (!this.backgrounds.includes(background)) {
+      this.backgrounds.push(background);
+    }
   }
 
   // Metodo per ottenere tutti i dati (opzionale, per comodità)
@@ -50,6 +57,20 @@ class NarrativeDataManager {
       objects: this.objects,
       backgrounds: this.backgrounds,
     };
+  }
+
+  getCharacterTypes(isVariable: boolean) {
+    return this.getStoryElementTypes(isVariable, this.characters);
+  }
+  getObjectTypes(isVariable: boolean) {
+    return this.getStoryElementTypes(isVariable, this.objects);
+  }
+  getBackgroundTypes(isVariable: boolean) {
+    return this.getStoryElementTypes(isVariable, this.backgrounds);
+  }
+
+  getStoryElementTypes(isVariable: boolean, array: StoryElement[]) {
+    return(array.filter(storyElem => storyElem.isVariable === isVariable));
   }
 }
 
