@@ -1,3 +1,8 @@
+import { ToolboxDefinition } from "react-blockly";
+import { WorkspaceSvg } from "react-blockly";
+import * as Blockly from "blockly/core";
+import React from "react";
+
 const customBlockData = {
   characters: {
     objectName: "SceneCharacterObject",
@@ -28,7 +33,7 @@ const customBlockData = {
   }
 };
 
-const baseToolboxCategories = {
+const baseToolboxCategories: ToolboxDefinition = {
   kind: "categoryToolbox",
   contents: [
     {
@@ -45,7 +50,7 @@ const baseToolboxCategories = {
   ],
 };
 
-const customToolboxCategories = {
+const customToolboxCategories: ToolboxDefinition = {
   kind: "categoryToolbox",
   contents: [
     {
@@ -80,7 +85,7 @@ const customToolboxCategories = {
   ],
 };
 
-const workspaceConfiguration = {
+const workspaceConfiguration: Blockly.BlocklyOptions = {
   grid: {
     spacing: 20,
     length: 3,
@@ -89,14 +94,14 @@ const workspaceConfiguration = {
   }
 };
 
-function addToCustomBlocks(type, newName) {
+function addToCustomBlocks(type: string, newName: string) {
   customBlockData[type].names.push(newName);
 }
 
-function flyoutCallback(type) {
+function flyoutCallback(type: string): any[] {
   if (!Object.keys(customBlockData).includes(type)) {
     console.error(`"${type}" is not a valid SceneObject type.`);
-    return;
+    return [];
   }
 
   const blockList = [customBlockData[type].button];
@@ -113,7 +118,7 @@ function flyoutCallback(type) {
   return blockList;
 }
 
-function populateCustomToolbox(workspace, buttonCallback) {
+function populateCustomToolbox(workspace: WorkspaceSvg, buttonCallback: (p1: any) => void) {
   workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback("characters"));
   workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback("objects"));
   workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback("locations"));
@@ -123,7 +128,7 @@ function populateCustomToolbox(workspace, buttonCallback) {
   workspace.updateToolbox(customToolboxCategories);
 }
 
-function BlocklyCanvas({ blocklyRef }) {
+function BlocklyCanvas({ blocklyRef }): string {
   return (
     <div ref={blocklyRef} className="fill-height"></div>
   );

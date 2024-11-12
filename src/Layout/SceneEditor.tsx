@@ -1,14 +1,16 @@
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
-import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration";
 import { useCallback, useEffect, useRef, useState } from "react";
+import React from "react";
+import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
+import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
 import initBlocks from "../Blockly/Blocks";
 import PromptElements from "./PromptElements";
 import AddElementsModal from "./AddElementsModal";
 import SceneDetails from "./SceneDetails";
-import SceneDescription from "../StoryElements/SceneDescription";
-import saveToDisc from "../Misc/SaveToDisc";
+import SceneDescription from "../StoryElements/SceneDescription.ts";
+import saveToDisk from "../Misc/SaveToDisk.ts";
 
 function SceneEditor() {
     const [promptElements, setPromptElements] = useState([]);
@@ -16,7 +18,7 @@ function SceneEditor() {
     
     const blocklyRef = useRef(null);
 
-    const handleWorkspaceChange = useCallback((workspace) => {
+    const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
         let workspaceString = javascriptGenerator.workspaceToCode(workspace);
         if (workspaceString.endsWith(",")) {
             workspaceString = workspaceString.slice(0, -1);
@@ -32,7 +34,7 @@ function SceneEditor() {
         onWorkspaceChange: handleWorkspaceChange
     });
 
-    const sceneDescription = new SceneDescription(workspace);
+    const sceneDescription = new SceneDescription(workspace!);
     
     [sceneDescription.summary, sceneDescription.setSummary] = useState("");
     [sceneDescription.time, sceneDescription.setTime] = useState("");
@@ -41,10 +43,10 @@ function SceneEditor() {
     [sceneDescription.value, sceneDescription.setValue] = useState("");
     
     const handleSave = () => {
-        saveToDisc(sceneDescription.toJSON(), "Scene", "application/json");
+        saveToDisk(sceneDescription.toJSON(), "Scene", "application/json");
     }
 
-    const handleLoad = async (file) => {
+    const handleLoad = async (file: File) => {
         if (!file) return;
         sceneDescription.fromJSON(await file.text());
     }
@@ -63,9 +65,7 @@ function SceneEditor() {
                     setModal={setModal} />
                 <Col>
                     <BlocklyCanvas 
-                        setElements={setPromptElements}
-                        blocklyRef={blocklyRef}
-                        />
+                        blocklyRef={blocklyRef} />
                 </Col>
                 <Col>
                     <Card style={{height:"75%"}}>

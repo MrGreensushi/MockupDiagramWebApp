@@ -6,38 +6,32 @@ import NarrativeFlowDiagram from "./Flow/NarrativeFlowDiagram";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
-import StoryElementDescriptor from "./StoryElements/StoryElementDescriptor";
 import StoryElementFormsTab from "./Features/StoryElementFormsTab";
-import CharacterData from "./StoryElements/CharacterData";
-import ObjectData from "./StoryElements/ObjectData";
-import LocationtData from "./StoryElements/LocationData";
-import SceneEditor from "./Layout/SceneEditor";import { Col, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
+import NarrativeDataManager from "./StoryElements/NarrativeDataManager.ts";
+import SceneEditor from "./Layout/SceneEditor.tsx";
+import { CharacterElement, LocationElement, ObjectElement } from "./StoryElements/StoryElement.ts";
 
 const characterDescriptors = [
-  new StoryElementDescriptor(false, "Amun", "Scriba per il faraone Ramses II"),
-  new StoryElementDescriptor(false, "Semeb", "Scriba per il faraone Ramses II"),
-  new StoryElementDescriptor(
-    false,
-    "Imhotep",
-    "Capo Scriba per il faraone Ramses II"
-  ),
-  new StoryElementDescriptor(false, "Tia", "Moglie di Semeb"),
-  new StoryElementDescriptor(true, "Oracolo"),
-  new StoryElementDescriptor(true, "Scienziati"),
+  new CharacterElement(false, "Amun", "Scriba per il faraone Ramses II"),
+  new CharacterElement(false, "Semeb", "Scriba per il faraone Ramses II"),
+  new CharacterElement(false, "Imhotep", "Capo Scriba per il faraone Ramses II"),
+  new CharacterElement(false, "Tia", "Moglie di Semeb"),
+  new CharacterElement(true, "Oracolo"),
+  new CharacterElement(true, "Scienziati"),
 ];
 
 const objectDescriptors = [
-  new StoryElementDescriptor(true, "Oggetti_generici"),
+  new ObjectElement(true, "Oggetti_generici"),
 ];
 
 const backgroundDescriptors = [
-  new StoryElementDescriptor(true, "Tombe"),
-  new StoryElementDescriptor(true, "Case"),
-  new StoryElementDescriptor(true, "Biblioteche"),
-  new StoryElementDescriptor(false, "Riva del Nilo"),
-  new StoryElementDescriptor(false, "Tempio di Karnak"),
-  new StoryElementDescriptor(false, "Pizza di Tebe"),
+  new LocationElement(true, "Tombe"),
+  new LocationElement(true, "Case"),
+  new LocationElement(true, "Biblioteche"),
+  new LocationElement(false, "Riva del Nilo"),
+  new LocationElement(false, "Tempio di Karnak"),
+  new LocationElement(false, "Pizza di Tebe"),
 ];
 
 
@@ -49,15 +43,15 @@ function App() {
 
   const manager = NarrativeDataManager.getInstance();
   characterDescriptors.forEach((element) => {
-    manager.addCharacterDescriptor(element);
+    manager.addCharacter(element);
   });
 
   objectDescriptors.forEach((element) => {
-    manager.addObjectDescriptor(element);
+    manager.addObject(element);
   });
 
   backgroundDescriptors.forEach((element) => {
-    manager.addBackgroundDescriptor(element);
+    manager.addBackground(element);
   });
 
   console.log("Manager ", manager);

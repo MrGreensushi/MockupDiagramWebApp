@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { addToCustomBlocks } from "../Blockly/BlocklyConfiguration";
+import { addToCustomBlocks } from "../Blockly/BlocklyConfiguration.tsx";
 
 function AddElementsModal({workspace, modal, setModal}) {
     const [blockName, setBlockName] = useState("");

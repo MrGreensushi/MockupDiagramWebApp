@@ -1,21 +1,36 @@
 import * as Blockly from 'blockly/core';
+import {v4 as uuidv4} from "uuid";
 
 class SceneDescription {
-    constructor(workspace) {
+    id: string;
+    workspace: Blockly.Workspace;
+    summary: string;
+    time: string;
+    weather: string;
+    tone: string;
+    value: string
+    setSummary: (summary: string) => void;
+    setTime: (time: string) => void;
+    setWeather: (weather: string) => void;
+    setTone: (tone: string) => void;
+    setValue: (value: string) => void;
+
+    constructor(workspace: Blockly.Workspace) {
+        this.id = uuidv4();
         this.workspace = workspace;
-        this.summary = ""
-        this.setSummary = () => {}
-        this.time = ""
-        this.setTime = () => {}
-        this.weather = ""
-        this.setWeather = () => {}
-        this.tone = ""
-        this.setTone = () => {}
-        this.value = ""
-        this.setValue = () => {}
+        this.summary = "";
+        this.time = "";
+        this.weather = "";
+        this.tone = "";
+        this.value = "";
+        this.setSummary = () => {};
+        this.setTime = () => {};
+        this.setWeather = () => {};
+        this.setTone = () => {};
+        this.setValue = () => {};
     }
 
-    toJSON() {
+    toJSON(): string {
         const serializedObject = {
             workspace: Blockly.serialization.workspaces.save(this.workspace),
             details: {
@@ -29,7 +44,7 @@ class SceneDescription {
         return JSON.stringify(serializedObject);
     }
 
-    fromJSON(json) {
+    fromJSON(json: string) {
         try {
             const serializedObject = JSON.parse(json);
             

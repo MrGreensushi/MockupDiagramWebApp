@@ -1,4 +1,4 @@
-function saveToDisc(object, fileName, fileType) {
+function saveToDisk(object: any, fileName?: string, fileType?: string) {
     if (!object) return;
     const name = fileName ?? "Download";
     const type = fileType ?? "text/plain";
@@ -11,4 +11,4 @@ function saveToDisc(object, fileName, fileType) {
     link.remove();
 }
 
-export default saveToDisc;
+export default saveToDisk;
