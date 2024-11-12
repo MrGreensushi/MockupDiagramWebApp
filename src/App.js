@@ -9,7 +9,10 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import NarrativeDataManager from "./StoryElements/NarrativeDataManager";
 import StoryElementDescriptor from "./StoryElements/StoryElementDescriptor";
 import StoryElementFormsTab from "./Features/StoryElementFormsTab";
-import { Col, Row } from "react-bootstrap";
+import CharacterData from "./StoryElements/CharacterData";
+import ObjectData from "./StoryElements/ObjectData";
+import LocationtData from "./StoryElements/LocationData";
+import SceneEditor from "./Layout/SceneEditor";import { Col, Row } from "react-bootstrap";
 
 const characterDescriptors = [
   new StoryElementDescriptor(false, "Amun", "Scriba per il faraone Ramses II"),
@@ -36,6 +39,7 @@ const backgroundDescriptors = [
   new StoryElementDescriptor(false, "Tempio di Karnak"),
   new StoryElementDescriptor(false, "Pizza di Tebe"),
 ];
+
 
 function App() {
   const [mainFlow, setMainFlow] = useState(
@@ -86,6 +90,12 @@ function App() {
       </Row>
     </div>
   );
+
+  /*return(
+    <div className="App">
+      <SceneEditor />
+    </div>
+  );*/
 }
 
 export default App;
