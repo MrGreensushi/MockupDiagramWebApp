@@ -1,5 +1,11 @@
 import {v4 as uuidv4} from "uuid";
 
+enum StoryElementEnum {
+    character = 0,
+    object = 1,
+    background = 2
+}
+
 type StoryElementType = 
     | CharacterElement
     | ObjectElement
@@ -11,7 +17,7 @@ class StoryElement {
     readonly isVariable: boolean;
     readonly id: string;
 
-    protected constructor(isVariable: boolean, name: string, notes?: string) {
+    constructor(isVariable: boolean, name: string, notes?: string) {
         this.name = name;
         this.notes = notes ?? "";
         this.isVariable = isVariable;
@@ -19,7 +25,7 @@ class StoryElement {
     }
 
     getDescription(): string {
-        return this.toString();
+        return `Name: ${this.name}`;
     }
 }
 
@@ -36,24 +42,20 @@ class CharacterElement extends StoryElement {
 
 class ObjectElement extends StoryElement{
     use: string;
-    notes: string;
 
     constructor(isVariable: boolean, name: string, use?: string, notes?: string) {
         super(isVariable, name, notes);
         this.use = use ?? "";
-        this.notes = notes ?? "";
     }
 }
 
 class LocationElement extends StoryElement{
     purpose: string;
-    notes: string;
 
     constructor(isVariable: boolean, name: string, purpose?: string, notes?: string) {
         super(isVariable, name, notes);
         this.purpose = purpose ?? "";
-        this.notes = notes ?? "";
     }
 }
 
-export {StoryElementType, StoryElement, CharacterElement, ObjectElement, LocationElement};
+export {StoryElement, CharacterElement, ObjectElement, LocationElement, StoryElementEnum, StoryElementType};

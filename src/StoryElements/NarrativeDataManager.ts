@@ -2,7 +2,7 @@ import { CharacterElement, LocationElement, ObjectElement, StoryElement } from "
 
 class NarrativeDataManager {
   // Variabile statica per memorizzare l'istanza del Singleton
-  static instance?: NarrativeDataManager;
+  public static instance?: NarrativeDataManager;
 
   characters: CharacterElement[];
   objects: ObjectElement[];
@@ -40,7 +40,6 @@ class NarrativeDataManager {
     if (!this.objects.includes(object)) {
       this.objects.push(object);
     }
-
   }
 
   // Metodo per aggiungere un background

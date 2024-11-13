@@ -10,17 +10,19 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid"; // Per generare id univoci
-import ResizableNode from "../Nodes/ResizableNode";
-import NodeEditor from "../Nodes/NodeEditing/NodeEditor";
-import NodeImporter from "../Nodes/NodeImporting/NodeImporter";
-import { BaseGraphNodeData } from "../Nodes/NodesClasses/BaseGraphNodeData";
-import SaveLoadManager from "./SaveLoad";
-import CustomEdge from "../Edges/CustomEdge";
-import BaseEdgeData from "../Edges/BaseEdgeData";
-import SideTab from "../Layout/SideTab";
-import BackendComm from "../BackEndCommunication/BackendComm";
-import FlowDescriptor from "./FlowDescriptor";
-import StartEndNode from "../Nodes/StartEndNode";
+import ResizableNode from "../Nodes/ResizableNode.jsx";
+import NodeEditor from "../Nodes/NodeEditing/NodeEditor.js";
+import NodeImporter from "../Nodes/NodeImporting/NodeImporter.js";
+import { BaseGraphNodeData } from "../Nodes/NodesClasses/BaseGraphNodeData.js";
+import SaveLoadManager from "./SaveLoad.js";
+import CustomEdge from "../Edges/CustomEdge.jsx";
+import BaseEdgeData from "../Edges/BaseEdgeData.js";
+import SideTab from "../Layout/SideTab.jsx";
+import BackendComm from "../BackEndCommunication/BackendComm.js";
+import FlowDescriptor from "./FlowDescriptor.ts";
+import StartEndNode from "../Nodes/StartEndNode.jsx";
+import { Edge } from "@xyflow/react";
+import React from "react";
 
 // const nodeTypes = {
 //   ResizableNode,
@@ -229,13 +231,13 @@ const FlowDiagram = ({ flow, onClickSetSubFlow }) => {
 
     const subflow = node.data.subFlow
       ? node.subFlow
-      : new FlowDescriptor(newFlow.edges, newFlow.nodes, node.data.label);
+      : new FlowDescriptor(node.data.label , false, newFlow.nodes, newFlow.edges);
 
     const updatedFlow = new FlowDescriptor(
-      edges,
-      nodes,
       flow.name,
-      flow.isMainFlow
+      flow.isMainFlow,
+      nodes,
+      edges
     );
 
     console.log("Subflot to setActive: ", subflow);

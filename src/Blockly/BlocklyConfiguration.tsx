@@ -1,5 +1,4 @@
-import { ToolboxDefinition } from "react-blockly";
-import { WorkspaceSvg } from "react-blockly";
+import { ToolboxDefinition, WorkspaceSvg } from "react-blockly";
 import * as Blockly from "blockly/core";
 import React from "react";
 
@@ -95,7 +94,7 @@ const workspaceConfiguration: Blockly.BlocklyOptions = {
 };
 
 function addToCustomBlocks(type: string, newName: string) {
-  customBlockData[type].names.push(newName);
+  customBlockData[`${type}s`].names.push(newName);
 }
 
 function flyoutCallback(type: string): any[] {
@@ -118,7 +117,7 @@ function flyoutCallback(type: string): any[] {
   return blockList;
 }
 
-function populateCustomToolbox(workspace: WorkspaceSvg, buttonCallback: (p1: any) => void) {
+function populateCustomToolbox(workspace: WorkspaceSvg, buttonCallback: (p: any) => void) {
   workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback("characters"));
   workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback("objects"));
   workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback("locations"));

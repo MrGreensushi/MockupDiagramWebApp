@@ -7,7 +7,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
 import initBlocks from "../Blockly/Blocks";
 import PromptElements from "./PromptElements";
-import AddElementsModal from "./AddElementsModal";
+import AddElementsModal from "./AddElementsModal.tsx";
 import SceneDetails from "./SceneDetails";
 import SceneDescription from "../StoryElements/SceneDescription.ts";
 import saveToDisk from "../Misc/SaveToDisk.ts";
@@ -59,10 +59,6 @@ function SceneEditor() {
     return(
         <Col>
             <Row>
-                <AddElementsModal
-                    workspace={workspace}
-                    modal={modal} 
-                    setModal={setModal} />
                 <Col>
                     <BlocklyCanvas 
                         blocklyRef={blocklyRef} />

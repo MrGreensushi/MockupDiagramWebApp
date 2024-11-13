@@ -3,14 +3,15 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import React, { useState } from "react";
-import FlowDiagram from "./Flow/FlowDiagram";
-import FlowDescriptor from "./Flow/FlowDescriptor";
+import FlowDiagram from "./Flow/FlowDiagram.tsx";
+import FlowDescriptor from "./Flow/FlowDescriptor.ts";
 import NarrativeFlowDiagram from "./Flow/NarrativeFlowDiagram";
-import StoryElementFormsTab from "./Features/StoryElementFormsTab";
-import { Col, Row } from "react-bootstrap";
+import StoryElementFormsTab from "./Features/StoryElementFormsTab.tsx";
+import { Col, Modal, Row } from "react-bootstrap";
 import NarrativeDataManager from "./StoryElements/NarrativeDataManager.ts";
 import SceneEditor from "./Layout/SceneEditor.tsx";
 import { CharacterElement, LocationElement, ObjectElement } from "./StoryElements/StoryElement.ts";
+import StoryElementInputForm from "./Layout/StoryElementInputForm.tsx";
 
 const characterDescriptors = [
   new CharacterElement(false, "Amun", "Scriba per il faraone Ramses II"),
@@ -31,15 +32,17 @@ const backgroundDescriptors = [
   new LocationElement(true, "Biblioteche"),
   new LocationElement(false, "Riva del Nilo"),
   new LocationElement(false, "Tempio di Karnak"),
-  new LocationElement(false, "Pizza di Tebe"),
+  new LocationElement(false, "Piazza di Tebe"),
 ];
 
 
 function App() {
   const [mainFlow, setMainFlow] = useState(
-    new FlowDescriptor([], [], "React Diagram", true)
+    new FlowDescriptor("React Diagram", true)
   );
   const [activeFlow, setActiveFlow] = useState(mainFlow);
+
+  const [modalOpened, setModalOpened] = useState(false);
 
   const manager = NarrativeDataManager.getInstance();
   characterDescriptors.forEach((element) => {
