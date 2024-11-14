@@ -1,10 +1,6 @@
 import { Tabs, Tab, Button } from "react-bootstrap";
-import StoryElementContainerForm from "./StoryElementContainerForm";
 import NarrativeDataManager from "../StoryElements/NarrativeDataManager.ts";
-import CharacterContainer from "../StoryElements/CharacterContainer";
-import ObjectContainer from "../StoryElements/ObjectContainer";
-import BackgroundContainer from "../StoryElements/BackgroundContainer";
-import StoryElementComponent from "./StoryElementComponent";
+import StoryElementComponent from "./StoryElementComponent.tsx";
 import { Component, useEffect, useState } from "react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElement, StoryElementEnum } from "../StoryElements/StoryElement.ts";
 import React from "react";
@@ -83,6 +79,7 @@ const StoryElementFormsTab = () => {
             onSubmit = {onSubmitNewLocation} />
         </Tab>
       </Tabs>
+      <div style={{paddingBottom:"1rem"}}></div>
       {elements.map((element) => (
         <StoryElementComponent
           key={"Tab:StoryElement:" + element.id}

@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { Col, Row, ToggleButton, ButtonGroup } from "react-bootstrap";
 
@@ -14,10 +15,10 @@ const StoryElementComponent = ({ element,additionalName="" }) => {
   ];
 
   return (
-    <Row>
-      <Col>- {element.id}:</Col>
-      <Col>
-        <ButtonGroup className="mb-2" >
+    <Row style={{paddingTop: ".3rem", paddingBottom:".3rem"}} className="align-items-center">
+      <Col >- {element.name}:</Col>
+      <Col >
+        <ButtonGroup  >
           {radios.map((radio, idx) => (
             <ToggleButton
               key={"Toggle:"+element.id+idx}
@@ -35,9 +36,7 @@ const StoryElementComponent = ({ element,additionalName="" }) => {
           ))}
         </ButtonGroup>
       </Col>
-      <Col>
-        <label>{element.type}</label>
-      </Col>
+  
     </Row>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import StoryElementComponent from "./StoryElementComponent";
+import StoryElementComponent from "./StoryElementComponent.tsx";
 
 const ElementContainerPicker = ({
   elements,
