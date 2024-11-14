@@ -1,5 +1,5 @@
 import { Form, InputGroup } from "react-bootstrap";
-import { CharacterElement, LocationElement, ObjectElement, StoryElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
 
 function StoryElementInputForm(props: {
@@ -13,7 +13,9 @@ function StoryElementInputForm(props: {
                 <InputGroup.Text>Nome:</InputGroup.Text>
                 <Form.Control
                     value={props.element.name}
-                    onChange={e => props.setElement({...props.element, name: e.target.value})} autoFocus />
+                    onChange={e => props.setElement({...props.element, name: e.target.value})}
+                    isInvalid={props.element.name.length === 0}
+                    autoFocus />
             </InputGroup>
             <InputGroup>
                 <InputGroup.Text>Variabile:</InputGroup.Text>
@@ -66,7 +68,7 @@ function StoryElementInputForm(props: {
                     {commonNotes}
                 </>
             );
-        case StoryElementEnum.background:
+        case StoryElementEnum.location:
             return(
                 <>
                     {commonFields}

@@ -54,7 +54,7 @@ function App() {
   });
 
   backgroundDescriptors.forEach((element) => {
-    manager.addBackground(element);
+    manager.addLocation(element);
   });
 
   console.log("Manager ", manager);

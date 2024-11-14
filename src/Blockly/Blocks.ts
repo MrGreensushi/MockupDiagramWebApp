@@ -39,11 +39,11 @@ function initBlocks() {
             this.setColour("#CCCCCC");
         },
 
-        getOutputText: (block) => {
+        getOutputText: (block: Blockly.Block) => {
             return `${block.getFieldValue('TextContent')}`;
         },
 
-        setOutputText: (block, text) => {
+        setOutputText: (block: Blockly.Block, text: string) => {
             block.setFieldValue(text, 'TextContent');
         }
     };        
@@ -57,13 +57,20 @@ function initBlocks() {
 
     Blockly.common.defineBlocks(blocks);
 
+    // Register code generators for defined blocks
     for (const blockName in blocks) {
         javascriptGenerator.forBlock[blockName] = generateCommonBlockData;
     }    
 }
 
-function generateCommonBlockData(block) {
-    const data = {
+type BlockData = {
+    id: string,
+    type: string,
+    outputText: string
+}
+
+function generateCommonBlockData(block: any): string {
+    const data: BlockData = {
         id: block.id,
         type: block.type,
         outputText: block.getOutputText(block) ?? ""
@@ -71,15 +78,15 @@ function generateCommonBlockData(block) {
     return JSON.stringify(data) + ",";
 }
 
-function commonInit(object) {
-    object.appendDummyInput('')
-            .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
-    object.setPreviousStatement(true, null);
-    object.setNextStatement(true, null);
+function commonInit(block: Blockly.Block) {
+    block.appendDummyInput('')
+          .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
+    block.setPreviousStatement(true, null);
+    block.setNextStatement(true, null);
 }
 
-function commonGetOutputText(block) {
+function commonGetOutputText(block: Blockly.Block) {
     return `${block.getFieldValue("SceneObjectName")}`;
 }
 
-export default initBlocks;
+export {initBlocks, BlockData};

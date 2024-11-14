@@ -1,4 +1,4 @@
-import { CharacterElement, LocationElement, ObjectElement, StoryElement } from "./StoryElement";
+import { CharacterElement, LocationElement, ObjectElement, StoryElement, StoryElementEnum, StoryElementType } from "./StoryElement.ts";
 
 class NarrativeDataManager {
   // Variabile statica per memorizzare l'istanza del Singleton
@@ -6,7 +6,7 @@ class NarrativeDataManager {
 
   characters: CharacterElement[];
   objects: ObjectElement[];
-  backgrounds: LocationElement[];
+  locations: LocationElement[];
 
   // Costruttore privato
   constructor() {
@@ -17,7 +17,7 @@ class NarrativeDataManager {
     // Proprietà per memorizzare le informazioni
     this.characters = [];
     this.objects = [];
-    this.backgrounds = [];
+    this.locations = [];
   }
 
   // Metodo statico per ottenere l'istanza unica
@@ -43,9 +43,23 @@ class NarrativeDataManager {
   }
 
   // Metodo per aggiungere un background
-  addBackground(background: LocationElement) {
-    if (!this.backgrounds.includes(background)) {
-      this.backgrounds.push(background);
+  addLocation(location: LocationElement) {
+    if (!this.locations.includes(location)) {
+      this.locations.push(location);
+    }
+  }
+
+  add(element: StoryElementType) {
+    switch (true) {
+      case element instanceof CharacterElement:
+        this.addCharacter(element);
+      break;
+      case element instanceof ObjectElement:
+        this.addObject(element);
+      break;
+      case element instanceof LocationElement:
+        this.addLocation(element);
+      break;
     }
   }
 
@@ -54,8 +68,21 @@ class NarrativeDataManager {
     return {
       characters: this.characters,
       objects: this.objects,
-      backgrounds: this.backgrounds,
+      backgrounds: this.locations,
     };
+  }
+
+  getAll(type: StoryElementEnum): StoryElementType[] {
+    switch (type) {
+      case StoryElementEnum.character:
+        return this.characters;
+      case StoryElementEnum.object:
+        return this.objects;
+      case StoryElementEnum.location:
+        return this.locations;
+      default:
+        return [];
+    }
   }
 
   getCharacterTypes(isVariable: boolean) {
@@ -65,7 +92,7 @@ class NarrativeDataManager {
     return this.getStoryElementTypes(isVariable, this.objects);
   }
   getBackgroundTypes(isVariable: boolean) {
-    return this.getStoryElementTypes(isVariable, this.backgrounds);
+    return this.getStoryElementTypes(isVariable, this.locations);
   }
 
   getStoryElementTypes(isVariable: boolean, array: StoryElement[]) {

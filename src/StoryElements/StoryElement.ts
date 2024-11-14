@@ -3,7 +3,7 @@ import {v4 as uuidv4} from "uuid";
 enum StoryElementEnum {
     character = 0,
     object = 1,
-    background = 2
+    location = 2
 }
 
 type StoryElementType = 

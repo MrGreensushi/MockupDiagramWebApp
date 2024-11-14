@@ -1,20 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
-import initBlocks from "../Blockly/Blocks";
-import PromptElements from "./PromptElements";
-import AddElementsModal from "./AddElementsModal.tsx";
-import SceneDetails from "./SceneDetails";
+import { initBlocks } from "../Blockly/Blocks.ts";
+import PromptElements from "./PromptElements.tsx";
+import SceneDetails from "./SceneDetails.tsx";
 import SceneDescription from "../StoryElements/SceneDescription.ts";
 import saveToDisk from "../Misc/SaveToDisk.ts";
+import AddElementModal from "./AddElementModal.tsx";
+import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import NarrativeDataManager from "../StoryElements/NarrativeDataManager.ts";
+import { PromptElementType } from "./PromptElement.tsx";
 
 function SceneEditor() {
-    const [promptElements, setPromptElements] = useState([]);
-    const [modal, setModal] = useState("");
+    const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
+    const [modal, setModal] = useState(false);
+    const [modalType, setModalType] = useState(StoryElementEnum.character);
     
     const blocklyRef = useRef(null);
 
@@ -23,7 +26,7 @@ function SceneEditor() {
         if (workspaceString.endsWith(",")) {
             workspaceString = workspaceString.slice(0, -1);
         }
-        const workspaceObject = JSON.parse("[" + workspaceString + "]");
+        const workspaceObject: PromptElementType[] = JSON.parse("[" + workspaceString + "]");
         setPromptElements(workspaceObject);
     }, []);
 
@@ -46,18 +49,36 @@ function SceneEditor() {
         saveToDisk(sceneDescription.toJSON(), "Scene", "application/json");
     }
 
-    const handleLoad = async (file: File) => {
+    const handleLoad = async (file?: File) => {
         if (!file) return;
         sceneDescription.fromJSON(await file.text());
     }
 
+    const onClickAdd = (type: StoryElementEnum) => {
+        setModalType(type);
+        setModal(true);
+    }
+
+    const onSubmitNewElement = (newElement: StoryElementType) => {
+        NarrativeDataManager.getInstance().add(newElement);
+        workspace?.refreshToolboxSelection();
+    }
+
     useEffect(() => initBlocks(), []);
     useEffect(() => {
-        if (workspace) populateCustomToolbox(workspace, setModal);
+        if (workspace) populateCustomToolbox(workspace, onClickAdd);
     }, [workspace]);
 
     return(
         <Col>
+            {modal &&
+                <AddElementModal 
+                    modal={modal}
+                    setModal={setModal}
+                    type={modalType}
+                    onSubmit={onSubmitNewElement}
+                    />
+            }
             <Row>
                 <Col>
                     <BlocklyCanvas 
@@ -76,11 +97,11 @@ function SceneEditor() {
                 </Col>
             </Row>
             <Row>
-                <Button onClick={()=> handleSave()}>SALVA</Button>
+                <Button onClick={() => handleSave()}>SALVA</Button>
                 <Form.Control
                     type="file"
                     accept="application/json"
-                    onChange={event => handleLoad(event.target.files[0])} />
+                    onChange={e => handleLoad((e.target as HTMLInputElement).files![0])} />
             </Row>
         </Col>
     );

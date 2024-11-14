@@ -4,7 +4,7 @@ import StoryElementComponent from "./StoryElementComponent.tsx";
 import { Component, useEffect, useState } from "react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElement, StoryElementEnum } from "../StoryElements/StoryElement.ts";
 import React from "react";
-import AddElementModal from "../Layout/AddElementsModal.tsx";
+import AddElementModal from "../Layout/AddElementModal.tsx";
 
 const StoryElementFormsTab = () => {
   const [key, setKey] = useState(StoryElementEnum.character);
@@ -16,8 +16,6 @@ const StoryElementFormsTab = () => {
   
   const narrativeDataManager = NarrativeDataManager.getInstance();
 
-  const commonHeaderString = "Aggiungi un nuovo ";
-
   const onSubmitNewCharacter = (newCharacter: StoryElement) => {
     narrativeDataManager.addCharacter(newCharacter as CharacterElement);
   }
@@ -25,7 +23,7 @@ const StoryElementFormsTab = () => {
     narrativeDataManager.addObject(newObject as ObjectElement);
   }
   const onSubmitNewLocation = (newLocation: StoryElement) => {
-    narrativeDataManager.addBackground(newLocation as LocationElement);
+    narrativeDataManager.addLocation(newLocation as LocationElement);
   }
 
   useEffect(() => {
@@ -36,8 +34,8 @@ const StoryElementFormsTab = () => {
       case StoryElementEnum.object:
         setElements([...narrativeDataManager.objects]);
       break;
-      case StoryElementEnum.background:
-        setElements([...narrativeDataManager.backgrounds]);
+      case StoryElementEnum.location:
+        setElements([...narrativeDataManager.locations]);
       break;
       default:
         console.error("Tab key is not valid: ", key);
@@ -49,7 +47,7 @@ const StoryElementFormsTab = () => {
     <>
       <Tabs
         activeKey={key}
-        onSelect={(k) => setKey(Number.parseInt(k))}
+        onSelect={(k) => setKey(Number.parseInt(k ?? "0"))}
         className="mb-3" >
         <Tab eventKey={StoryElementEnum.character} title="Personaggi">
           <Button onClick={() => setCharacterModal(true)}>Aggiungi Personaggio</Button>
@@ -57,7 +55,6 @@ const StoryElementFormsTab = () => {
             modal={characterModal}
             setModal={setCharacterModal}
             type={StoryElementEnum.character}
-            title={commonHeaderString + "personaggio"}
             onSubmit={onSubmitNewCharacter} />
         </Tab>
         <Tab eventKey={StoryElementEnum.object} title="Oggetti">
@@ -66,16 +63,14 @@ const StoryElementFormsTab = () => {
             modal={objectModal}
             setModal={setObjectModal}
             type={StoryElementEnum.object}
-            title={commonHeaderString + "oggetto"}
             onSubmit={onSubmitNewObject} />
         </Tab>
-        <Tab eventKey={StoryElementEnum.background} title="Luoghi">
+        <Tab eventKey={StoryElementEnum.location} title="Luoghi">
           <Button onClick={() => setLocationModal(true)}>Aggiungi Luogo</Button>
           <AddElementModal
             modal = {locationModal}
             setModal = {setLocationModal}
-            type = {StoryElementEnum.background}
-            title = {commonHeaderString + "luogo"}
+            type = {StoryElementEnum.location}
             onSubmit = {onSubmitNewLocation} />
         </Tab>
       </Tabs>
