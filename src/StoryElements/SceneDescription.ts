@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core';
 import {v4 as uuidv4} from "uuid";
+import { workspaceConfiguration } from '../Blockly/BlocklyConfiguration';
 
 class SceneDescription {
     id: string;
@@ -15,24 +16,36 @@ class SceneDescription {
     setTone: (tone: string) => void;
     setValue: (value: string) => void;
 
-    constructor(workspace: Blockly.Workspace) {
+    constructor(
+        workspace: Blockly.Workspace,
+        summary?: string,
+        time?: string,
+        weather?: string,
+        tone?: string,
+        value?: string,
+        setSummary?: (summary: string) => void,
+        setTime?: (time: string) => void,
+        setWeather?: (weather: string) => void,
+        setTone?: (tone: string) => void,
+        setValue?: (value: string) => void
+    ) {
         this.id = uuidv4();
         this.workspace = workspace;
-        this.summary = "";
-        this.time = "";
-        this.weather = "";
-        this.tone = "";
-        this.value = "";
-        this.setSummary = () => {};
-        this.setTime = () => {};
-        this.setWeather = () => {};
-        this.setTone = () => {};
-        this.setValue = () => {};
+        this.summary = summary ?? "";
+        this.time = time ?? "";
+        this.weather = weather ?? "";
+        this.tone = tone ?? "";
+        this.value = value ?? "";
+        this.setSummary = setSummary ?? ((summary: string) => this.summary = summary);
+        this.setTime = setTime ?? ((time: string) => this.time = time);
+        this.setWeather = setWeather ?? ((weather: string) => this.weather = weather);
+        this.setTone = setTone ?? ((tone: string) => this.tone = tone);
+        this.setValue = setValue ?? ((value: string) => this.value = value);
     }
 
     toJSON(): string {
         const serializedObject = {
-            workspace: Blockly.serialization.workspaces.save(this.workspace),
+            workspace: this.workspace ? Blockly.serialization.workspaces.save(this.workspace) : {},
             details: {
                 summary: this.summary,
                 time: this.time,
@@ -44,18 +57,18 @@ class SceneDescription {
         return JSON.stringify(serializedObject);
     }
 
-    fromJSON(json: string) {
+    setFromJSON(json: string, sd: SceneDescription = this): void {
         try {
             const serializedObject = JSON.parse(json);
             
-            this.setSummary(serializedObject.details.summary);
-            this.setTime(serializedObject.details.time);
-            this.setWeather(serializedObject.details.weather);
-            this.setTone(serializedObject.details.tone);
-            this.setValue(serializedObject.details.value);
+            sd.setSummary(serializedObject.details.summary);
+            sd.setTime(serializedObject.details.time);
+            sd.setWeather(serializedObject.details.weather);
+            sd.setTone(serializedObject.details.tone);
+            sd.setValue(serializedObject.details.value);
         
             try {
-                Blockly.serialization.workspaces.load(serializedObject.workspace, this.workspace)
+                Blockly.serialization.workspaces.load(serializedObject.workspace, sd.workspace)
             } catch (ex) {
                 console.error("Failed to parse JSON workspace: ", ex)
             }

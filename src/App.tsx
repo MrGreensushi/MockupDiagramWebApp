@@ -23,7 +23,7 @@ const characterDescriptors = [
 ];
 
 const objectDescriptors = [
-  new ObjectElement(true, "Oggetti_generici"),
+  new ObjectElement(true, "Oggetti Generici"),
 ];
 
 const backgroundDescriptors = [
@@ -42,34 +42,30 @@ function App() {
   );
   const [activeFlow, setActiveFlow] = useState(mainFlow);
 
-  const [modalOpened, setModalOpened] = useState(false);
-
   const manager = NarrativeDataManager.getInstance();
-  characterDescriptors.forEach((element) => {
+  characterDescriptors.forEach((element: CharacterElement) => {
     manager.addCharacter(element);
   });
 
-  objectDescriptors.forEach((element) => {
+  objectDescriptors.forEach((element: ObjectElement) => {
     manager.addObject(element);
   });
 
-  backgroundDescriptors.forEach((element) => {
+  backgroundDescriptors.forEach((element: LocationElement) => {
     manager.addLocation(element);
   });
 
   console.log("Manager ", manager);
 
-  const onClickSetSubFlow = (currentFlow, newFlow) => {
+  const onClickSetSubFlow = (currentFlow: FlowDescriptor, newFlow: FlowDescriptor) => {
     //aggiorna mainFlow
     setMainFlow(
       (prevFlow) =>
-        new FlowDescriptor(currentFlow.nodes, currentFlow.edges, prevFlow.name)
+        new FlowDescriptor(prevFlow.name, false, currentFlow.nodes, currentFlow.edges, )
     );
     //Setta il nuovo active flow
     setActiveFlow(newFlow);
   };
-
-  const returnToMainFlow = () => {};
 
   return (
     <div className="App">
@@ -87,8 +83,8 @@ function App() {
       </Row>
     </div>
   );
-
-  /*return(
+/*
+  return(
     <div className="App">
       <SceneEditor />
     </div>

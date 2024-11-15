@@ -18,6 +18,7 @@ import NarratorNode from "../Nodes/NodesClasses/NarratorNode";
 import NarratorNodeEditor from "../Features/NarratorNodeEditor";
 import NarrativeNodeDiv from "../Nodes/NarrativeNodeDiv";
 import OneLabelEdge from "../Edges/OneLabelEdge";
+import SceneEditor from "../Layout/SceneEditor.tsx";
 
 // const nodeTypes = {
 //   ResizableNode,
@@ -157,6 +158,7 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
     }
   };
 
+
   // Funzione per aggiornare il nome del nodo selezionato
   const handleNameChange = (e) => {
     const newLabel = e.target.value;
@@ -183,9 +185,10 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
 
   // Function to handle node updates (descriptions and nodePhrases)
   const handleNodeUpdate = (updatedNode) => {
-    if (!(updatedNode instanceof NarratorNode)) {
+    /*if (!(updatedNode instanceof NarratorNode)) {
       throw new Error(updatedNode, " is not an instanceof BaseGraphNodeData");
-    }
+    }*/
+    console.log(updatedNode);
 
     setNodes((els) =>
       els.map((el) =>
@@ -205,6 +208,7 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
   };
 
   const onClickEdit = () => {
+    console.log(selectedNode);
     setShowSideTab(true);
   };
 
@@ -223,11 +227,11 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
 
       if (node === null || node === undefined)
         throw new Error("Node not found: ", nodeId);
-      else if (!(node.data instanceof NarratorNode))
+      /*else if (!(node.data instanceof NarratorNode))
         throw new Error(
           "Node data is not an instance of NarratorNode: ",
           node.data
-        );
+        );*/
       else return node.data;
     },
     [nodes]
@@ -365,13 +369,18 @@ const NarrativeFlowDiagram = ({ flow, onClickSetSubFlow }) => {
         </ReactFlow>
 
         <SideTab showSideTab={showSideTab} setShowSideTab={setShowSideTab}>
-          <NarratorNodeEditor
+          {showSideTab &&
+            <SceneEditor 
+              sceneJson={selectedNode.sceneData}
+              saveScene={(sceneJson) => handleNodeUpdate({...selectedNode, sceneData: sceneJson})}/>
+          }
+          {/*<NarratorNodeEditor
             selectedNode={selectedNode} // Pass the selected node
             handleNameChange={handleNameChange} // Pass the name change handler
             handleNodeUpdate={handleNodeUpdate} // Pass the node update handler
             getNodeDataFromId={getNodeDataFromId}
             getOutgoingConnectionsFromNodeId={getOutgoingConnectionsFromNodeId}
-          />
+          />*/}
         </SideTab>
       </Row>
     </Container>

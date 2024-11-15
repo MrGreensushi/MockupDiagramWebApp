@@ -9,7 +9,7 @@ const customBlockData = {
     objectName: "SceneCharacterObject",
     button: {
       kind: "BUTTON",
-      text: "Add Character",
+      text: "Nuovo Personaggio",
       callbackKey: "createCharacterInstance"
     }
   },
@@ -17,7 +17,7 @@ const customBlockData = {
     objectName: "SceneObjectObject",
     button: {
       kind: "BUTTON",
-      text: "Add Object",
+      text: "Nuovo Oggetto",
       callbackKey: "createObjectInstance"
     }
   },
@@ -25,7 +25,7 @@ const customBlockData = {
     objectName: "SceneLocationObject",
     button: {
       kind: "BUTTON",
-      text: "Add Location",
+      text: "Nuovo Luogo",
       callbackKey: "createLocationInstance"
     }
   }

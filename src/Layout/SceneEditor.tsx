@@ -14,7 +14,7 @@ import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElemen
 import NarrativeDataManager from "../StoryElements/NarrativeDataManager.ts";
 import { PromptElementType } from "./PromptElement.tsx";
 
-function SceneEditor() {
+function SceneEditor(props: {sceneJson?: string, saveScene: (sceneJson: string) => void}) {
     const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
     const [modal, setModal] = useState(false);
     const [modalType, setModalType] = useState(StoryElementEnum.character);
@@ -34,24 +34,27 @@ function SceneEditor() {
         ref: blocklyRef,
         toolboxConfiguration: baseToolboxCategories,
         workspaceConfiguration: workspaceConfiguration,
-        onWorkspaceChange: handleWorkspaceChange
+        onWorkspaceChange: handleWorkspaceChange,
+        initialJson: props.sceneJson ? JSON.parse(props.sceneJson)["workspace"] : undefined
     });
 
     const sceneDescription = new SceneDescription(workspace!);
+    if (props.sceneJson) sceneDescription.setFromJSON(props.sceneJson);
     
-    [sceneDescription.summary, sceneDescription.setSummary] = useState("");
-    [sceneDescription.time, sceneDescription.setTime] = useState("");
-    [sceneDescription.weather, sceneDescription.setWeather] = useState("");
-    [sceneDescription.tone, sceneDescription.setTone] = useState("");
-    [sceneDescription.value, sceneDescription.setValue] = useState("");
+    [sceneDescription.summary, sceneDescription.setSummary] = useState(sceneDescription.summary);
+    [sceneDescription.time, sceneDescription.setTime] = useState(sceneDescription.time);
+    [sceneDescription.weather, sceneDescription.setWeather] = useState(sceneDescription.weather);
+    [sceneDescription.tone, sceneDescription.setTone] = useState(sceneDescription.tone);
+    [sceneDescription.value, sceneDescription.setValue] = useState(sceneDescription.value);
     
     const handleSave = () => {
-        saveToDisk(sceneDescription.toJSON(), "Scene", "application/json");
+        props.saveScene(sceneDescription.toJSON());
+        //saveToDisk(sceneDescription.toJSON(), "Scene", "application/json");
     }
 
     const handleLoad = async (file?: File) => {
         if (!file) return;
-        sceneDescription.fromJSON(await file.text());
+        sceneDescription.setFromJSON(await file.text());
     }
 
     const onClickAdd = (type: StoryElementEnum) => {

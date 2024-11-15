@@ -28,7 +28,10 @@ function PromptElements(props: {elements: PromptElementType[], workspace?: Block
     
     const setText = (id: string, text: string) => {
         const block: any = workspace.getBlockById(id);
-        if (block && block.setOutputText) block.setOutputText(block, text);
+        if (block && block.setOutputText) {
+            block.setOutputText(block, text);
+            workspace.refreshTheme();
+        }
     }
     
     for (let i = 0; i < elements.length; i++) {

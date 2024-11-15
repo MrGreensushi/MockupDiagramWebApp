@@ -21,9 +21,9 @@ type ListElement = {
 
 type PromptElementType = SceneElement | TextElement | ListElement;
 
-function PromptElement(props: {element: PromptElementType, setText?: (id: string, value: string) => void}) {
+function PromptElement(props: {element: PromptElementType, setText?: (id: string, value: string) => void, noTrailingSpace?: boolean}) {
     const [focus, setFocus] = useState(false);
-
+    const maybeSpace = props.noTrailingSpace ? "" : " "; 
     switch (props.element.type) {
         case "ListElement":
             if (props.element.elements.length === 2) {
@@ -32,7 +32,7 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
                         <PromptElement element = {props.element.elements[0]} />
                         {" e "}
                         <PromptElement element = {props.element.elements[1]} />
-                        {" "}
+                        {maybeSpace}
                     </>
                 )
             } else {
@@ -43,7 +43,7 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
                                 if (idx < array.length - 1) {
                                     return (
                                         <React.Fragment key = {idx}>
-                                            <PromptElement element = {e} />
+                                            <PromptElement element = {e} noTrailingSpace={true} />
                                             {idx < array.length - 2 ? ", " : ""}
                                         </React.Fragment>
                                     );
@@ -53,7 +53,7 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
                         )}
                         {" e "}
                         <PromptElement element = {props.element.elements.pop()!} />
-                        {" "}
+                        {maybeSpace}
                     </>
                 )
             }
@@ -65,7 +65,7 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
                     <Card style={{display:"inline-block"}} >
                         {props.element.outputText}
                     </Card>
-                    {" "}
+                    {maybeSpace}
                 </>
             );
         
@@ -77,21 +77,21 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
             document.body.appendChild(utility);
             const computedWidth = utility.offsetWidth;
             document.body.removeChild(utility);
-            
+
             return(
                 <Form
                     style={{display:"inline"}}
                     onSubmit={(e) => {e.preventDefault(); setFocus(false);}} >
                     <Form.Control
                         type="text"
-                        value={props.element.outputText}
+                        defaultValue={props.element.outputText}
                         onClick={() => setFocus(true)}
-                        onChange={(event) => props.setText!(props.element.id, event.target.value)}
                         onBlur={() => setFocus(false)}
+                        onChange={(e) => props.setText!(props.element.id, e.target.value)}
                         readOnly={!focus}
-                        plaintext={!focus}
+                        plaintext={true}
                         style={{display:"inline", width:computedWidth, minWidth:"2em", padding:"0"}}/>
-                    {" "}
+                    {maybeSpace}
                 </Form>
             );
         default:

@@ -10,6 +10,7 @@ const SideTab = ({showSideTab, setShowSideTab, title, children}) => {
             onHide={handleClose}
             placement="end"
             scroll={true}
+            className="w-75"
             >
             <Offcanvas.Header closeButton>
                 <Offcanvas.Title>{title}</Offcanvas.Title>
