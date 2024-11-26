@@ -1,5 +1,3 @@
-import {v4 as uuidv4} from "uuid";
-
 enum StoryElementEnum {
     character = 0,
     object = 1,
@@ -14,18 +12,20 @@ type StoryElementType =
 class StoryElement {
     name: string;
     notes: string;
-    readonly isVariable: boolean;
-    readonly id: string;
+    isVariable: boolean;
 
     constructor(isVariable: boolean, name: string, notes?: string) {
         this.name = name;
         this.notes = notes ?? "";
         this.isVariable = isVariable;
-        this.id = uuidv4();
     }
 
     getDescription(): string {
         return `Name: ${this.name}`;
+    }
+
+    compare(other: StoryElement) {
+        return this.name.localeCompare(other.name);
     }
 }
 

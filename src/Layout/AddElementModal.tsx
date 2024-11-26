@@ -1,36 +1,37 @@
 import { useState } from "react";
-import { Alert, Button, Modal } from "react-bootstrap";
+import { Alert, Button, Form, Modal } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
 import StoryElementInputForm from "./StoryElementInputForm.tsx";
 
 function AddElementModal(props: {
     modal: boolean,
-    setModal: (modal: boolean) => void,
+    setModal: React.Dispatch<React.SetStateAction<boolean>>,
     type: StoryElementEnum
-    onSubmit: (newElement: StoryElementType) => void
+    onSubmit: (newElement: StoryElementType) => boolean
 }) {
-    const commonHeaderString = "Aggiungi un nuovo ";
     
     let initElement: StoryElementType;
-    let title = commonHeaderString;
+    let typeString: string;
 
     switch (props.type) {
         case StoryElementEnum.character:
             initElement = new CharacterElement(false, "Nuovo Personaggio");
-            title += "personaggio";
+            typeString = "personaggio";
         break;
         case StoryElementEnum.object:
             initElement = new ObjectElement(false, "Nuovo Oggetto");
-            title += "oggetto";
+            typeString = "oggetto";
         break;
         case StoryElementEnum.location:
             initElement = new LocationElement(false, "Nuovo Luogo");
-            title += "luogo";
+            typeString = "luogo";
         break;
         default:
             throw new TypeError(props.type + " is not a valid type");
     }
+
+    const title = "Aggiungi un nuovo " + typeString;
 
     const [element, setElement] = useState(initElement);
     const [alert, setAlert] = useState(false);
@@ -49,8 +50,12 @@ function AddElementModal(props: {
             setAlertText(errorMessage);
             setAlert(true);
         } else {
-            props.onSubmit(element);
-            handleModalClose();
+            if (props.onSubmit(element)) {
+                handleModalClose();
+            } else {
+                setAlertText(`Un ${typeString} con questo nome esiste già.`);
+                setAlert(true);
+            }
         }
     }
 
@@ -62,35 +67,33 @@ function AddElementModal(props: {
 
     return (
         <Modal show={props.modal} onHide={handleModalClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>{title}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <StoryElementInputForm
-                    type={props.type}
-                    element={element}
-                    setElement={setElement} />
-                    {alert && (
-                    <Alert
-                        variant={"danger"}
-                        dismissible
-                        onClose={() => setAlert(false)} >
-                        {alertText}
-                    </Alert>
-                    )}
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleModalClose}>
-                    Annulla
-                </Button>
-                <Button variant="primary" onClick={() => {
-                    //addToCustomBlocks(props.type.toString(), blockName);
-                    //props.workspace?.refreshToolboxSelection();
-                    onConfirm();
-                }}>
-                    Aggiungi
-                </Button>
-            </Modal.Footer>
+            <Form onSubmit={(e) => {e.preventDefault(); onConfirm()}}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{title}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <StoryElementInputForm
+                        type={props.type}
+                        element={element}
+                        setElement={setElement} />
+                        {alert && (
+                            <Alert
+                            variant={"danger"}
+                            dismissible
+                            onClose={() => setAlert(false)} >
+                            {alertText}
+                        </Alert>
+                        )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleModalClose}>
+                        Annulla
+                    </Button>
+                    <Button variant="primary" type="submit" onClick={onConfirm}>
+                        Aggiungi
+                    </Button>
+                </Modal.Footer>
+            </Form>
         </Modal>
     );
 }

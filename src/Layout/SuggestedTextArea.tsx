@@ -7,15 +7,17 @@ function SuggestedTextArea(props: {
     setValue: (newValue: string) => void,
     choices: string[],
     onAdd: (newValue: string) => void,
+    onBlur: () => void,
     labelTextWidth?: string,
     children?: React.ReactNode
 }) {       
-    const maybeAddButton =
-        (props.value && !props.choices.includes(props.value)) && 
-            (<Button variant="secondary"
-                onClick={() => props.onAdd(props.value)}>
-                    {props.children}
-            </Button>);
+    const maybeAddButton = (
+        <Button variant="secondary"
+            onClick={() => props.onAdd(props.value)}
+            hidden={!props.value || props.choices.includes(props.value)} >
+                {props.children}
+        </Button>
+    );
 
     const datalistId = props.label ? `${props.label}ListOptions` : "ListOptions";
 
@@ -29,7 +31,8 @@ function SuggestedTextArea(props: {
             <Form.Control
                 value={props.value}
                 list={datalistId}
-                onChange={e => props.setValue(e.target.value)} />
+                onChange={e => props.setValue(e.target.value)}
+                onBlur={props.onBlur} />
             {props.label && 
                 <datalist id={datalistId}>
                     {props.choices.map((e, idx) => <option value={e} key={idx} />)}

@@ -2,7 +2,7 @@ import { ToolboxDefinition, WorkspaceSvg } from "react-blockly";
 import * as Blockly from "blockly/core";
 import React, { ReactElement } from "react";
 import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
-import NarrativeDataManager from "../StoryElements/NarrativeDataManager.ts";
+import Story from "../StoryElements/Story.ts";
 
 const customBlockData = {
   characters: {
@@ -92,7 +92,7 @@ const workspaceConfiguration: Blockly.BlocklyOptions = {
   }
 };
 
-function convertFromEnumToCustomKey(type: StoryElementEnum): string {
+function convertFromEnumToKey(type: StoryElementEnum): string {
   switch (type) {
     case StoryElementEnum.character:
       return "characters";
@@ -105,36 +105,40 @@ function convertFromEnumToCustomKey(type: StoryElementEnum): string {
   }
 }
 
-function flyoutCallback(type: StoryElementEnum): Blockly.utils.toolbox.FlyoutDefinition {
-  const typeKey = convertFromEnumToCustomKey(type);
+function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.toolbox.FlyoutDefinition {
+  const typeKey = convertFromEnumToKey(type);
 
   const blockList: Blockly.utils.toolbox.FlyoutItemInfoArray = [customBlockData[typeKey].button];
 
-  NarrativeDataManager.getInstance().getAll(type).forEach((element) => {
-    blockList.push({
-      kind:"block",
-      type: customBlockData[typeKey].objectName,
-      fields: {
-        SceneObjectName: element.name,
-      },
+  [...story.getTypeIteratorByEnum(type)]
+    .sort((e1, e2) => e1.name.localeCompare(e2.name))
+    .forEach((element) => {
+      blockList.push({
+        kind:"block",
+        type: customBlockData[typeKey].objectName,
+        fields: {
+          SceneObjectName: element.name,
+        },
+      });
     });
-  });
   return blockList;
 }
 
-function populateCustomToolbox(workspace: WorkspaceSvg, buttonCallback: (type: StoryElementEnum) => void) {
-  workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback(StoryElementEnum.character));
-  workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback(StoryElementEnum.object));
-  workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback(StoryElementEnum.location));
+function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCallback: (type: StoryElementEnum) => void) {
+  workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback(story, StoryElementEnum.character));
+  workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback(story, StoryElementEnum.object));
+  workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback(story, StoryElementEnum.location));
   workspace.registerButtonCallback('createCharacterInstance', () => buttonCallback(StoryElementEnum.character));
   workspace.registerButtonCallback('createObjectInstance', () => buttonCallback(StoryElementEnum.object));
   workspace.registerButtonCallback('createLocationInstance', () => buttonCallback(StoryElementEnum.location));
   workspace.updateToolbox(customToolboxCategories);
 }
 
-function BlocklyCanvas({ blocklyRef }): ReactElement {
+function BlocklyCanvas({ blocklyRef, onBlur }): ReactElement {
   return(
-    <div ref={blocklyRef} className="fill-height"></div>
+    <div ref={blocklyRef}
+      className="fill-height"
+      onBlur={onBlur}></div>
   );
 }
 

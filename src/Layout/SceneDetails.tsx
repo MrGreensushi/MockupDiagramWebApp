@@ -1,10 +1,21 @@
 import { useState } from "react";
 import { Col, Form, InputGroup } from "react-bootstrap";
 import SuggestedTextArea from "./SuggestedTextArea.tsx";
-import SceneDescription from "../StoryElements/SceneDescription.ts";
 import React from "react";
 
-function SceneDetails(props: {sceneDescription: SceneDescription}) {
+function SceneDetails(props: {
+    summary: string,
+    setSummary: (summary: string) => void,
+    time: string,
+    setTime: (time: string) => void,
+    weather: string,
+    setWeather: (weather: string) => void,
+    tone: string,
+    setTone: (tone: string) => void,
+    value: string,
+    setValue: (value: string) => void,
+    onBlur: () => void
+}) {
     const [weatherList, setWeatherList] = useState(["Soleggiato", "Velato", "Nuvoloso", "Pioggia", "Temporale"]);
     const [tonesList, setTonesList] = useState(["Felice", "Triste", "Arrabbiato", "Timoroso"]);
     const [valuesList, setValuesList] = useState(["Qualcosa", "Qualcos'altro"]);
@@ -22,41 +33,46 @@ function SceneDetails(props: {sceneDescription: SceneDescription}) {
                     <Form.Control
                         as="textarea"
                         style={{maxHeight:"10em"}}
-                        value={props.sceneDescription.summary}
-                        onChange={(e) => props.sceneDescription.setSummary(e.target.value)} />
+                        value={props.summary}
+                        onChange={(e) => props.setSummary(e.target.value)}
+                        onBlur={props.onBlur} />
                 </InputGroup>
                 <hr />
                 <InputGroup>
                     <InputGroup.Text style={{width: textWidth}}>Orario:</InputGroup.Text>
                     <Form.Control
-                        value={props.sceneDescription.time}
-                        onChange={(e) => props.sceneDescription.setTime(e.target.value)} />
+                        value={props.time}
+                        onChange={(e) => props.setTime(e.target.value)}
+                        onBlur={props.onBlur} />
                 </InputGroup>
                 <SuggestedTextArea
                     label="Tempo Atmosferico:"
-                    value={props.sceneDescription.weather}
-                    setValue={props.sceneDescription.setWeather}
+                    value={props.weather}
+                    setValue={props.setWeather}
                     choices={weatherList}
                     onAdd={(newWeather: string) => setWeatherList([...weatherList, newWeather])}
-                    labelTextWidth={textWidth}>
+                    labelTextWidth={textWidth}
+                    onBlur={props.onBlur}>
                     +
                 </SuggestedTextArea>
                 <SuggestedTextArea
                     label="Tono:"
-                    value={props.sceneDescription.tone}
-                    setValue={props.sceneDescription.setTone}
+                    value={props.tone}
+                    setValue={props.setTone}
                     choices={tonesList}
                     onAdd={(newTone: string) => setTonesList([...tonesList, newTone])}
-                    labelTextWidth={textWidth}>
+                    labelTextWidth={textWidth}
+                    onBlur={props.onBlur}>
                     +
                 </SuggestedTextArea>
                 <SuggestedTextArea
                     label="Valore:"
-                    value={props.sceneDescription.value}
-                    setValue={props.sceneDescription.setValue}
+                    value={props.value}
+                    setValue={props.setValue}
                     choices={valuesList}
                     onAdd={(newValue: string) => setValuesList([...valuesList, newValue])}
-                    labelTextWidth={textWidth}>
+                    labelTextWidth={textWidth}
+                    onBlur={props.onBlur}>
                     +
                 </SuggestedTextArea>
             </Form>

@@ -1,26 +1,30 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
-import { initBlocks } from "../Blockly/Blocks.ts";
 import PromptElements from "./PromptElements.tsx";
 import SceneDetails from "./SceneDetails.tsx";
-import SceneDescription from "../StoryElements/SceneDescription.ts";
-import saveToDisk from "../Misc/SaveToDisk.ts";
 import AddElementModal from "./AddElementModal.tsx";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
-import NarrativeDataManager from "../StoryElements/NarrativeDataManager.ts";
 import { PromptElementType } from "./PromptElement.tsx";
+import Scene from "../StoryElements/Scene.ts";
+import Story from "../StoryElements/Story.ts";
 
-function SceneEditor(props: {sceneJson?: string, saveScene: (sceneJson: string) => void}) {
+function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>, scene: Scene, setScene: (newScene: Scene) => void}) {
     const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
     const [modal, setModal] = useState(false);
     const [modalType, setModalType] = useState(StoryElementEnum.character);
     
     const blocklyRef = useRef(null);
-
+    
+    const [summary, setSummary] = useState(props.scene.details.summary ?? "");
+    const [time, setTime] = useState(props.scene.details.time ?? "");
+    const [weather, setWeather] = useState(props.scene.details.weather ?? "");
+    const [tone, setTone] = useState(props.scene.details.tone ?? "");
+    const [value, setValue] = useState(props.scene.details.value ?? "");
+    
     const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
         let workspaceString = javascriptGenerator.workspaceToCode(workspace);
         if (workspaceString.endsWith(",")) {
@@ -35,26 +39,13 @@ function SceneEditor(props: {sceneJson?: string, saveScene: (sceneJson: string) 
         toolboxConfiguration: baseToolboxCategories,
         workspaceConfiguration: workspaceConfiguration,
         onWorkspaceChange: handleWorkspaceChange,
-        initialJson: props.sceneJson ? JSON.parse(props.sceneJson)["workspace"] : undefined
+        initialJson: props.scene ? props.scene.workspace : undefined
     });
 
-    const sceneDescription = new SceneDescription(workspace!);
-    if (props.sceneJson) sceneDescription.setFromJSON(props.sceneJson);
-    
-    [sceneDescription.summary, sceneDescription.setSummary] = useState(sceneDescription.summary);
-    [sceneDescription.time, sceneDescription.setTime] = useState(sceneDescription.time);
-    [sceneDescription.weather, sceneDescription.setWeather] = useState(sceneDescription.weather);
-    [sceneDescription.tone, sceneDescription.setTone] = useState(sceneDescription.tone);
-    [sceneDescription.value, sceneDescription.setValue] = useState(sceneDescription.value);
-    
     const handleSave = () => {
-        props.saveScene(sceneDescription.toJSON());
-        //saveToDisk(sceneDescription.toJSON(), "Scene", "application/json");
-    }
-
-    const handleLoad = async (file?: File) => {
-        if (!file) return;
-        sceneDescription.setFromJSON(await file.text());
+        const newScene = new Scene(workspace!, summary, time, weather, tone, value);
+        props.setScene(newScene);
+        return newScene;
     }
 
     const onClickAdd = (type: StoryElementEnum) => {
@@ -62,15 +53,20 @@ function SceneEditor(props: {sceneJson?: string, saveScene: (sceneJson: string) 
         setModal(true);
     }
 
-    const onSubmitNewElement = (newElement: StoryElementType) => {
-        NarrativeDataManager.getInstance().add(newElement);
+    const onSubmitNewElement = (newElement: StoryElementType): boolean => {
+        if (!props.story.canAddElement(newElement)) return false;
+        props.setStory(oldStory => oldStory.cloneAndAddElement(newElement))
         workspace?.refreshToolboxSelection();
+        return true;
     }
 
-    useEffect(() => initBlocks(), []);
+    const handleBlur = () => {
+        handleSave();
+    }
+
     useEffect(() => {
-        if (workspace) populateCustomToolbox(workspace, onClickAdd);
-    }, [workspace]);
+        if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
+    }, [props.story, workspace]);
 
     return(
         <Col>
@@ -79,32 +75,39 @@ function SceneEditor(props: {sceneJson?: string, saveScene: (sceneJson: string) 
                     modal={modal}
                     setModal={setModal}
                     type={modalType}
-                    onSubmit={onSubmitNewElement}
-                    />
+                    onSubmit={onSubmitNewElement} />
             }
             <Row>
                 <Col>
                     <BlocklyCanvas 
-                        blocklyRef={blocklyRef} />
+                        blocklyRef={blocklyRef}
+                        onBlur={handleBlur} />
                 </Col>
                 <Col>
-                    <Card style={{height:"75%"}}>
-                        <SceneDetails 
-                            sceneDescription={sceneDescription} />
-                    </Card>
-                    <Card style={{height:"25%"}}>
-                        <PromptElements
-                            elements={promptElements}
-                            workspace={workspace} />
-                    </Card>
+                <Card>
+                    <Card.Body style={{height:"80vh"}}>
+                        <Card style={{height:"66%"}}>
+                            <SceneDetails 
+                                summary={summary}
+                                setSummary={setSummary}
+                                time={time}
+                                setTime={setTime}
+                                weather={weather}
+                                setWeather={setWeather}
+                                tone={tone}
+                                setTone={setTone}
+                                value={value}
+                                setValue={setValue}
+                                onBlur={handleBlur} />
+                        </Card>
+                        <Card style={{height:"33%"}}>
+                            <PromptElements
+                                elements={promptElements}
+                                workspace={workspace} />
+                        </Card>
+                    </Card.Body>
+                </Card>
                 </Col>
-            </Row>
-            <Row>
-                <Button onClick={() => handleSave()}>SALVA</Button>
-                <Form.Control
-                    type="file"
-                    accept="application/json"
-                    onChange={e => handleLoad((e.target as HTMLInputElement).files![0])} />
             </Row>
         </Col>
     );

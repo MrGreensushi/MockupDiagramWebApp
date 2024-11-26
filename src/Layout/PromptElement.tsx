@@ -16,6 +16,7 @@ type TextElement = {
 type ListElement = {
     id: string,
     type: "ListElement",
+    outputText?: "",
     elements: PromptElementType[]
 }
 
@@ -23,6 +24,7 @@ type PromptElementType = SceneElement | TextElement | ListElement;
 
 function PromptElement(props: {element: PromptElementType, setText?: (id: string, value: string) => void, noTrailingSpace?: boolean}) {
     const [focus, setFocus] = useState(false);
+    
     const maybeSpace = props.noTrailingSpace ? "" : " "; 
     switch (props.element.type) {
         case "ListElement":
@@ -70,7 +72,9 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
             );
         
         case "TextInput":
-            // Create a hidden <Form.Control> element, populate it with text and measure width, then apply to actual <Form.Control>
+            // Create a hidden <Form.Control> element,
+            // populate it with text and measure width,
+            // then apply to actual <Form.Control>
             const utility = document.createElement("Form.Control");
             utility.style.visibility = 'hidden';
             utility.textContent = props.element.outputText;
@@ -82,15 +86,24 @@ function PromptElement(props: {element: PromptElementType, setText?: (id: string
                 <Form
                     style={{display:"inline"}}
                     onSubmit={(e) => {e.preventDefault(); setFocus(false);}} >
-                    <Form.Control
-                        type="text"
-                        defaultValue={props.element.outputText}
-                        onClick={() => setFocus(true)}
-                        onBlur={() => setFocus(false)}
-                        onChange={(e) => props.setText!(props.element.id, e.target.value)}
-                        readOnly={!focus}
-                        plaintext={true}
-                        style={{display:"inline", width:computedWidth, minWidth:"2em", padding:"0"}}/>
+                    {focus ? 
+                        <Form.Control
+                            type="text"
+                            defaultValue={props.element.outputText}
+                            onBlur={() => setFocus(false)}
+                            onChange={(e) => props.setText!(props.element.id, e.target.value)}
+                            readOnly={false}
+                            plaintext={false}
+                            style={{display:"inline", width:computedWidth, minWidth:"2em", padding:"0"}}/>
+                    :
+                        <Form.Control
+                            type="text"
+                            value={props.element.outputText}
+                            onClick={() => setFocus(true)}
+                            readOnly={true}
+                            plaintext={true}
+                            style={{display:"inline", width:computedWidth, minWidth:"2em", padding:"0"}}/>
+                    }
                     {maybeSpace}
                 </Form>
             );
