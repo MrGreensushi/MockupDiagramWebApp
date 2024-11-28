@@ -9,26 +9,26 @@ function StoryElementInputForm(props: {
 }) {
     const commonFields = (
         <>
-            <InputGroup>
+            <InputGroup className="mb-2">
                 <InputGroup.Text>Nome:</InputGroup.Text>
                 <Form.Control
                     value={props.element.name}
-                    onChange={e => props.setElement({...props.element, name: e.target.value})}
+                    onChange={e => props.setElement({...props.element, name: e.target.value} as typeof props.element)}
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
             </InputGroup>
-            <InputGroup>
+            <InputGroup className="mb-2">
                 <InputGroup.Text>Variabile:</InputGroup.Text>
-                <Form.Switch value={props.element.isVariable? 1 : 0} onChange={e => props.setElement({...props.element, isVariable: !!e.target.value})} />
+                <Form.Switch value={props.element.isVariable? 1 : 0} onChange={e => props.setElement({...props.element, isVariable: !!e.target.value}  as typeof props.element)} />
             </InputGroup>
         </>
     );
     const commonNotes = (
-        <InputGroup>
+        <InputGroup className="mb-2">
             <InputGroup.Text>Note:</InputGroup.Text>
             <Form.Control
                 value={props.element.notes}
-                onChange={e => props.setElement({...props.element, notes: e.target.value})} />
+                onChange={e => props.setElement({...props.element, notes: e.target.value} as typeof props.element)} />
         </InputGroup>
     );
     switch (props.type) {
@@ -37,17 +37,17 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup>
+                    <InputGroup className="mb-2">
                         <InputGroup.Text>Bio:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as CharacterElement).bio}
-                            onChange={e => props.setElement({...props.element, bio: e.target.value})} />
+                            onChange={e => props.setElement({...props.element, bio: e.target.value} as typeof props.element)} />
                     </InputGroup>
-                    <InputGroup>
+                    <InputGroup className="mb-2">
                         <InputGroup.Text>Obiettivo:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as CharacterElement).objective}
-                            onChange={e => props.setElement({...props.element, objective: e.target.value})} />
+                            onChange={e => props.setElement({...props.element, objective: e.target.value} as typeof props.element)} />
                     </InputGroup>
                     <hr />
                     {commonNotes}
@@ -58,11 +58,11 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup>
+                    <InputGroup className="mb-2">
                         <InputGroup.Text>Funzione:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as ObjectElement).use}
-                            onChange={e => props.setElement({...props.element, use: e.target.value})} />
+                            onChange={e => props.setElement({...props.element, use: e.target.value} as ObjectElement)} />
                     </InputGroup>
                     <hr />
                     {commonNotes}
@@ -73,11 +73,11 @@ function StoryElementInputForm(props: {
                 <>
                     {commonFields}
                     <hr />
-                    <InputGroup>
+                    <InputGroup className="mb-2">
                         <InputGroup.Text>Scopo:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as LocationElement).purpose}
-                            onChange={e => props.setElement({...props.element, purpose: e.target.value})} />
+                            onChange={e => props.setElement({...props.element, purpose: e.target.value} as typeof props.element)} />
                     </InputGroup>
                     <hr />
                     {commonNotes}

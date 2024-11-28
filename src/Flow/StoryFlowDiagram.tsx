@@ -10,7 +10,7 @@ import SceneNode, { SceneNodeObject } from "../Nodes/SceneNode.tsx";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 
-function NarrativeFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>}) {
+function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>}) {
   const [nodes, setNodes] = useState<Node[]>(props.story.flow.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(props.story.flow.edges ?? []);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
@@ -26,8 +26,6 @@ function NarrativeFlowDiagram (props: {story: Story, setStory: React.Dispatch<Re
     setNodes(propsFlow.nodes);
     setEdges(propsFlow.edges)
   }, [propsFlow]);
-
-  console.log(nodes);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
@@ -205,4 +203,4 @@ function NarrativeFlowDiagram (props: {story: Story, setStory: React.Dispatch<Re
   );
 };
 
-export default NarrativeFlowDiagram;
+export default StoryFlowDiagram;

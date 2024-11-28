@@ -6,7 +6,7 @@ import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
 import PromptElements from "./PromptElements.tsx";
 import SceneDetails from "./SceneDetails.tsx";
-import AddElementModal from "./AddElementModal.tsx";
+import ElementModal from "./AddElementModal.tsx";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import { PromptElementType } from "./PromptElement.tsx";
 import Scene from "../StoryElements/Scene.ts";
@@ -55,7 +55,7 @@ function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetSta
 
     const onSubmitNewElement = (newElement: StoryElementType): boolean => {
         if (!props.story.canAddElement(newElement)) return false;
-        props.setStory(oldStory => oldStory.cloneAndAddElement(newElement))
+        props.setStory(story => story.cloneAndAddElement(newElement))
         workspace?.refreshToolboxSelection();
         return true;
     }
@@ -71,10 +71,11 @@ function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetSta
     return(
         <Col>
             {modal &&
-                <AddElementModal 
+                <ElementModal 
                     modal={modal}
                     setModal={setModal}
-                    type={modalType}
+                    modalAction="add"
+                    elementType={modalType}
                     onSubmit={onSubmitNewElement} />
             }
             <Row>

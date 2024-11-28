@@ -1,68 +1,108 @@
-import { Tabs, Tab, Button } from "react-bootstrap";
-import StoryElementComponent from "./StoryElement.tsx";
-import { useEffect, useState } from "react";
+import { Tabs, Tab, Button, Col, ListGroup } from "react-bootstrap";
+import StoryElementComponent from "./StoryElementComponent.tsx";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
-import AddElementModal from "./AddElementModal.tsx";
+import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
 const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>}) => {
   const [key, setKey] = useState(StoryElementEnum.character);
-  const [elements, setElements] = useState(new Array<StoryElementType>());
+  const [elements, setElements] = useState(new Map<string, StoryElementType>());
+  const [selectedElement, setSelectedElement] = useState<StoryElementType>();
+  const [selectedElementId, setSelectedElementId] = useState<string>();
   
-  const [characterModal, setCharacterModal] = useState(false);
-  const [objectModal, setObjectModal] = useState(false);
-  const [locationModal, setLocationModal] = useState(false);
-  
-  const onSubmitNewElement = (newElement: StoryElementType) => {
-    if (!props.story.canAddElement(newElement)) return false;
-    props.setStory(oldStory => oldStory.cloneAndAddElement(newElement));
-    return true;
+  const [modal, setModal] = useState(false);
+  const [modalAction, setModalAction] = useState<"add" | "edit">("add");
+
+  const onSelectElement = (id: string, element: StoryElementType) => {
+    setSelectedElementId(id);
+    setSelectedElement(element);
   }
 
+  const onDeselectElement = () => {
+    setSelectedElementId(undefined);
+    setSelectedElement(undefined);
+  }
+
+  const onAddButtonClicked = () => {
+    setModalAction("add");
+    setModal(true);
+    setSelectedElementId(undefined);
+    setSelectedElement(undefined);
+  }
+
+  const onElementEditButtonClicked = (id: string, element: StoryElementType) => {
+    onSelectElement(id, element)
+    setModalAction("edit");
+    setModal(true);
+  }
+
+  const onElementDeleteButtonClicked = (id: string) => {
+    props.setStory(story => story.cloneAndDeleteElement(id));
+    onDeselectElement();
+  }
+
+  const onSubmitNewElement = useCallback((newElement: StoryElementType) => {
+    if (!props.story.canAddElement(newElement)) return false;
+    props.setStory(story => story.cloneAndAddElement(newElement, key));
+    onDeselectElement();
+    return true;
+  }, [key]);
+
+  const onEditElement = useCallback((editedElement: StoryElementType) => {
+    if (selectedElementId) {
+      props.setStory(story => story.cloneAndSetElement(selectedElementId, editedElement, key));
+      onDeselectElement();
+      return true;
+    }
+    onDeselectElement();
+    return false;
+  }, [selectedElementId, key]);
+
+  const dynamicElementModal = useMemo(() => (
+    <ElementModal
+      modal = {modal}
+      setModal = {setModal}
+      modalAction = {modalAction}
+      elementType = {key}
+      initialElement = {selectedElement}
+      onSubmit = {modalAction === "add" ? onSubmitNewElement : onEditElement} />
+  ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
+  
   useEffect(() => 
-    setElements([...props.story.getTypeIteratorByEnum(key)])
-  , [key, props.story]);
+    setElements(props.story.getTypeMapByEnum(key))
+  , [key, props]);
 
   return (
     <>
+      {dynamicElementModal}
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
         className="mb-3" >
         <Tab eventKey={StoryElementEnum.character} title="Personaggi">
-          <Button onClick={() => setCharacterModal(true)}>Aggiungi Personaggio</Button>
-          <AddElementModal
-            modal={characterModal}
-            setModal={setCharacterModal}
-            type={StoryElementEnum.character}
-            onSubmit={onSubmitNewElement} />
+          <Button onClick={onAddButtonClicked}>Aggiungi Personaggio</Button>
         </Tab>
         <Tab eventKey={StoryElementEnum.object} title="Oggetti">
-          <Button onClick={() => setObjectModal(true)}>Aggiungi Oggetto</Button>
-          <AddElementModal
-            modal={objectModal}
-            setModal={setObjectModal}
-            type={StoryElementEnum.object}
-            onSubmit={onSubmitNewElement} />
+          <Button onClick={onAddButtonClicked}>Aggiungi Oggetto</Button>
         </Tab>
         <Tab eventKey={StoryElementEnum.location} title="Luoghi">
-          <Button onClick={() => setLocationModal(true)}>Aggiungi Luogo</Button>
-          <AddElementModal
-            modal = {locationModal}
-            setModal = {setLocationModal}
-            type = {StoryElementEnum.location}
-            onSubmit = {onSubmitNewElement} />
+          <Button onClick={onAddButtonClicked}>Aggiungi Luogo</Button>
         </Tab>
       </Tabs>
-      <div style={{paddingBottom:"1rem"}}></div>
-      {elements.map((element, idx) => (
-        <StoryElementComponent
-          element={element}
-          additionalName="Tab"
-          key={idx}
-        />
-      ))}
+      <ListGroup variant="flush">
+        {[...elements.keys()].map((id, idx) => (
+          <ListGroup.Item key={idx}>
+            <StoryElementComponent
+              element={elements.get(id)!}
+              elementType={key}
+              onEditButtonClick={() => onElementEditButtonClicked(id, elements.get(id)!)}
+              onDeleteButtonClick={() => onElementDeleteButtonClicked(id)} />
+          </ListGroup.Item>
+          ))
+        }
+      </ListGroup>
     </>
   );
 };

@@ -27,6 +27,13 @@ class StoryElement {
     compare(other: StoryElement) {
         return this.name.localeCompare(other.name);
     }
+
+    equals(other: StoryElement) {
+        return (
+            this.name === other.name &&
+            this.notes === other.notes &&
+            this.isVariable === other.isVariable);
+    }
 }
 
 class CharacterElement extends StoryElement {

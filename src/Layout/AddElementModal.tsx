@@ -1,37 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Button, Form, Modal } from "react-bootstrap";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
 import StoryElementInputForm from "./StoryElementInputForm.tsx";
 
-function AddElementModal(props: {
+function ElementModal(props: {
     modal: boolean,
     setModal: React.Dispatch<React.SetStateAction<boolean>>,
-    type: StoryElementEnum
-    onSubmit: (newElement: StoryElementType) => boolean
+    modalAction: "add" | "edit",
+    elementType: StoryElementEnum,
+    initialElement?: StoryElementType,
+    onSubmit: (element: StoryElementType) => boolean
 }) {
-    
-    let initElement: StoryElementType;
+    let blankElement: StoryElementType;
     let typeString: string;
+    let actionString: string;
+    let buttonString: string;
 
-    switch (props.type) {
+    switch (props.elementType) {
         case StoryElementEnum.character:
-            initElement = new CharacterElement(false, "Nuovo Personaggio");
+            blankElement = new CharacterElement(false, "Nuovo Personaggio");
             typeString = "personaggio";
         break;
         case StoryElementEnum.object:
-            initElement = new ObjectElement(false, "Nuovo Oggetto");
+            blankElement = new ObjectElement(false, "Nuovo Oggetto");
             typeString = "oggetto";
         break;
         case StoryElementEnum.location:
-            initElement = new LocationElement(false, "Nuovo Luogo");
+            blankElement = new LocationElement(false, "Nuovo Luogo");
             typeString = "luogo";
         break;
         default:
-            throw new TypeError(props.type + " is not a valid type");
+            throw new TypeError(props.elementType + " is not a valid type");
     }
 
-    const title = "Aggiungi un nuovo " + typeString;
+    switch (props.modalAction) {
+        case "add":
+            actionString = "Aggiungi un nuovo";
+            buttonString = "Aggiungi";
+        break;
+        case "edit":
+            actionString = "Modifica";
+            buttonString = "Modifica";
+        break;
+    }
+
+    const title = `${actionString} ${typeString}`;
+
+    const initElement = props.initialElement ?? blankElement;
 
     const [element, setElement] = useState(initElement);
     const [alert, setAlert] = useState(false);
@@ -45,52 +61,57 @@ function AddElementModal(props: {
     }
 
     const onConfirm = () => {
-        const errorMessage = checkElementInvalid();
+        const errorMessage = checkElementInvalid(element);
         if (errorMessage) {
             setAlertText(errorMessage);
             setAlert(true);
-        } else {
-            if (props.onSubmit(element)) {
-                handleModalClose();
-            } else {
-                setAlertText(`Un ${typeString} con questo nome esiste già.`);
-                setAlert(true);
-            }
+            return;
         }
+
+        if (props.onSubmit(element)) {
+            handleModalClose();
+            return;
+        }
+
+        setAlertText(`Un ${typeString} con questo nome esiste già.`);
+        setAlert(true);
     }
 
-    const checkElementInvalid = () => {
+    const checkElementInvalid = (element: StoryElementType) => {
         if (!element) throw new Error("Element is undefined");
         if (!element.name || element.name === "") return "Il nome non può essere vuoto";
         return;
     }
 
+    useEffect(() => setElement(props.initialElement ?? blankElement), [props.initialElement, props.elementType]);
+    
     return (
         <Modal show={props.modal} onHide={handleModalClose}>
-            <Form onSubmit={(e) => {e.preventDefault(); onConfirm()}}>
+            <Form onSubmit={e => {e.preventDefault(); onConfirm()}}>
                 <Modal.Header closeButton>
                     <Modal.Title>{title}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <StoryElementInputForm
-                        type={props.type}
+                        type={props.elementType}
                         element={element}
                         setElement={setElement} />
                         {alert && (
                             <Alert
-                            variant={"danger"}
-                            dismissible
-                            onClose={() => setAlert(false)} >
+                                className="mt-3"
+                                variant={"danger"}
+                                dismissible
+                                onClose={() => setAlert(false)} >
                             {alertText}
                         </Alert>
                         )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={handleModalClose}>
+                    <Button variant="secondary" type="reset" onClick={handleModalClose}>
                         Annulla
                     </Button>
-                    <Button variant="primary" type="submit" onClick={onConfirm}>
-                        Aggiungi
+                    <Button variant="primary" type="submit">
+                        {buttonString}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -98,4 +119,4 @@ function AddElementModal(props: {
     );
 }
 
-export default AddElementModal;
+export default ElementModal;
