@@ -110,7 +110,7 @@ function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.too
 
   const blockList: Blockly.utils.toolbox.FlyoutItemInfoArray = [customBlockData[typeKey].button];
 
-  [...story.getTypeIteratorByEnum(type)]
+  [...story.getTypeIterator(type)]
     .sort((e1, e2) => e1.name.localeCompare(e2.name))
     .forEach((element) => {
       blockList.push({

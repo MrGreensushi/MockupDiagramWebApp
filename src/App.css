@@ -47,6 +47,21 @@
   border: 1px solid #222; /* corrisponde a theme.nodeBorder */
 }
 
+.dynamic-text-field {
+  padding: 0;
+  border: 0;
+  text-align: center;
+  text-wrap: pretty;
+  text-overflow: ellipsis;
+  flex-wrap: nowrap;
+}
+
+.blabla {
+background: #ffecd7; color: #b05e00;
+background: #e1f7ff; color: #003468;
+background: #dcffdc; color: #004e03;
+}
+
 .scene-node.selected {
   border-color: #ff0072; /* corrisponde a theme.primary */
 }

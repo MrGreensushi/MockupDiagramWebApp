@@ -6,7 +6,8 @@ type SerializedStory = {
     characters: CharacterElement[],
     objects: ObjectElement[],
     locations: LocationElement[],
-    flow: ReactFlowJsonObject
+    flow: ReactFlowJsonObject,
+    title: string
 }
 
 class Story {
@@ -37,24 +38,32 @@ class Story {
         return new Story([...this.characters.values()], [...this.objects.values()], [...this.locations.values()], this.flow, this.title); 
     }
 
-    getByType(type: StoryElementEnum) {
-        return this.getTypeIteratorByEnum(type);
-    }
-
-    canAddElement(element: StoryElementType, type?: StoryElementEnum): boolean {
-        const map = this.getTypeMap(element, type);
+    canAddElement(element: StoryElementType, type: StoryElementEnum): boolean {
+        const map = this.getTypeMap(type);
         return ![...map.values()].some(el => el.name === element.name);
     }
 
-    addElement(element: StoryElementType, type?: StoryElementEnum) {
-        if (this.canAddElement(element, type)) {
-            const map = this.getTypeMap(element, type);
-            map.set(uuidv4(), element);
+    addElement(element: StoryElementType, type: StoryElementEnum) {
+        if (!this.canAddElement(element, type)) return false;
+        const map = this.getTypeMap(type);
+        switch (type) {
+            case StoryElementEnum.character:
+                const char = element as CharacterElement;
+                map.set(uuidv4(), new CharacterElement(char.isVariable, char.name, char.bio, char.objective, char.notes));
+            break;
+            case StoryElementEnum.object:
+                const obj = element as ObjectElement;
+                map.set(uuidv4(), new ObjectElement(obj.isVariable, obj.name, obj.use, obj.notes));
+            break;
+            case StoryElementEnum.location:
+                const loc = element as LocationElement;
+                map.set(uuidv4(), new LocationElement(loc.isVariable, loc.name, loc.purpose, loc.notes));
+            break;
         }
         return true;
     }
 
-    cloneAndAddElement(element: StoryElementType, type?: StoryElementEnum): Story {
+    cloneAndAddElement(element: StoryElementType, type: StoryElementEnum): Story {
         this.addElement(element, type);
         return this.clone();
     }
@@ -64,7 +73,7 @@ class Story {
         return this.clone();
     }
 
-    cloneAndSetElement(id: string, element: StoryElementType, type?: StoryElementEnum): Story {
+    cloneAndSetElement(id: string, element: StoryElementType, type: StoryElementEnum): Story {
         this.setElement(id, element, type);
         return this.clone();
     }
@@ -79,8 +88,8 @@ class Story {
         return this.clone();
     }
 
-    setElement(id: string, element: StoryElementType, type?: StoryElementEnum) {
-        const iter = this.getTypeMap(element, type);
+    setElement(id: string, element: StoryElementType, type: StoryElementEnum) {
+        const iter = this.getTypeMap(type);
         iter.set(id, element);
     }
 
@@ -90,23 +99,15 @@ class Story {
         if (this.locations.delete(id)) return;
     }
 
-    getTypeMap(element: StoryElementType, type?: StoryElementEnum): Map<string, StoryElementType> {
-        if (type) {
-            return this.getTypeMapByEnum(type);
-        }
-        switch (true) {
-            case element instanceof CharacterElement:
-                return this.characters;
-            case element instanceof ObjectElement:
-                return this.objects;
-            case element instanceof LocationElement:
-                return this.locations;
-            default:
-                return this.characters;
-        }
+    getAll(): [StoryElementType, StoryElementEnum][] {
+        const entries = new Array<[StoryElementType, StoryElementEnum]>().concat(
+            [...this.characters.values()].map(v => [v, StoryElementEnum.character]),
+            [...this.objects.values()].map(v => [v, StoryElementEnum.object]),
+            [...this.locations.values()].map(v => [v, StoryElementEnum.location]));
+        return entries;
     }
-
-    getTypeMapByEnum(type: StoryElementEnum): Map<string, StoryElementType> {
+  
+    getTypeMap(type: StoryElementEnum): Map<string, StoryElementType> {
         switch (type) {
             case StoryElementEnum.character:
                 return this.characters;
@@ -117,18 +118,18 @@ class Story {
         }
     }
 
-    getTypeIterator(element: StoryElementType): Iterator<StoryElementType> {
-        return this.getTypeMap(element).values();
+    getTypeIterator(type: StoryElementEnum): MapIterator<StoryElementType> {
+        return this.getTypeMap(type).values();
     }
 
-    getTypeIteratorByEnum(type: StoryElementEnum): MapIterator<StoryElementType> {
-        return this.getTypeMapByEnum(type).values();
-    }
-
-    search(element: StoryElementType) {
-        const iter = this.getTypeMap(element);
-        for (const [key, value] of iter.entries()) {
-            if (value.equals(element)) return key;
+    search(element: StoryElementType, type?: StoryElementEnum) {
+        let iter: Map<string, StoryElementType>;
+        const ltype = type ? [type] : [StoryElementEnum.character, StoryElementEnum.object, StoryElementEnum.location];
+        for (const type of ltype) {
+            iter = this.getTypeMap(type);
+            for (const [key, value] of iter.entries()) {
+                if (value.equals(element)) return key;
+            }
         }
         return null;
     }
@@ -138,12 +139,13 @@ class Story {
             characters: Array.from(this.characters.values()),
             objects: Array.from(this.objects.values()),
             locations: Array.from(this.locations.values()),
-            flow: this.flow
+            flow: this.flow,
+            title: this.title
         }
     }
 
     static deserialize(obj: SerializedStory) {
-        return new Story(obj.characters, obj.objects, obj.locations, obj.flow);
+        return new Story(obj.characters, obj.objects, obj.locations, obj.flow, obj.title);
     }
 
     toJSON() {

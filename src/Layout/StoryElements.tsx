@@ -44,7 +44,7 @@ const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetS
   }
 
   const onSubmitNewElement = useCallback((newElement: StoryElementType) => {
-    if (!props.story.canAddElement(newElement)) return false;
+    if (!props.story.canAddElement(newElement, key)) return false;
     props.setStory(story => story.cloneAndAddElement(newElement, key));
     onDeselectElement();
     return true;
@@ -71,7 +71,7 @@ const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetS
   ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
   
   useEffect(() => 
-    setElements(props.story.getTypeMapByEnum(key))
+    setElements(props.story.getTypeMap(key))
   , [key, props]);
 
   return (

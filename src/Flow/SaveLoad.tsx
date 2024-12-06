@@ -25,9 +25,11 @@ function SaveLoadManager (props: {
       serializedStory.characters,
       serializedStory.objects,
       serializedStory.locations,
-      {nodes: nodes, edges: edges, viewport: rfInstance.getViewport()});
+      {nodes: nodes, edges: edges, viewport: rfInstance.getViewport()},
+      serializedStory.title
+    );
     const jsonString = newStory.toJSON();
-    saveToDisk(jsonString, "Flow.story", "application/json");
+    saveToDisk(jsonString, `${newStory.title}.story`, "application/json");
   }, [rfInstance, story, edges, nodes]);
 
   const onLoad = useCallback(async (file?: File) => {

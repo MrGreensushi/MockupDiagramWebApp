@@ -6,7 +6,7 @@ import "@xyflow/react/dist/style.css";
 import SaveLoadManager from "./SaveLoad.tsx";
 import SideTab from "../Layout/SideTab.tsx";
 import SceneEditor from "../Layout/SceneEditor.tsx";
-import SceneNode, { SceneNodeObject } from "../Nodes/SceneNode.tsx";
+import SceneNode, { SceneNodeObject } from "./SceneNode.tsx";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 

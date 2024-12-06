@@ -13,13 +13,13 @@ function StoryElementInputForm(props: {
                 <InputGroup.Text>Nome:</InputGroup.Text>
                 <Form.Control
                     value={props.element.name}
-                    onChange={e => props.setElement({...props.element, name: e.target.value} as typeof props.element)}
+                    onChange={e => props.setElement({...props.element, name: e.target.value})}
                     isInvalid={props.element.name.length === 0}
                     autoFocus />
             </InputGroup>
             <InputGroup className="mb-2">
                 <InputGroup.Text>Variabile:</InputGroup.Text>
-                <Form.Switch value={props.element.isVariable? 1 : 0} onChange={e => props.setElement({...props.element, isVariable: !!e.target.value}  as typeof props.element)} />
+                <Form.Switch value={props.element.isVariable? 1 : 0} onChange={e => props.setElement({...props.element, isVariable: !!e.target.value})} />
             </InputGroup>
         </>
     );
@@ -28,7 +28,7 @@ function StoryElementInputForm(props: {
             <InputGroup.Text>Note:</InputGroup.Text>
             <Form.Control
                 value={props.element.notes}
-                onChange={e => props.setElement({...props.element, notes: e.target.value} as typeof props.element)} />
+                onChange={e => props.setElement({...props.element, notes: e.target.value})} />
         </InputGroup>
     );
     switch (props.type) {
@@ -41,13 +41,13 @@ function StoryElementInputForm(props: {
                         <InputGroup.Text>Bio:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as CharacterElement).bio}
-                            onChange={e => props.setElement({...props.element, bio: e.target.value} as typeof props.element)} />
+                            onChange={e => props.setElement({...props.element, bio: e.target.value})} />
                     </InputGroup>
                     <InputGroup className="mb-2">
                         <InputGroup.Text>Obiettivo:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as CharacterElement).objective}
-                            onChange={e => props.setElement({...props.element, objective: e.target.value} as typeof props.element)} />
+                            onChange={e => props.setElement({...props.element, objective: e.target.value})} />
                     </InputGroup>
                     <hr />
                     {commonNotes}
@@ -62,7 +62,7 @@ function StoryElementInputForm(props: {
                         <InputGroup.Text>Funzione:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as ObjectElement).use}
-                            onChange={e => props.setElement({...props.element, use: e.target.value} as ObjectElement)} />
+                            onChange={e => props.setElement({...props.element, use: e.target.value})} />
                     </InputGroup>
                     <hr />
                     {commonNotes}
@@ -77,7 +77,7 @@ function StoryElementInputForm(props: {
                         <InputGroup.Text>Scopo:</InputGroup.Text>
                         <Form.Control
                             value={(props.element as LocationElement).purpose}
-                            onChange={e => props.setElement({...props.element, purpose: e.target.value} as typeof props.element)} />
+                            onChange={e => props.setElement({...props.element, purpose: e.target.value})} />
                     </InputGroup>
                     <hr />
                     {commonNotes}

@@ -7,18 +7,25 @@ import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceC
 import PromptElements from "./PromptElements.tsx";
 import SceneDetails from "./SceneDetails.tsx";
 import ElementModal from "./AddElementModal.tsx";
-import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { CharacterElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import { PromptElementType } from "./PromptElement.tsx";
 import Scene from "../StoryElements/Scene.ts";
 import Story from "../StoryElements/Story.ts";
+import PromptArea from "./PromptArea.tsx";
 
-function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>, scene: Scene, setScene: (newScene: Scene) => void}) {
+function SceneEditor(props: {
+    story: Story,
+    setStory: React.Dispatch<React.SetStateAction<Story>>,
+    scene: Scene,
+    setScene: (newScene: Scene) => void
+}) {
     const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
     const [modal, setModal] = useState(false);
     const [modalType, setModalType] = useState(StoryElementEnum.character);
     
     const blocklyRef = useRef(null);
     
+    const [title, setTitle] = useState(props.scene.details.title ?? "");
     const [summary, setSummary] = useState(props.scene.details.summary ?? "");
     const [time, setTime] = useState(props.scene.details.time ?? "");
     const [weather, setWeather] = useState(props.scene.details.weather ?? "");
@@ -53,9 +60,9 @@ function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetSta
         setModal(true);
     }
 
-    const onSubmitNewElement = (newElement: StoryElementType): boolean => {
-        if (!props.story.canAddElement(newElement)) return false;
-        props.setStory(story => story.cloneAndAddElement(newElement))
+    const onSubmitNewElement = (newElement: StoryElementType, type: StoryElementEnum): boolean => {
+        if (!props.story.canAddElement(newElement, type)) return false;
+        props.setStory(story => story.cloneAndAddElement(newElement, type))
         workspace?.refreshToolboxSelection();
         return true;
     }
@@ -70,14 +77,12 @@ function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetSta
 
     return(
         <Col>
-            {modal &&
-                <ElementModal 
-                    modal={modal}
-                    setModal={setModal}
-                    modalAction="add"
-                    elementType={modalType}
-                    onSubmit={onSubmitNewElement} />
-            }
+            <ElementModal 
+                modal={modal}
+                setModal={setModal}
+                modalAction="add"
+                elementType={modalType}
+                onSubmit={element => onSubmitNewElement(element, modalType)} />
             <Row>
                 <Col>
                     <BlocklyCanvas 
@@ -85,29 +90,31 @@ function SceneEditor(props: {story: Story, setStory: React.Dispatch<React.SetSta
                         onBlur={handleBlur} />
                 </Col>
                 <Col>
-                <Card>
-                    <Card.Body style={{height:"80vh"}}>
-                        <Card style={{height:"66%"}}>
-                            <SceneDetails 
-                                summary={summary}
-                                setSummary={setSummary}
-                                time={time}
-                                setTime={setTime}
-                                weather={weather}
-                                setWeather={setWeather}
-                                tone={tone}
-                                setTone={setTone}
-                                value={value}
-                                setValue={setValue}
-                                onBlur={handleBlur} />
-                        </Card>
-                        <Card style={{height:"33%"}}>
-                            <PromptElements
-                                elements={promptElements}
-                                workspace={workspace} />
-                        </Card>
-                    </Card.Body>
-                </Card>
+                    <SceneDetails
+                        title={title}
+                        setTitle={setTitle}
+                        summary={summary}
+                        setSummary={setSummary}
+                        time={time}
+                        setTime={setTime}
+                        weather={weather}
+                        setWeather={setWeather}
+                        tone={tone}
+                        setTone={setTone}
+                        value={value}
+                        setValue={setValue}
+                        onBlur={handleBlur} />
+                    {/*<PromptElements
+                        elements={promptElements}
+                        workspace={workspace} />*/}
+                    <PromptArea 
+                        initialText={
+                            promptElements.map(e => {
+                                if (e.type === "SceneCharacterObject" || e.type === "SceneObjectObject" || e.type === "SceneLocationObject") return `@${e.outputText}`
+                                else return e.outputText ?? ""
+                            }).join(" ")
+                        }
+                        story={props.story} />
                 </Col>
             </Row>
         </Col>

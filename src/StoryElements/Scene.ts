@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core';
 
 type SceneDetails = {
+    title: string;
     summary: string;
     time: string;
     weather: string;
@@ -19,6 +20,7 @@ class Scene {
 
     constructor(
         workspace?: Blockly.Workspace | {[key: string]: any},
+        title?: string,
         summary?: string,
         time?: string,
         weather?: string,
@@ -30,6 +32,7 @@ class Scene {
         else
             this.workspace = workspace;
             this.details = {
+                title: title ?? "",
                 summary: summary ?? "",
                 time: time ?? "",
                 weather: weather ?? "",
@@ -40,6 +43,7 @@ class Scene {
 
     copy(): Scene {
         return new Scene(this.workspace,
+            this.details.title,
             this.details.summary,
             this.details.time,
             this.details.weather,
@@ -51,6 +55,7 @@ class Scene {
         return {
             workspace: this.workspace,
             details: {
+                title: this.details.title,
                 summary: this.details.summary,
                 time: this.details.time,
                 weather: this.details.weather,
@@ -63,6 +68,7 @@ class Scene {
     static deserialize(obj: SerializedScene) {
         return new Scene(
             obj.workspace,
+            obj.details.title,
             obj.details.summary,
             obj.details.time,
             obj.details.weather,

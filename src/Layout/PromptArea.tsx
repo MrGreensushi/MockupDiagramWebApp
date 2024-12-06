@@ -1,0 +1,178 @@
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { RichTextarea, RichTextareaHandle } from "rich-textarea"
+import PromptAreaMenu from "./PromptAreaMenu.tsx";
+import Story from "../StoryElements/Story.ts";
+import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+
+type Position = {
+	top: number;
+	left: number;
+	caret: number;
+};
+
+const styles = [
+	{background: "#ffecd7", color: "#b05e00"},
+	{background: "#e1f7ff", color: "#003468"},
+	{background: "#dcffdc", color: "#004e03"}
+];
+
+const MENTION_REGEX = /\B@([\-+\w]*)$/;
+
+const MAX_LIST_LENGTH = 10;
+
+function PromptArea(props: { initialText?: string, story: Story }) {
+	const ref = useRef<RichTextareaHandle>(null);
+	const [text, setText] = useState(props.initialText ?? "");
+	const [pos, setPos] = useState<Position | null>(null);
+	const [index, setIndex] = useState<number>(0);
+
+	const targetText = pos ? text.slice(0, pos.caret) : text;
+	const match = pos && targetText.match(MENTION_REGEX);
+	const name = match?.[1] ?? "";
+	
+	const elements = useMemo(() => props.story.getAll(), [props.story]);
+	
+	const filtered = useMemo(() =>
+		elements
+			.filter(element =>
+				element[0].name.toLowerCase()
+					.startsWith(name.toLowerCase()))
+					.slice(0, MAX_LIST_LENGTH)
+			.map(element => element[0].name)
+		, [elements, name]);
+	const filteredMap = useMemo(() =>
+		elements
+			.filter(element =>
+				element[0].name.toLowerCase()
+					.startsWith(name.toLowerCase()))
+					.slice(0, MAX_LIST_LENGTH)
+		, [elements, name]);
+	
+	const highlight_all = useMemo(() => {
+		if (elements.length === 0) return /^$/;
+		else return new RegExp("(" + elements.map(element => `@${element[0].name}`).join("|") + ")", "g")
+	}, [elements]);
+	
+	const highlight_characters = useMemo(() => new RegExp(
+		`(^${elements.filter(element => element[1] === StoryElementEnum.character)
+			.map(element => `@${element[0].name}`)
+			.join("|")}$)`
+	), [elements])
+	const highlight_objects = useMemo(() => new RegExp(
+		`(^${elements.filter(element => element[1] === StoryElementEnum.object)
+			.map(element => `@${element[0].name}`)
+			.join("|")}$)`
+	), [elements])
+	const highlight_locations = useMemo(() => new RegExp(
+		`(^${elements.filter(element => element[1] === StoryElementEnum.location)
+			.map(element => `@${element[0].name}`)
+			.join("|")}$)`
+	), [elements])
+
+	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
+
+	const complete = (index: number) => {
+		if (!ref.current || !pos) return;
+		const selected = filtered[index];
+		ref.current.setRangeText(
+			`@${selected}`,
+			pos.caret - name.length - 1,
+			pos.caret,
+			"end");
+		setPos(null);
+		setIndex(0);
+	};
+
+	const renderer = (text: string): ReactNode => {
+		const split = elements.length > 0 ? text.split(highlight_all) : [text];
+		const finalArr = split
+			.reduce((acc, spl) => {
+				if (spl.match(highlight_all))
+					return acc.concat(spl);
+				else
+					return acc.concat(spl.split(/(\s)/g));
+			}, new Array<string>())
+			.filter(s => !s.match(/^$/));
+		return (finalArr?.map((word, idx) => {
+			if (word === " ") return " ";
+			if (word.startsWith("@")) {
+				if (filtered.length > 0) {
+					if (word.match(highlight_characters)) return (<span key={idx} style={{...styles[StoryElementEnum.character], borderRadius: "3px" }}>{word}</span>);
+					if (word.match(highlight_objects)) return (<span key={idx} style={{...styles[StoryElementEnum.object], borderRadius: "3px" }}>{word}</span>);
+					if (word.match(highlight_locations)) return (<span key={idx} style={{...styles[StoryElementEnum.location], borderRadius: "3px" }}>{word}</span>);
+				}
+				return (<span key={idx} style={{background: "#EEEEEE", color: "black", borderRadius: "3px" }}>{word}</span>);
+			}
+			return word;
+		}));
+	}
+	
+	return (
+		<>
+			<RichTextarea
+				ref={ref}
+				value={text}
+				style={{ width:"100%", height:"300px" }}
+				autoHeight
+				onChange={e => setText(e.target.value)}
+				onKeyDown={e => {
+					if (!pos || !filtered.length) return;
+					switch (e.code) {
+						case "ArrowUp":
+							e.preventDefault();
+							const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
+							setIndex(nextIndex);
+						break;
+						case "ArrowDown":
+							e.preventDefault();
+							const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
+							setIndex(prevIndex);
+						break;
+						case "Enter":
+						case "Tab":
+							e.preventDefault();
+							complete(index);
+						break;
+						case "Escape":
+							e.preventDefault();
+							setPos(null);
+							setIndex(0);
+						break;
+						default:
+							break;
+					}
+				}}
+				onSelectionChange={r => {
+					if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+						setPos({
+							top: r.top + r.height,
+							left: r.left,
+							caret: r.selectionStart
+						});
+						setIndex(0);
+					} else {
+						setPos(null);
+						setIndex(0);
+					}
+				}}>
+				{renderer}
+			</RichTextarea>
+			{pos &&
+				createPortal(
+					<PromptAreaMenu
+						top={pos.top}
+						left={pos.left}
+						elements={filteredMap}
+						noElements={elements.length === 0}
+						index={index}
+						setIndex={setIndex}
+						complete={complete}
+						styles={styles} />,
+					document.body)
+			}
+		</>
+	);
+}
+
+export default PromptArea;

@@ -1,5 +1,5 @@
 import React from "react";
-import { Col } from "react-bootstrap";
+import { Card, Col } from "react-bootstrap";
 import * as Blockly from "blockly/core"
 import { PromptElement, PromptElementType } from "./PromptElement.tsx";
 
@@ -9,11 +9,14 @@ function PromptElements(props: {elements: PromptElementType[], workspace?: Block
     }
 
     if (!props.elements || props.elements.length === 0) return(
-        <Col>
-            <h3>
-                Prompt Generato
-            </h3>
-        </Col>
+        <Card>
+            <Card.Header>
+                <h4>
+                    Prompt Generato
+                </h4>
+            </Card.Header>
+            <Card.Body style={{height: "100%"}}/>
+        </Card>
     );
 
     const workspace = props.workspace!;
@@ -55,17 +58,21 @@ function PromptElements(props: {elements: PromptElementType[], workspace?: Block
     }
 
     return(
-        <Col>
-            <h3>
-                Prompt Generato
-            </h3>
-            {processedList.map((e, idx) => 
-                <PromptElement
-                    element = {e}
-                    setText = {setText}
-                    key = {idx} />
-            )}
-        </Col>
+        <Card>
+            <Card.Header>
+                <h4>
+                    Prompt Generato
+                </h4>
+            </Card.Header>
+            <Card.Body>
+                {processedList.map((e, idx) => 
+                    <PromptElement
+                        element = {e}
+                        setText = {setText}
+                        key = {idx} />
+                )}
+            </Card.Body>
+        </Card>
     )
 }
 
