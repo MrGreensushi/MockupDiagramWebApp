@@ -8,7 +8,8 @@ import SideTab from "../Layout/SideTab.tsx";
 import SceneEditor from "../Layout/SceneEditor.tsx";
 import SceneNode, { SceneNodeObject } from "./SceneNode.tsx";
 import Story from "../StoryElements/Story.ts";
-import Scene from "../StoryElements/Scene.ts";
+import Scene, { SerializedScene } from "../StoryElements/Scene.ts";
+import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.SetStateAction<Story>>}) {
   const [nodes, setNodes] = useState<Node[]>(props.story.flow.nodes ?? []);
@@ -36,11 +37,8 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
   }, []);
   
   const onConnect = useCallback((connection: Connection) =>
-      setEdges((eds) =>
-        addEdge({ ...connection }, eds),
-      ),
-    [],
-  );
+    setEdges((eds) => addEdge({ ...connection }, eds),
+  ), []);
 
   const onNodeClick = useCallback((_, node: Node) => {
     setSelectedNodeId(node.id);  
@@ -64,11 +62,34 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
     });
   }, [rfInstance]);
 
-  const onLabelChanged = useCallback((id: string, newName: string) => {
+  const onSceneNameChanged = useCallback((id: string, newName: string) => {
     setNodes(nodes => nodes.map(
       node => {
         if (node.id === id) {
           return {...node, data: {...node.data, label: newName}}
+        } else {
+          return node
+        }
+      }
+    ))}, []);
+  
+  const onSceneTitleChanged = useCallback((id: string, newTitle: string) => {
+    setNodes(nodes => nodes.map(
+      node => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              scene: {
+                ...(node.data.scene as Scene),
+                details: {
+                  ...(node.data.scene as Scene).details,
+                  title: newTitle
+                }
+              }
+            }
+          }
         } else {
           return node
         }
@@ -107,24 +128,26 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
         scene: new Scene(undefined),
         onClickEdit: onClickEdit,
         onClickDelete: onClickDelete,
-        onLabelChanged: onLabelChanged
+        onSceneNameChanged: onSceneNameChanged,
+        onSceneTitleChanged: onSceneTitleChanged
       }, 
       type: "sceneNode"
     };
     return obj;
-  }, [nodes.length, onClickDelete, onLabelChanged, rfInstance]);
+  }, [rfInstance, nodes.length, onClickDelete, onSceneNameChanged, onSceneTitleChanged]);
 
   const restoreFlow = useCallback(
     (flow: ReactFlowJsonObject) => {
-      try {
+      //try {
         const newNodes = [...flow.nodes].map(
           node => {
             return {...node, data: {
               ...node.data,
-              scene: Scene.fromJSON(node.data.scene as string),
+              scene: Scene.fromJSONObject(node.data.scene as SerializedScene),
               onClickEdit: onClickEdit,
               onClickDelete: onClickDelete,
-              onLabelChanged: onLabelChanged
+              onSceneNameChanged: onSceneNameChanged,
+              onSceneTitleChanged: onSceneTitleChanged
             }}
           }
         );
@@ -135,13 +158,13 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
             viewport: flow.viewport
           })
         );
-      } catch {
+      /*} catch {
         console.error(flow);
         setNodes([]);
         setEdges([]);
-      }
+      }*/
     },
-    [rfInstance, setNodes, setEdges, onClickDelete, onLabelChanged]
+    [rfInstance, setNodes, setEdges, onClickDelete, onSceneNameChanged, onSceneTitleChanged]
   );
 
   const addNode = useCallback(() => {
@@ -150,6 +173,31 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
   }, [createNewNode]);
   
   const nodeTypes = useMemo(() => ({sceneNode: SceneNode}), []);
+
+  const OffcanvasTitle = useMemo(() => {
+    const node = rfInstance?.getNode(selectedNodeId!);
+    const name = node ? node.data.label as string : "";
+    const title = node ? (node.data.scene as Scene)?.details.title : "";
+
+    return (
+      <Row>
+        <div style={{width: "50%"}}>
+          <DynamicTextField 
+            initialValue={name}
+            onSubmit={(name: string) => onSceneNameChanged(selectedNodeId!, name)}
+            baseProps={{size:"lg", placeholder:"Scena"}}/>
+        </div>
+        <div style={{width: "50%"}}>
+          <DynamicTextField 
+            initialValue={title}
+            onSubmit={(title: string) => onSceneTitleChanged(selectedNodeId!, title)}
+            baseProps={{size:"lg", placeholder:"Nessun Titolo"}}/>
+        </div>
+      </Row>
+    );
+  }, [rfInstance, selectedNodeId, props.story, onSceneTitleChanged, onSceneNameChanged, nodes])
+
+  useEffect(() => console.log(nodes), [nodes]);
 
   return (
     <Container fluid style={{ height: "90vh", padding: "1%" }}>
@@ -187,7 +235,7 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
           <Background />
         </ReactFlow>
         <SideTab 
-          title={rfInstance?.getNode(selectedNodeId!)?.data.label as string}
+          title={OffcanvasTitle}
           showSideTab={showSideTab}
           setShowSideTab={setShowSideTab} >
           {showSideTab &&

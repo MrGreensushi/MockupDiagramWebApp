@@ -2,25 +2,25 @@ import React, { useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import * as Blockly from "blockly/core"
 
-type SceneElement = {
+type ScenePromptElement = {
     id: string,
     type: "SceneCharacterObject" | "SceneObjectObject" | "SceneLocationObject",
     outputText: string
 };
-type TextElement = {
+type TextPromptElement = {
     id: string,
     type: "TextInput",
     outputText: string,
     setOutputText: (block: Blockly.Block, text: string) => void
 };
-type ListElement = {
+type ListPromptElement = {
     id: string,
     type: "ListElement",
     outputText?: "",
     elements: PromptElementType[]
 }
 
-type PromptElementType = SceneElement | TextElement | ListElement;
+type PromptElementType = ScenePromptElement | TextPromptElement | ListPromptElement;
 
 function PromptElement(props: {element: PromptElementType, setText?: (id: string, value: string) => void, noTrailingSpace?: boolean}) {
     const [focus, setFocus] = useState(false);

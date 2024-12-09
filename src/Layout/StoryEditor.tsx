@@ -21,7 +21,7 @@ function StoryEditor() {
                 initialValue={story.title}
                 onSubmit={handleSubmit}
                 baseProps={{size:"lg"}} />
-            <Row>
+            <Row style={{width: "100%"}}>
                 <Col xs={3}>
                 <StoryElements 
                     story={story}

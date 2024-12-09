@@ -13,11 +13,10 @@ function DynamicTextField(props: {
 	const [focus, setFocus] = useState(false);
 
 	const handleSubmit = () => {
-		if (props.isInvalid) {
-			if (!props.isInvalid(value)) {
-				props.onSubmit?.(value);
-				setFocus(false);
-			}
+		if ((props.isInvalid !== undefined && !props.isInvalid(value))
+			|| props.isInvalid === undefined) {
+			props.onSubmit?.(value);
+			setFocus(false);
 		}
 	}
 

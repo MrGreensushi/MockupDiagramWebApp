@@ -9,7 +9,8 @@ type SceneNodeProps = {
   scene?: Scene;
   onClickEdit: (scene: Scene | undefined, setScene: React.Dispatch<React.SetStateAction<Scene | undefined>>) => void;
   onClickDelete: (id: string) => void;
-  onLabelChanged: (id: string, name: string) => void
+  onSceneNameChanged: (id: string, name: string) => void
+  onSceneTitleChanged: (id: string, title: string) => void
 }
 
 type SceneNodeObject = {
@@ -32,33 +33,34 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
     props.data.onClickDelete(props.id);
   }
 
-  const handleSubmit = (label: string) => {
-    props.data.onLabelChanged(props.id, label);
+  const handleSubmitSceneName = (name: string) => {
+    props.data.onSceneNameChanged(props.id, name);
   }
 
-  const labelField = (
-    <Col>
-      <DynamicTextField 
-        initialValue={props.data.label}
-        focusOnDoubleClick={true}
-        onSubmit={handleSubmit}
-        isInvalid={label => label === ""}
-        baseProps={{
-          htmlSize: 10,
-          size: "sm" }}/>
-      <DynamicTextField
-        initialValue={props.data.scene?.details.title}
-        focusOnDoubleClick={true}
-        baseProps={{
-          htmlSize: 20,
-          size: "sm",
-          placeholder: "Nessun Titolo" }}/>
-    </Col>
-  );
+  const handleSubmitSceneTitle = (title: string) => {
+    props.data.onSceneTitleChanged(props.id, title);
+  }
 
   return (
     <div className={`scene-node ${props.selected ? "selected" : ""}`}>
-      {labelField}
+      <Col>
+        <DynamicTextField 
+          initialValue={props.data.label}
+          focusOnDoubleClick={true}
+          onSubmit={handleSubmitSceneName}
+          isInvalid={label => label === ""}
+          baseProps={{
+            htmlSize: 15,
+            size: "sm" }}/>
+        <DynamicTextField
+          initialValue={props.data.scene?.details.title}
+          focusOnDoubleClick={true}
+          onSubmit={handleSubmitSceneTitle}
+          baseProps={{
+            htmlSize: 15,
+            size: "sm",
+            placeholder: "Nessun Titolo" }}/>
+      </Col>
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
       <NodeToolbar>

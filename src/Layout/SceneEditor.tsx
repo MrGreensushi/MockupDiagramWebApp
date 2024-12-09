@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Card, Col, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
-import PromptElements from "./PromptElements.tsx";
 import SceneDetails from "./SceneDetails.tsx";
 import ElementModal from "./AddElementModal.tsx";
-import { CharacterElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import { PromptElementType } from "./PromptElement.tsx";
 import Scene from "../StoryElements/Scene.ts";
 import Story from "../StoryElements/Story.ts";
@@ -22,15 +21,15 @@ function SceneEditor(props: {
     const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
     const [modal, setModal] = useState(false);
     const [modalType, setModalType] = useState(StoryElementEnum.character);
-    
+
     const blocklyRef = useRef(null);
     
-    const [title, setTitle] = useState(props.scene.details.title ?? "");
-    const [summary, setSummary] = useState(props.scene.details.summary ?? "");
-    const [time, setTime] = useState(props.scene.details.time ?? "");
-    const [weather, setWeather] = useState(props.scene.details.weather ?? "");
-    const [tone, setTone] = useState(props.scene.details.tone ?? "");
-    const [value, setValue] = useState(props.scene.details.value ?? "");
+    const [title, setTitle] = useState(props.scene?.details.title ?? "");
+    const [summary, setSummary] = useState(props.scene?.details.summary ?? "");
+    const [time, setTime] = useState(props.scene?.details.time ?? "");
+    const [weather, setWeather] = useState(props.scene?.details.weather ?? "");
+    const [tone, setTone] = useState(props.scene?.details.tone ?? "");
+    const [value, setValue] = useState(props.scene?.details.value ?? "");
     
     const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
         let workspaceString = javascriptGenerator.workspaceToCode(workspace);
@@ -74,6 +73,15 @@ function SceneEditor(props: {
     useEffect(() => {
         if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
     }, [props.story, workspace]);
+
+    /*useEffect(() => {     //Necessita ulteriori approfondimenti
+        if (workspace) {
+            const newBlock = workspace.newBlock("SceneCharacterObject");
+            newBlock.setFieldValue('Ciaone', 'SceneObjectName');
+            newBlock.initSvg();
+            newBlock.render();
+        }
+    }, [text])*/
 
     return(
         <Col>

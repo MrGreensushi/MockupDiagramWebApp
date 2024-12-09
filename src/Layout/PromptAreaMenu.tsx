@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { StoryElementEnum, StoryElementEnumString, StoryElementType } from "../StoryElements/StoryElement.ts";
-import { Col, ListGroup } from "react-bootstrap";
+import { ListGroup } from "react-bootstrap";
 
 function PromptAreaMenu(props: {
   elements: [StoryElementType, StoryElementEnum][];
@@ -13,6 +13,7 @@ function PromptAreaMenu(props: {
 }) {
   return (
     <ListGroup
+      className="prompt-area"
       style={{
         position: "fixed",
         top: props.top,
@@ -56,6 +57,7 @@ function PromptAreaMenuElement(props: {
 }) {
   return (
     <ListGroup.Item
+      action
       className={props.className}
       style={{padding: "4px"}}
       onMouseEnter={e => {e.preventDefault(); props.onEnter?.()}}

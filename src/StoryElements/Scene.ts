@@ -90,6 +90,14 @@ class Scene {
         }
     }
 
+    static fromJSONObject(object: SerializedScene) {
+        try {
+            return this.deserialize(object);
+        } catch (ex) {
+            throw new Error("Failed to parse Serialized Scene Object: " + ex)
+        }
+    }
+
     setFromJSON(json: string, workspace: Blockly.Workspace) {
         const newScene = Scene.fromJSON(json);
         if (newScene.workspace) {
@@ -109,4 +117,4 @@ class Scene {
 }
 
 export default Scene;
-export {SceneDetails};
+export {SceneDetails, type SerializedScene};

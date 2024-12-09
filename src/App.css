@@ -37,8 +37,6 @@
   }
 }
 
-/* DecisionalNarrativeNode.css */
-
 .scene-node {
   padding: 10px 20px;
   border-radius: 5px;
@@ -56,36 +54,38 @@
   flex-wrap: nowrap;
 }
 
-.character-mention {
-  background: #ffecd7;
-  color: #b05e00;
-}
-.character-mention.selected {
-  background: #b05e00;
-  color: #ffecd7;
-}
-
-.object-mention {
-  background: #e1f7ff;
-  color: #003468;
-}
-.object-mention.selected {
-  background: #003468;
-  color: #e1f7ff;
-}
-
-.location-mention {
-  background: #dcffdc;
-  color: #004e03;
-}
-.location-mention.selected {
-  background: #004e03;
-  color: #dcffdc;
-}
-
-.no-mention {
-  background: #eee;
-  color: #000;
+.prompt-area {
+  .character-mention {
+    background: #ffecd7;
+    color: #b05e00;
+  }
+  .character-mention.selected {
+    background: #b05e00;
+    color: #ffecd7;
+  }
+  
+  .object-mention {
+    background: #e1f7ff;
+    color: #003468;
+  }
+  .object-mention.selected {
+    background: #003468;
+    color: #e1f7ff;
+  }
+  
+  .location-mention {
+    background: #dcffdc;
+    color: #004e03;
+  }
+  .location-mention.selected {
+    background: #004e03;
+    color: #dcffdc;
+  }
+  
+  .no-mention {
+    background: #eee;
+    color: #000;
+  }
 }
 
 .scene-node.selected {

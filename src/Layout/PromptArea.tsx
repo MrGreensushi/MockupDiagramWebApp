@@ -110,8 +110,7 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 					Prompt
 				</h4>
 			</Card.Header>
-			<Card.Body>
-
+			<Card.Body className="prompt-area">
 				<RichTextarea
 					ref={ref}
 					value={text}
