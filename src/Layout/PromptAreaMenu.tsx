@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElementEnum, StoryElementEnumString, StoryElementType } from "../StoryElements/StoryElement.ts";
 import { Col, ListGroup } from "react-bootstrap";
-
-const unselectedStyle = {background: "#EEEEEE", color: "black"};
 
 function PromptAreaMenu(props: {
   elements: [StoryElementType, StoryElementEnum][];
@@ -12,7 +10,6 @@ function PromptAreaMenu(props: {
   top: number;
   left: number;
   complete: (index: number) => void;
-  styles: {background: string, color: string}[];
 }) {
   return (
     <ListGroup
@@ -30,18 +27,17 @@ function PromptAreaMenu(props: {
       {props.noElements ?
         <PromptAreaMenuElement
         value={"Non sono presenti elementi nella storia attuale"}
-        style={unselectedStyle} />
+        className={"no-mention"} />
       :
         props.elements.length === 0 ?
           <PromptAreaMenuElement
           value={"Nessuna corrispondenza"}
-          style={unselectedStyle} />
+          className={"no-mention"} />
         :
           props.elements.map((element, idx) =>
             <PromptAreaMenuElement
               value={element[0].name}
-              style={props.styles[element[1]]}
-              selected={props.index === idx}
+              className={`${StoryElementEnumString[props.elements[idx][1]]}-mention ${props.index === idx ? "selected" : ""}`}
               onEnter={() => props.setIndex(idx)}
               onClick={() => props.complete(idx)}
               key={idx} />)
@@ -53,18 +49,15 @@ function PromptAreaMenu(props: {
 
 function PromptAreaMenuElement(props: {
   value: string,
-  style: {background: string, color: string},
+  className: string,
   selected?: boolean,
   onEnter?: () => void,
   onClick?: () => void
 }) {
   return (
     <ListGroup.Item
-      style={{
-        ...props.style,
-        ...(props.selected && {background: props.style.color, color: props.style.background}),
-        padding: "4px"
-      }}
+      className={props.className}
+      style={{padding: "4px"}}
       onMouseEnter={e => {e.preventDefault(); props.onEnter?.()}}
       onMouseDown={e => {e.preventDefault(); props.onClick?.()}} >
       {props.value}

@@ -4,6 +4,8 @@ enum StoryElementEnum {
     location = 2
 }
 
+const StoryElementEnumString = ["character", "object", "location"];
+
 type StoryElementType = 
     | CharacterElement
     | ObjectElement
@@ -65,4 +67,4 @@ class LocationElement extends StoryElement{
     }
 }
 
-export {StoryElement, CharacterElement, ObjectElement, LocationElement, StoryElementEnum, StoryElementType};
+export {StoryElement, CharacterElement, ObjectElement, LocationElement, StoryElementEnum, StoryElementEnumString, StoryElementType};

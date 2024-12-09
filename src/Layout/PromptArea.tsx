@@ -4,18 +4,13 @@ import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import PromptAreaMenu from "./PromptAreaMenu.tsx";
 import Story from "../StoryElements/Story.ts";
 import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+import { Card } from "react-bootstrap";
 
 type Position = {
 	top: number;
 	left: number;
 	caret: number;
 };
-
-const styles = [
-	{background: "#ffecd7", color: "#b05e00"},
-	{background: "#e1f7ff", color: "#003468"},
-	{background: "#dcffdc", color: "#004e03"}
-];
 
 const MENTION_REGEX = /\B@([\-+\w]*)$/;
 
@@ -76,7 +71,7 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 		if (!ref.current || !pos) return;
 		const selected = filtered[index];
 		ref.current.setRangeText(
-			`@${selected}`,
+			`@${selected} `,
 			pos.caret - name.length - 1,
 			pos.caret,
 			"end");
@@ -98,9 +93,9 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 			if (word === " ") return " ";
 			if (word.startsWith("@")) {
 				if (filtered.length > 0) {
-					if (word.match(highlight_characters)) return (<span key={idx} style={{...styles[StoryElementEnum.character], borderRadius: "3px" }}>{word}</span>);
-					if (word.match(highlight_objects)) return (<span key={idx} style={{...styles[StoryElementEnum.object], borderRadius: "3px" }}>{word}</span>);
-					if (word.match(highlight_locations)) return (<span key={idx} style={{...styles[StoryElementEnum.location], borderRadius: "3px" }}>{word}</span>);
+					if (word.match(highlight_characters)) return (<span key={idx} className="character-mention" style={{borderRadius: "3px" }}>{word}</span>);
+					if (word.match(highlight_objects)) return (<span key={idx} className="object-mention" style={{borderRadius: "3px" }}>{word}</span>);
+					if (word.match(highlight_locations)) return (<span key={idx} className="location-mention" style={{borderRadius: "3px" }}>{word}</span>);
 				}
 				return (<span key={idx} style={{background: "#EEEEEE", color: "black", borderRadius: "3px" }}>{word}</span>);
 			}
@@ -109,69 +104,76 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 	}
 	
 	return (
-		<>
-			<RichTextarea
-				ref={ref}
-				value={text}
-				style={{ width:"100%", height:"300px" }}
-				autoHeight
-				onChange={e => setText(e.target.value)}
-				onKeyDown={e => {
-					if (!pos || !filtered.length) return;
-					switch (e.code) {
-						case "ArrowUp":
-							e.preventDefault();
-							const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
-							setIndex(nextIndex);
-						break;
-						case "ArrowDown":
-							e.preventDefault();
-							const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
-							setIndex(prevIndex);
-						break;
-						case "Enter":
-						case "Tab":
-							e.preventDefault();
-							complete(index);
-						break;
-						case "Escape":
-							e.preventDefault();
+		<Card>
+			<Card.Header>
+				<h4>
+					Prompt
+				</h4>
+			</Card.Header>
+			<Card.Body>
+
+				<RichTextarea
+					ref={ref}
+					value={text}
+					style={{ width:"100%", height:"300px" }}
+					autoHeight
+					onChange={e => setText(e.target.value)}
+					onKeyDown={e => {
+						if (!pos || !filtered.length) return;
+						switch (e.code) {
+							case "ArrowUp":
+								e.preventDefault();
+								const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
+								setIndex(nextIndex);
+							break;
+							case "ArrowDown":
+								e.preventDefault();
+								const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
+								setIndex(prevIndex);
+							break;
+							case "Enter":
+							case "Tab":
+								e.preventDefault();
+								complete(index);
+							break;
+							case "Escape":
+								e.preventDefault();
+								setPos(null);
+								setIndex(0);
+							break;
+							default:
+								break;
+						}
+					}}
+					onSelectionChange={r => {
+						if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+							setPos({
+								top: r.top + r.height,
+								left: r.left,
+								caret: r.selectionStart
+							});
+							setIndex(0);
+						} else {
 							setPos(null);
 							setIndex(0);
-						break;
-						default:
-							break;
-					}
-				}}
-				onSelectionChange={r => {
-					if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-						setPos({
-							top: r.top + r.height,
-							left: r.left,
-							caret: r.selectionStart
-						});
-						setIndex(0);
-					} else {
-						setPos(null);
-						setIndex(0);
-					}
-				}}>
-				{renderer}
-			</RichTextarea>
-			{pos &&
-				createPortal(
-					<PromptAreaMenu
-						top={pos.top}
-						left={pos.left}
-						elements={filteredMap}
-						noElements={elements.length === 0}
-						index={index}
-						setIndex={setIndex}
-						complete={complete}
-						styles={styles} />,
-					document.body)
-			}
-		</>
+						}
+					}}>
+					{renderer}
+				</RichTextarea>
+				{pos &&
+					createPortal(
+						<PromptAreaMenu
+							top={pos.top}
+							left={pos.left}
+							elements={filteredMap}
+							noElements={elements.length === 0}
+							index={index}
+							setIndex={setIndex}
+							complete={complete} />,
+						document.body)
+				}
+			</Card.Body>
+		</Card>
 	);
 }
 
