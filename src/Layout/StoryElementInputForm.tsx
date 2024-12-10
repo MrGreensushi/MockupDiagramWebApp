@@ -19,7 +19,7 @@ function StoryElementInputForm(props: {
             </InputGroup>
             <InputGroup className="mb-2">
                 <InputGroup.Text>Variabile:</InputGroup.Text>
-                <Form.Switch value={props.element.isVariable? 1 : 0} onChange={e => props.setElement({...props.element, isVariable: !!e.target.value})} />
+                <Form.Switch checked={props.element.isVariable} onChange={e => props.setElement({...props.element, isVariable: e.target.checked})} />
             </InputGroup>
         </>
     );

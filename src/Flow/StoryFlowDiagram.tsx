@@ -197,8 +197,6 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
     );
   }, [rfInstance, selectedNodeId, props.story, onSceneTitleChanged, onSceneNameChanged, nodes])
 
-  useEffect(() => console.log(nodes), [nodes]);
-
   return (
     <Container fluid style={{ height: "90vh", padding: "1%" }}>
       <Row style={{ height: "100%" }}>

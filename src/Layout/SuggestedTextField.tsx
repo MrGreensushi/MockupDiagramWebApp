@@ -38,7 +38,7 @@ function SuggestedTextArea(props: {
                     {props.choices.map((e, idx) => <option value={e} key={idx} />)}
                 </datalist>
             }
-            {maybeAddButton}
+            {/*maybeAddButton*/}
         </InputGroup>
     );
 }

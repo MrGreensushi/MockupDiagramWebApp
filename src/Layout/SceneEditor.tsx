@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Card, Col, Form, Row } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
@@ -49,7 +49,7 @@ function SceneEditor(props: {
     });
 
     const handleSave = () => {
-        const newScene = new Scene(workspace!, summary, time, weather, tone, value);
+        const newScene = new Scene(workspace!, title, summary, time, weather, tone, value);
         props.setScene(newScene);
         return newScene;
     }
@@ -123,6 +123,18 @@ function SceneEditor(props: {
                             }).join(" ")
                         }
                         story={props.story} />
+                    {/*<Card>
+                        <Card.Header>
+                            <h4>
+                                Prompt Generato
+                            </h4>
+                        </Card.Header>
+                        <Card.Body>
+                            <Form.Control as="textarea" height={8}>
+
+                            </Form.Control>
+                        </Card.Body>
+                    </Card>*/}
                 </Col>
             </Row>
         </Col>

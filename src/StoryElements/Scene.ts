@@ -77,7 +77,7 @@ class Scene {
         )
     }
 
-    toJSON(): string {
+    toJson(): string {  //Renamed to lowercase to avoid JSON.stringify from using this
         return JSON.stringify(this.serialize());
     }
 
