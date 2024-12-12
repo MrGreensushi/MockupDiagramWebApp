@@ -1,9 +1,9 @@
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import PromptAreaMenu from "./PromptAreaMenu.tsx";
 import Story from "../StoryElements/Story.ts";
-import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+import { StoryElementEnum, StoryElementEnumString } from "../StoryElements/StoryElement.ts";
 import { Card } from "react-bootstrap";
 
 type Position = {
@@ -16,7 +16,7 @@ const MENTION_REGEX = /\B@([\-+\w]*)$/;
 
 const MAX_LIST_LENGTH = 10;
 
-function PromptArea(props: { initialText?: string, story: Story }) {
+function PromptArea(props: { initialText?: string, story: Story, setBlocks: any }) {
 	const ref = useRef<RichTextareaHandle>(null);
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
@@ -79,30 +79,43 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 		setIndex(0);
 	};
 
-	const renderer = (text: string): ReactNode => {
+	const textSplitter = useCallback((text: string, spaces: boolean) => {
 		const split = elements.length > 0 ? text.split(highlight_all) : [text];
-		const finalArr = split
-			.reduce((acc, spl) => {
-				if (spl.match(highlight_all))
-					return acc.concat(spl);
-				else
-					return acc.concat(spl.split(/(\s)/g));
-			}, new Array<string>())
-			.filter(s => !s.match(/^$/));
-		return (finalArr?.map((word, idx) => {
-			if (word === " ") return " ";
-			if (word.startsWith("@")) {
-				if (filtered.length > 0) {
-					if (word.match(highlight_characters)) return (<span key={idx} className="character-mention" style={{borderRadius: "3px" }}>{word}</span>);
-					if (word.match(highlight_objects)) return (<span key={idx} className="object-mention" style={{borderRadius: "3px" }}>{word}</span>);
-					if (word.match(highlight_locations)) return (<span key={idx} className="location-mention" style={{borderRadius: "3px" }}>{word}</span>);
+		let retArr: string[];
+		if (!spaces) retArr = split;
+		else {
+			retArr = split
+				.reduce((acc, spl) => {
+					if (spl.match(highlight_all))
+						return acc.concat(spl);
+					else
+						return acc.concat(spl.split(/(\s)/g));
+				}, new Array<string>())
+		}
+		return retArr.filter(s => !s.match(/^$/));
+	}, [elements, highlight_all]);
+
+	const mentionMatcher = useCallback((mention: string) => {
+		if (mention.match(highlight_characters)) return StoryElementEnum.character;
+		if (mention.match(highlight_objects)) return StoryElementEnum.object;
+		if (mention.match(highlight_locations)) return StoryElementEnum.location;
+		return null;
+	}, [highlight_characters, highlight_objects, highlight_locations]);
+
+	const renderer = useCallback((text: string) => {
+		return textSplitter(text, true)
+			.map((word, idx) => {
+				if (word === " ") return " ";
+				if (word.startsWith("@")) {
+					const mentionType = mentionMatcher(word);
+					const mentionClass = `${mentionType === null ? "no" : StoryElementEnumString[mentionType]}-mention`
+					return <span key={idx} className={mentionClass} style={{borderRadius: "3px" }}>{word}</span>
 				}
-				return (<span key={idx} style={{background: "#EEEEEE", color: "black", borderRadius: "3px" }}>{word}</span>);
+				return word;
 			}
-			return word;
-		}));
-	}
-	
+		);
+	}, [textSplitter, mentionMatcher]);
+
 	return (
 		<Card>
 			<Card.Header>
@@ -114,9 +127,16 @@ function PromptArea(props: { initialText?: string, story: Story }) {
 				<RichTextarea
 					ref={ref}
 					value={text}
-					style={{ width:"100%", height:"300px" }}
+					style={{ width:"100%"}}
 					autoHeight
-					onChange={e => setText(e.target.value)}
+					onChange={e => {
+						setText(e.target.value);
+						props.setBlocks(
+							textSplitter(e.target.value, false)
+							.filter(s => !s.match(/^ +$/))
+							.map(s => s.startsWith("@") ? [s.slice(1).trim(), mentionMatcher(s)] : [s.trim(), null])
+						);
+					}}
 					onKeyDown={e => {
 						if (!pos || !filtered.length) return;
 						switch (e.code) {

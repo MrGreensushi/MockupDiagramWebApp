@@ -138,7 +138,7 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
 
   const restoreFlow = useCallback(
     (flow: ReactFlowJsonObject) => {
-      //try {
+      try {
         const newNodes = [...flow.nodes].map(
           node => {
             return {...node, data: {
@@ -158,11 +158,11 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
             viewport: flow.viewport
           })
         );
-      /*} catch {
-        console.error(flow);
+      } catch (err) {
+        console.error(err, flow);
         setNodes([]);
         setEdges([]);
-      }*/
+      }
     },
     [rfInstance, setNodes, setEdges, onClickDelete, onSceneNameChanged, onSceneTitleChanged]
   );
@@ -195,7 +195,7 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
         </div>
       </Row>
     );
-  }, [rfInstance, selectedNodeId, props.story, onSceneTitleChanged, onSceneNameChanged, nodes])
+  }, [rfInstance, selectedNodeId, onSceneTitleChanged, onSceneNameChanged])
 
   return (
     <Container fluid style={{ height: "90vh", padding: "1%" }}>
@@ -215,8 +215,9 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
           ref={flowRef}
           fitView >
           <Panel>
-            <Button variant="primary" onClick={addNode} style={{ marginBottom: "10px" } }>
-              Aggiungi Scena
+            <Button variant="primary" onClick={addNode} style={{ margin: "0px 5px" }}>
+                {"Aggiungi Scena "}
+                <i className="bi bi-plus-square"/>
             </Button>
           </Panel>
           {rfInstance && 
@@ -226,8 +227,7 @@ function StoryFlowDiagram (props: {story: Story, setStory: React.Dispatch<React.
               setStory={props.setStory}
               nodes={nodes}
               edges={edges}
-              restoreFlow={restoreFlow}
-            />
+              restoreFlow={restoreFlow} />
           }
           <Controls />
           <Background />

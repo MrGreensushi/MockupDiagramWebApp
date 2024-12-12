@@ -105,6 +105,19 @@ function convertFromEnumToKey(type: StoryElementEnum): string {
   }
 }
 
+function convertFromEnumToObjectType(type: StoryElementEnum | null): string {
+  switch (type) {
+    case StoryElementEnum.character:
+      return customBlockData.characters.objectName;
+    case StoryElementEnum.object:
+      return customBlockData.objects.objectName;
+    case StoryElementEnum.location:
+      return customBlockData.locations.objectName;
+    default:
+      return "TextInput";
+  }
+}
+
 function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.toolbox.FlyoutDefinition {
   const typeKey = convertFromEnumToKey(type);
 
@@ -142,4 +155,4 @@ function BlocklyCanvas({ blocklyRef, onBlur }): ReactElement {
   );
 }
 
-export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, populateCustomToolbox};
+export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, populateCustomToolbox, convertFromEnumToObjectType};

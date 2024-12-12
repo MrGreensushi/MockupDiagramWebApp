@@ -42,13 +42,15 @@ class Scene {
     }
 
     copy(): Scene {
-        return new Scene(this.workspace,
+        return new Scene(
+            this.workspace,
             this.details.title,
             this.details.summary,
             this.details.time,
             this.details.weather,
             this.details.tone,
-            this.details.value)
+            this.details.value,
+        )
     }
 
     serialize() {
@@ -61,7 +63,7 @@ class Scene {
                 weather: this.details.weather,
                 tone: this.details.tone,
                 value: this.details.value
-            }
+            },
         }
     }
 
@@ -73,7 +75,7 @@ class Scene {
             obj.details.time,
             obj.details.weather,
             obj.details.tone,
-            obj.details.value
+            obj.details.value,
         )
     }
 
