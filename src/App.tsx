@@ -3,13 +3,13 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-import StoryEditor from "./Layout/StoryEditor.tsx";
+import ProcedureEditor from "./Layout/ProcedureEditor.tsx";
 import React from "react";
 
 function App() {
   return (
     <div className="App">
-      <StoryEditor />
+      <ProcedureEditor />
     </div>
   );
 }

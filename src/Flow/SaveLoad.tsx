@@ -2,52 +2,48 @@ import { useCallback } from "react";
 import { Edge, Node, Panel, ReactFlowInstance, ReactFlowJsonObject } from "@xyflow/react";
 import saveToDisk from "../Misc/SaveToDisk.ts";
 import React from "react";
-import Story from "../StoryElements/Story.ts";
+import Procedure from "../Procedure/Procedure.ts";
 
 function SaveLoadManager (props: {
   rfInstance: ReactFlowInstance,
-  story: Story,
-  setStory: React.Dispatch<React.SetStateAction<Story>>,
+  procedure: Procedure,
+  setProcedure: React.Dispatch<React.SetStateAction<Procedure>>,
   nodes: Node[],
   edges: Edge[],
   restoreFlow: (flow: ReactFlowJsonObject) => void
 }) {
   const rfInstance = props.rfInstance;
-  const story = props.story;
-  const setStory = props.setStory;
+  const story = props.procedure;
+  const setProcedure = props.setProcedure;
   const nodes = props.nodes;
   const edges = props.edges;
   const restoreFlow = props.restoreFlow;
 
   const onSave = useCallback(async () => {
-    const serializedStory = story.serialize();
-    const newStory = new Story(
-      serializedStory.characters,
-      serializedStory.objects,
-      serializedStory.locations,
+    const newStory = new Procedure(
       {nodes: nodes, edges: edges, viewport: rfInstance.getViewport()},
-      serializedStory.title
+      story.title
     );
     const jsonString = newStory.toJSON();
-    saveToDisk(jsonString, `${newStory.title}.story`, "application/json");
+    saveToDisk(jsonString, `${newStory.title}.procedure`, "application/json");
   }, [rfInstance, story, edges, nodes]);
 
   const onLoad = useCallback(async (file?: File) => {
     if (!file) return;
 
     try {
-      const newStory = Story.fromJSON(await file.text());
+      const newStory = Procedure.fromJSON(await file.text());
       console.log(newStory);
-      setStory(newStory);
+      setProcedure(newStory);
       restoreFlow(newStory.flow);
     } catch(err) {
       console.error(err);
     }
-  }, [restoreFlow, setStory]);
+  }, [restoreFlow, setProcedure]);
 
   return (
     <Panel position="top-right">
-      <button onClick={onSave}>Salva Storia</button>
+      <button onClick={onSave}>Salva Procedura</button>
       <input
         type="file"
         accept=".story"
