@@ -1,30 +1,77 @@
-import React, {useState } from "react";
-import { Col, Row } from "react-bootstrap";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import DynamicTextField from "./DynamicTextField.tsx";
+import SubProcedure from "../Procedure/SubProcedure.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
+import { ReactFlowJsonObject } from "@xyflow/react";
+import LoadNodes from "../Misc/LoadNodes.tsx";
 
-function ProcedureEditor() {
-    const [procedure, setProcedure] = useState(new Procedure());
-    const handleSubmit = (title: string) => {
-        setProcedure(story => story.cloneAndSetTitle(title));
+function ProcedureEditor(props: { procedure: Procedure }) {
+  const [procedure, setProcedure] = useState(props.procedure);
+  const [subProcedure, setSubProcedure] = useState<SubProcedure | undefined>();
+
+  const handleSubmit = (title: string) => {
+    setProcedure((story) => story.cloneAndSetTitle(title));
+  };
+
+  const handleSubProcedure = (newSubProcedure: SubProcedure) => {
+    setSubProcedure(newSubProcedure);
+  };
+
+  const handleProcedureUpdate = (reactFlowObject: ReactFlowJsonObject) => {
+    console.log("handleProcedureUpdate");
+    if (subProcedure) {
+      // console.log(subProcedure instanceof SubProcedure);
+      // console.log(subProcedure);
+      setSubProcedure(subProcedure.cloneAndAddFlow(reactFlowObject));
+      return;
     }
 
-    return (
+    setProcedure(procedure.cloneAndAddFlow(reactFlowObject));
+  };
+
+  const handleBackSubActivity = () => {
+    const toRet = subProcedure?.parent?.parent
+      ? subProcedure.parent
+      : undefined;
+
+    setSubProcedure(toRet);
+  };
+
+  return (
+    <Col>
+      <DynamicTextField
+        initialValue={
+          procedure.title + (subProcedure ? " > " + subProcedure?.title : "")
+        }
+        onSubmit={handleSubmit}
+        baseProps={{ size: "lg" }}
+        disable={subProcedure ? true : false}
+      />
+      {/* <Row>
+        {subProcedure && (
+          <Button onClick={handleBackSubActivity}>
+            <i className="bi bi-arrow-left-circle" />
+          </Button>
+        )}
+      </Row> */}
+      <Row style={{ width: "100%" }}>
         <Col>
-            <DynamicTextField
-                initialValue={procedure.title}
-                onSubmit={handleSubmit}
-                baseProps={{size:"lg"}} />
-            <Row style={{width: "100%"}}>
-                <Col>
-                <ProcedureFlowDiagram
-                    procedure={procedure}
-                    setProcedure={setProcedure}/>
-                </Col>
-            </Row>
+          <ProcedureFlowDiagram
+            procedure={
+              subProcedure ?? new SubProcedure(procedure.flow, procedure.title)
+            }
+            setProcedure={setProcedure}
+            handleSubProcedure={handleSubProcedure}
+            handleProcedureUpdate={handleProcedureUpdate}
+            handleBackButton={handleBackSubActivity}
+            showBackButton={subProcedure ? true : false}
+          />
         </Col>
-    );
+      </Row>
+    </Col>
+  );
 }
 
 export default ProcedureEditor;

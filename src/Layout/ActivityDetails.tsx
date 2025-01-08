@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, Col, Dropdown, Form, InputGroup, Row } from "react-bootstrap";
 import React from "react";
 import { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
@@ -6,17 +6,44 @@ import DynamicTextField from "./DynamicTextField.tsx";
 
 function ActivityDetails(props: {
   phrase: Phrase;
+  unavailableLevels: boolean[];
   handlePhraseUpdate: (clipId: string, level: LevelsEnum, text: string) => void;
+  checkValidClipId: (name: string, level: LevelsEnum) => boolean;
 }) {
   const textWidth = "25%";
   const [clipId, setClipId] = useState(props.phrase.clipId);
   const [level, setLevel] = useState(props.phrase.level);
   const [text, setText] = useState(props.phrase.text);
 
-  const handleOnBlur = () => {
+  const [dataChanged, setDataChanged] = useState(false);
+
+  const handleOnBlur = useCallback(() => {
+    if (!dataChanged) return;
+
     console.log("ActivityDetails:OnBlur");
     props.handlePhraseUpdate(clipId, level, text);
+
+    setDataChanged(false);
+  }, [clipId, level, text, dataChanged]);
+
+  const handleChangeLevel = useCallback(
+    (newLevel: LevelsEnum) => {
+      if (newLevel === level) return;
+
+      setLevel(newLevel);
+      props.handlePhraseUpdate(clipId, newLevel, text);
+    },
+    [level]
+  );
+
+  const handleInvalidClipId = (newClipId: string) => {
+    return props.checkValidClipId(newClipId, level);
   };
+
+  const handleChangeClipId = useCallback((value: string) => {
+    setClipId(value);
+    setDataChanged(true);
+  }, []);
 
   return (
     <Card onBlur={handleOnBlur}>
@@ -25,15 +52,14 @@ function ActivityDetails(props: {
           <Col xs={10}>
             <DynamicTextField
               initialValue={clipId}
-              onChange={setClipId}
+              onChange={handleChangeClipId}
+              isInvalid={handleInvalidClipId}
               //onSubmit={props.handlePhraseClipIdUpdate}
             />
           </Col>
           <Col xs={2}>
             <Dropdown
-              onSelect={(eventKey) => {
-                setLevel(eventKey as LevelsEnum);
-              }}
+              onSelect={(eventKey) => handleChangeLevel(eventKey as LevelsEnum)}
             >
               <Dropdown.Toggle variant="success" id="dropdown-basic">
                 {level}
@@ -41,7 +67,11 @@ function ActivityDetails(props: {
 
               <Dropdown.Menu>
                 {Object.values(LevelsEnum).map((element, index) => (
-                  <Dropdown.Item eventKey={element} active={element === level}>
+                  <Dropdown.Item
+                    eventKey={element}
+                    active={element === level}
+                    disabled={props.unavailableLevels[index]}
+                  >
                     {element}
                   </Dropdown.Item>
                 ))}
@@ -60,7 +90,10 @@ function ActivityDetails(props: {
               as="textarea"
               style={{ maxHeight: "10em" }}
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                setDataChanged(true);
+                setText(e.target.value);
+              }}
             />
           </InputGroup>
         </Form>

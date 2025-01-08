@@ -5,11 +5,12 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 import ProcedureEditor from "./Layout/ProcedureEditor.tsx";
 import React from "react";
+import Procedure from "./Procedure/Procedure.ts";
 
 function App() {
   return (
     <div className="App">
-      <ProcedureEditor />
+      <ProcedureEditor procedure={new Procedure()} />
     </div>
   );
 }

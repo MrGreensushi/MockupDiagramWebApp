@@ -8,6 +8,7 @@ function DynamicTextField(props: {
   onSubmit?: (value: string) => void;
   isInvalid?: (value: string) => boolean;
   baseProps?: FormControlProps;
+  disable?: boolean;
 }) {
   const [value, setValue] = useState(props.initialValue ?? "");
   const [focus, setFocus] = useState(false);
@@ -54,6 +55,7 @@ function DynamicTextField(props: {
           cursor: focus ? "text" : "inherit",
           userSelect: focus ? "auto" : "none",
         }}
+        //disabled={props.disable}
       />
     </Form>
   );
