@@ -51,7 +51,7 @@ function SceneDetails(props: {
                             onBlur={props.onBlur} />
                     </InputGroup>
                     <SuggestedTextField
-                        label="Tempo Atmosferico:"
+                        label="Meteo:"
                         value={props.weather}
                         setValue={props.setWeather}
                         choices={weatherList}

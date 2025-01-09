@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Card, Col, Form, Row } from "react-bootstrap";
+import { Col, Row, Stack } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
@@ -51,7 +51,6 @@ function SceneEditor(props: {
 
 	const handleSave = () => {
 		const newScene = new Scene(workspace!, title, summary, time, weather, tone, value);
-		console.log(newScene);
 		props.setScene(newScene);
 	}
 
@@ -75,7 +74,7 @@ function SceneEditor(props: {
 		if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
 	}, [props.story, workspace]);
 
-	useEffect(() => {  
+	useEffect(() => {
 		if (workspace) {
 			workspace.clear();
 			let stack: Blockly.BlockSvg | undefined;
@@ -101,12 +100,12 @@ function SceneEditor(props: {
 				elementType={modalType}
 				onSubmit={element => onSubmitNewElement(element, modalType)} />
 			<Row>
-				<Col>
+				<Col xs={6}>
 					<BlocklyCanvas
 						blocklyRef={blocklyRef}
 						onBlur={handleBlur} />
 				</Col>
-				<Col>
+				<Stack gap={2} style={{width:"50%"}}>
 					<SceneDetails
 						title={title}
 						setTitle={setTitle}
@@ -121,19 +120,17 @@ function SceneEditor(props: {
 						value={value}
 						setValue={setValue}
 						onBlur={handleBlur} />
-					{/*<PromptElements
-						elements={promptElements}
-						workspace={workspace} />*/}
 					<PromptArea
 						initialText={
 							promptElements.map(e => {
 								if (e.type === "SceneCharacterObject" || e.type === "SceneObjectObject" || e.type === "SceneLocationObject") return `@${e.outputText}`
 								else return e.outputText ?? ""
-							}).join(" ")
+							}).join("")
 						}
 						story={props.story}
-						setBlocks={setBlocks}/>
-				</Col>
+						setBlocks={setBlocks}
+						onBlur={handleBlur} />
+				</Stack>
 			</Row>
 		</Col>
 	);

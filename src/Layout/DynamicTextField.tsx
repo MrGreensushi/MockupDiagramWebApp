@@ -40,9 +40,9 @@ function DynamicTextField(props: {
 
 				{...props.baseProps}
 				style={{
-					...props.baseProps?.style,
 					cursor: focus ? "text" : "inherit",
-					userSelect: focus ? "auto" : "none"
+					userSelect: focus ? "auto" : "none",
+					...props.baseProps?.style
 				}} />
 		</Form>
 	);

@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import PromptAreaMenu from "./PromptAreaMenu.tsx";
@@ -16,7 +16,12 @@ const MENTION_REGEX = /\B@([\-+\w]*)$/;
 
 const MAX_LIST_LENGTH = 10;
 
-function PromptArea(props: { initialText?: string, story: Story, setBlocks: any }) {
+function PromptArea(props: {
+	initialText?: string,
+	story: Story,
+	setBlocks: any,
+	onBlur: () => void
+}) {
 	const ref = useRef<RichTextareaHandle>(null);
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
@@ -71,7 +76,7 @@ function PromptArea(props: { initialText?: string, story: Story, setBlocks: any 
 		if (!ref.current || !pos) return;
 		const selected = filtered[index];
 		ref.current.setRangeText(
-			`@${selected} `,
+			`@${selected}`,
 			pos.caret - name.length - 1,
 			pos.caret,
 			"end");
@@ -105,7 +110,6 @@ function PromptArea(props: { initialText?: string, story: Story, setBlocks: any 
 	const renderer = useCallback((text: string) => {
 		return textSplitter(text, true)
 			.map((word, idx) => {
-				if (word === " ") return " ";
 				if (word.startsWith("@")) {
 					const mentionType = mentionMatcher(word);
 					const mentionClass = `${mentionType === null ? "no" : StoryElementEnumString[mentionType]}-mention`
@@ -129,12 +133,13 @@ function PromptArea(props: { initialText?: string, story: Story, setBlocks: any 
 					value={text}
 					style={{ width:"100%"}}
 					autoHeight
+					onBlur={props.onBlur}
 					onChange={e => {
 						setText(e.target.value);
 						props.setBlocks(
 							textSplitter(e.target.value, false)
 							.filter(s => !s.match(/^ +$/))
-							.map(s => s.startsWith("@") ? [s.slice(1).trim(), mentionMatcher(s)] : [s.trim(), null])
+							.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
 						);
 					}}
 					onKeyDown={e => {

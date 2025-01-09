@@ -1,5 +1,5 @@
-import { Tabs, Tab, Button, Col, ListGroup } from "react-bootstrap";
-import StoryElementComponent from "./StoryElementComponent.tsx";
+import { Tabs, Tab, Button, ListGroup } from "react-bootstrap";
+import ActionListElement from "./ActionListElement.tsx";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
@@ -48,7 +48,7 @@ const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetS
     props.setStory(story => story.cloneAndAddElement(newElement, key));
     onDeselectElement();
     return true;
-  }, [key]);
+  }, [key, props.story, props.setStory]);
 
   const onEditElement = useCallback((editedElement: StoryElementType) => {
     if (selectedElementId) {
@@ -58,7 +58,7 @@ const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetS
     }
     onDeselectElement();
     return false;
-  }, [selectedElementId, key]);
+  }, [selectedElementId, key, props.setStory]);
 
   const dynamicElementModal = useMemo(() => (
     <ElementModal
@@ -94,11 +94,17 @@ const StoryElements = (props: {story: Story, setStory: React.Dispatch<React.SetS
       <ListGroup variant="flush">
         {[...elements.keys()].map((id, idx) => (
           <ListGroup.Item key={idx}>
-            <StoryElementComponent
-              element={elements.get(id)!}
-              elementType={key}
-              onEditButtonClick={() => onElementEditButtonClicked(id, elements.get(id)!)}
-              onDeleteButtonClick={() => onElementDeleteButtonClicked(id)} />
+            <ActionListElement
+              leftSide={
+                <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
+                  <i className="bi bi-trash" aria-label="delete" /> 
+                </Button>}
+              rightSide={
+                <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elements.get(id)!)}>
+                  <i className="bi bi-pencil" aria-label="edit" /> 
+                </Button>}>
+              {elements.get(id)!.name}
+            </ActionListElement>
           </ListGroup.Item>
           ))
         }

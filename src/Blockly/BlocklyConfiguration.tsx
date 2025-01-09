@@ -1,6 +1,6 @@
 import { ToolboxDefinition, WorkspaceSvg } from "react-blockly";
 import * as Blockly from "blockly/core";
-import React, { ReactElement } from "react";
+import React, { ReactElement, Ref } from "react";
 import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
 import Story from "../StoryElements/Story.ts";
 
@@ -147,11 +147,11 @@ function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCall
   workspace.updateToolbox(customToolboxCategories);
 }
 
-function BlocklyCanvas({ blocklyRef, onBlur }): ReactElement {
+function BlocklyCanvas(props: { blocklyRef: Ref<HTMLDivElement>, onBlur: () => void }): ReactElement {
   return(
-    <div ref={blocklyRef}
+    <div ref={props.blocklyRef}
       className="fill-height"
-      onBlur={onBlur}></div>
+      onBlur={props.onBlur} />
   );
 }
 

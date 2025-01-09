@@ -5,11 +5,11 @@ import React from "react";
 import Story from "../StoryElements/Story.ts";
 
 function SaveLoadManager (props: {
-  rfInstance: ReactFlowInstance,
   story: Story,
   setStory: React.Dispatch<React.SetStateAction<Story>>,
   nodes: Node[],
   edges: Edge[],
+  rfInstance: ReactFlowInstance,
   restoreFlow: (flow: ReactFlowJsonObject) => void
 }) {
   const rfInstance = props.rfInstance;

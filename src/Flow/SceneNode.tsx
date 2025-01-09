@@ -1,21 +1,25 @@
-import { Handle, Node, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import Scene from "../StoryElements/Scene";
+import { v4 as uuidv4 } from "uuid";
+import { Handle, Node, NodeProps, NodeToolbar, Position, XYPosition } from "@xyflow/react";
+import Scene from "../StoryElements/Scene.ts";
 import React, { useState } from "react";
 import { Button, ButtonGroup, Col } from "react-bootstrap";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
-type SceneNodeProps = {
-  label: string;
-  scene?: Scene;
+type FunctionProps = {
   onClickEdit: (scene: Scene | undefined, setScene: React.Dispatch<React.SetStateAction<Scene | undefined>>) => void;
   onClickDelete: (id: string) => void;
   onSceneNameChanged: (id: string, name: string) => void
   onSceneTitleChanged: (id: string, title: string) => void
 }
 
+type SceneNodeProps = {
+  label: string;
+  scene?: Scene;
+} & FunctionProps;
+
 type SceneNodeObject = {
   id: string;
-  position: {x: number, y: number}
+  position: XYPosition
   data: SceneNodeProps;
   type: "sceneNode"
 }
@@ -24,6 +28,23 @@ type SceneNodeType = Node<
   SceneNodeProps,
   "SceneNode"
 >;
+
+function createNewNode(id: string, callbacks: FunctionProps, label?: string, position?: XYPosition, data?: SceneNodeProps) {
+  const node: SceneNodeObject = {
+    id: id ?? uuidv4(),
+    position: position ?? {x: 0, y: 0},
+    data: {
+      label: label ?? data?.label ?? "Scena senza nome",
+      scene: data?.scene ?? new Scene(undefined),
+      onClickEdit: callbacks.onClickEdit,
+      onClickDelete: callbacks.onClickDelete,
+      onSceneNameChanged: callbacks.onSceneNameChanged,
+      onSceneTitleChanged: callbacks.onSceneTitleChanged
+    }, 
+    type: "sceneNode"
+  };
+  return node
+}
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
   const [scene, setScene] = useState<Scene | undefined>(undefined);
@@ -50,13 +71,17 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
           onSubmit={handleSubmitSceneName}
           isInvalid={label => label === ""}
           baseProps={{
+            className: "scene-node-name",
             htmlSize: 15,
-            size: "sm" }}/>
+            size: "sm",
+            style: {userSelect:"none"}
+          }}/>
         <DynamicTextField
           initialValue={props.data.scene?.details.title}
           focusOnDoubleClick={true}
           onSubmit={handleSubmitSceneTitle}
           baseProps={{
+            className: "scene-node-title",
             htmlSize: 15,
             size: "sm",
             placeholder: "Nessun Titolo" }}/>
@@ -78,4 +103,4 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 }
 
 export default SceneNode;
-export {SceneNodeProps, SceneNodeObject};
+export {SceneNodeProps, SceneNodeObject, createNewNode};
