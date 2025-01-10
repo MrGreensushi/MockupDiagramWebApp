@@ -55,7 +55,7 @@ function DynamicTextField(props: {
           cursor: focus ? "text" : "inherit",
           userSelect: focus ? "auto" : "none",
         }}
-        //disabled={props.disable}
+        disabled={props.disable}
       />
     </Form>
   );

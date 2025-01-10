@@ -12,7 +12,11 @@ function ProcedureEditor(props: { procedure: Procedure }) {
   const [subProcedure, setSubProcedure] = useState<SubProcedure | undefined>();
 
   const handleSubmit = (title: string) => {
-    setProcedure((story) => story.cloneAndSetTitle(title));
+    setProcedure((prevProcedure) => {
+      const newProcedure = prevProcedure.cloneAndSetTitle(title);
+      console.log(newProcedure);
+      return newProcedure;
+    });
   };
 
   const handleSubProcedure = (newSubProcedure: SubProcedure) => {
@@ -26,7 +30,9 @@ function ProcedureEditor(props: { procedure: Procedure }) {
       if (prevSub) {
         return prevSub.cloneAndAddFlow(reactFlowObject);
       }
-      setProcedure(procedure.cloneAndAddFlow(reactFlowObject));
+      setProcedure((prevProcedure) =>
+        prevProcedure.cloneAndAddFlow(reactFlowObject)
+      );
       return prevSub;
     });
   };
