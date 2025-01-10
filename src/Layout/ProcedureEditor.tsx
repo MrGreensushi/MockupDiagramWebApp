@@ -16,19 +16,19 @@ function ProcedureEditor(props: { procedure: Procedure }) {
   };
 
   const handleSubProcedure = (newSubProcedure: SubProcedure) => {
+    //TODO: if subProcedure is empty add an output Node
+    console.log("handleSubProcedure");
     setSubProcedure(newSubProcedure);
   };
 
   const handleProcedureUpdate = (reactFlowObject: ReactFlowJsonObject) => {
-    console.log("handleProcedureUpdate");
-    if (subProcedure) {
-      // console.log(subProcedure instanceof SubProcedure);
-      // console.log(subProcedure);
-      setSubProcedure(subProcedure.cloneAndAddFlow(reactFlowObject));
-      return;
-    }
-
-    setProcedure(procedure.cloneAndAddFlow(reactFlowObject));
+    setSubProcedure((prevSub) => {
+      if (prevSub) {
+        return prevSub.cloneAndAddFlow(reactFlowObject);
+      }
+      setProcedure(procedure.cloneAndAddFlow(reactFlowObject));
+      return prevSub;
+    });
   };
 
   const handleBackSubActivity = () => {

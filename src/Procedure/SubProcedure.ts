@@ -1,10 +1,10 @@
 import { ReactFlowJsonObject } from "@xyflow/react";
 import Procedure from "./Procedure.ts";
-import Activity from "./Activity";
+import Activity from "./Activity.ts";
+import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 
 class SubProcedure extends Procedure {
   parent: SubProcedure | undefined;
-  activityParentId: string | undefined;
 
   constructor(
     flow: ReactFlowJsonObject = {
@@ -13,21 +13,14 @@ class SubProcedure extends Procedure {
       viewport: { x: 0, y: 0, zoom: 1 },
     },
     title?: string,
-    parent?: SubProcedure,
-    activityParentId?: string
+    parent?: SubProcedure
   ) {
     super(flow, title);
     this.parent = parent;
-    this.activityParentId = activityParentId;
   }
 
   clone(): SubProcedure {
-    return new SubProcedure(
-      this.flow,
-      this.title,
-      this.parent,
-      this.activityParentId
-    );
+    return new SubProcedure(this.flow, this.title, this.parent);
   }
 
   cloneAndAddFlow(flow: ReactFlowJsonObject): SubProcedure {
@@ -41,12 +34,41 @@ class SubProcedure extends Procedure {
   }
 
   toJSON() {
-    return JSON.stringify(this);
+    const { parent, ...rest } = this;
+    return { ...rest };
   }
 
-  static fromJSON(json: string) {
-    const obj = JSON.parse(json);
-    return new SubProcedure(obj.flow, obj.title, obj.parent);
+  // static fromJSON(json: string) {
+  //   const obj = JSON.parse(json);
+  //   return new SubProcedure(obj.flow, obj.title, obj.parent);
+  // }
+
+  static fromJSONObject(
+    json: any,
+    parent: SubProcedure,
+    callbacksActivity: any,
+    callbacksEvent: any
+  ): SubProcedure {
+    const subProcedure = new SubProcedure(json.flow, json.title, parent);
+    console.log("SubProcedure:FromJSONObject");
+
+    if (subProcedure.flow.nodes.length === 0) return subProcedure;
+
+    console.log(subProcedure.flow.nodes);
+
+    const newNodes = instantiateNodeFromJsonObj(
+      subProcedure.flow,
+      subProcedure,
+      callbacksActivity,
+      callbacksEvent
+    );
+
+    subProcedure.cloneAndAddFlow({
+      nodes: newNodes,
+      edges: subProcedure.flow.edges,
+      viewport: subProcedure.flow.viewport,
+    });
+    return subProcedure;
   }
 }
 

@@ -1,4 +1,4 @@
-import SubProcedure from "./SubProcedure";
+import SubProcedure from "./SubProcedure.ts";
 
 enum LevelsEnum {
   novice = "Novice",
@@ -29,22 +29,45 @@ class Activity {
     return new Activity(this.name, this.subProcedure, [...this.nodePhrases]);
   }
 
-  static deserialize(obj: any) {
-    return new Activity(obj.name, obj.subProcedure, obj.nodePhrases);
+  static deserialize(
+    obj: any,
+    parent: SubProcedure,
+    callbacksActivity: any,
+    callbacksEvent: any
+  ) {
+    const subProcedure = SubProcedure.fromJSONObject(
+      obj.subProcedure,
+      parent,
+      callbacksActivity,
+      callbacksEvent
+    );
+
+    // console.log(subProcedure);
+    return new Activity(obj.name, subProcedure, obj.nodePhrases);
   }
 
-  static fromJSON(json: string) {
-    try {
-      const obj = JSON.parse(json);
-      return this.deserialize(obj);
-    } catch (ex) {
-      throw new Error("Failed to parse JSON file: " + ex);
-    }
-  }
+  // static fromJSON(json: string) {
+  //   try {
+  //     const obj = JSON.parse(json);
+  //     return this.deserialize(obj);
+  //   } catch (ex) {
+  //     throw new Error("Failed to parse JSON file: " + ex);
+  //   }
+  // }
 
-  static fromJSONObject(object: any) {
+  static fromJSONObject(
+    object: any,
+    parent: SubProcedure,
+    callbacksActivity: any,
+    callbacksEvent: any
+  ) {
     try {
-      return this.deserialize(object);
+      return this.deserialize(
+        object,
+        parent,
+        callbacksActivity,
+        callbacksEvent
+      );
     } catch (ex) {
       throw new Error("Failed to parse Serialized Activity Object: " + ex);
     }

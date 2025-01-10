@@ -58,7 +58,6 @@ function LoadNodes(props: {
 
   const getPhraseActivity = (data: any) => {
     const ita = data.ITA;
-    console.log(data);
     const descriptions = ita.descriptions; // Parsing della stringa JSON in un oggetto
     const nodePhrases = ita.nodePhrases;
 

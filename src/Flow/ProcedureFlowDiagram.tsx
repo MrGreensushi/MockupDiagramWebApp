@@ -33,8 +33,10 @@ import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
 import SubProcedure from "../Procedure/SubProcedure.ts";
 import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
-import CustomEdge from "./CustomEdge.tsx";
 import LoadNodes from "../Misc/LoadNodes.tsx";
+import EventNode, { EventNodeObject } from "./EventNode.tsx";
+import CustomEdge from "./CustomEdge.tsx";
+import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
@@ -68,16 +70,21 @@ function ProcedureFlowDiagram(props: {
     setEdges((edges) => applyEdgeChanges(changes, edges));
   }, []);
 
-  const onConnect = useCallback(
-    (connection: Connection) =>
-      setEdges((eds) =>
-        addEdge(
-          { ...connection, markerEnd: { type: MarkerType.ArrowClosed } },
-          eds
-        )
-      ),
-    []
-  );
+  const onConnect = useCallback((connection: Connection) => {
+    const type = getTypeNodeFromId(connection.source);
+
+    setEdges((eds) =>
+      addEdge(
+        {
+          ...connection,
+          markerEnd: { type: MarkerType.ArrowClosed },
+          data: { sourceNodeType: type },
+          type: "customEdge",
+        },
+        eds
+      )
+    );
+  }, []);
 
   const onNodeClick = useCallback((_, node: Node) => {
     console.log("Flow:OnNodeClick");
@@ -88,6 +95,17 @@ function ProcedureFlowDiagram(props: {
     console.log("Flow:OnBlur");
     setSelectedNodeId(undefined);
   }, []);
+
+  const saveProcedure = () => {
+    props.handleProcedureUpdate(rfInstance!.toObject());
+  };
+
+  const handleBackButton = () => {
+    saveProcedure();
+    props.handleBackButton();
+  };
+
+  //#region ActivityNode
 
   const onClickEdit = () => {
     setShowSideTab(true);
@@ -103,15 +121,6 @@ function ProcedureFlowDiagram(props: {
 
     //open the new sub procedure
     props.handleSubProcedure(subProcedure);
-  };
-
-  const saveProcedure = () => {
-    props.handleProcedureUpdate(rfInstance!.toObject());
-  };
-
-  const handleBackButton = () => {
-    saveProcedure();
-    props.handleBackButton();
   };
 
   const onActivityEdited = (newActivity: Activity) => {
@@ -183,7 +192,7 @@ function ProcedureFlowDiagram(props: {
         label: label,
         activity: new Activity(
           label,
-          new SubProcedure(undefined, label, props.procedure, id),
+          new SubProcedure(undefined, label, props.procedure),
           undefined
         ),
         onClickEdit: onClickEdit,
@@ -196,71 +205,12 @@ function ProcedureFlowDiagram(props: {
     return obj;
   }, [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]);
 
-  const restoreFlow = useCallback(
-    (flow: ReactFlowJsonObject) => {
-      //try {
-      const newNodes = [...flow.nodes].map((node) => {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            activity: Activity.fromJSONObject(node.data.activity),
-            onClickEdit: onClickEdit,
-            onClickDelete: onClickDelete,
-            onActivityNameChanged: onActivityNameChanged,
-            onClickSubProcedure: onClickSubProcedure,
-          },
-        };
-      });
-      props.setProcedure((procedure) =>
-        procedure.cloneAndAddFlow({
-          nodes: newNodes,
-          edges: flow.edges,
-          viewport: flow.viewport,
-        })
-      );
-      /*} catch {
-        console.error(flow);
-        setNodes([]);
-        setEdges([]);
-      }*/
-    },
-    [rfInstance, setNodes, setEdges, onClickDelete, onActivityNameChanged]
-  );
-
   const addNode = useCallback(() => {
     const newNode = createNewNode();
     setNodes((nodes) => [...nodes, newNode]);
   }, [createNewNode]);
 
-  const nodeTypes = useMemo(() => ({ activityNode: ActivityNode }), []);
-
-  const OffcanvasTitle = useMemo(() => {
-    const node = rfInstance?.getNode(selectedNodeId!);
-    const name = node ? (node.data.label as string) : "";
-
-    return (
-      <Row>
-        <div style={{ width: "100%" }}>
-          <DynamicTextField
-            initialValue={name}
-            onSubmit={(name: string) =>
-              onActivityNameChanged(selectedNodeId!, name)
-            }
-            baseProps={{ size: "lg", placeholder: "Activity" }}
-          />
-        </div>
-      </Row>
-    );
-  }, [
-    rfInstance,
-    selectedNodeId,
-    props.procedure,
-    onActivityNameChanged,
-    nodes,
-  ]);
-
-  const instantiateActvity = (activityDescription: ActivityDescription) => {
+  const instantiateActivity = (activityDescription: ActivityDescription) => {
     const newNode = createExistingNode(activityDescription);
     setNodes((nodes) => [...nodes, newNode]);
   };
@@ -287,7 +237,7 @@ function ProcedureFlowDiagram(props: {
           label: label,
           activity: new Activity(
             label,
-            new SubProcedure(undefined, label, props.procedure, id),
+            new SubProcedure(undefined, label, props.procedure),
             activityDescription.nodePhrases
           ),
           onClickEdit: onClickEdit,
@@ -302,6 +252,159 @@ function ProcedureFlowDiagram(props: {
     [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]
   );
 
+  //#endregion
+
+  const nodeTypes = useMemo(
+    () => ({ activityNode: ActivityNode, eventNode: EventNode }),
+    []
+  );
+
+  const edgeTypes = useMemo(() => ({ customEdge: CustomEdge }), []);
+
+  const OffcanvasTitle = useMemo(() => {
+    const node = rfInstance?.getNode(selectedNodeId!);
+    const name = node ? (node.data.label as string) : "";
+
+    return (
+      <Row>
+        <div style={{ width: "100%" }}>
+          <DynamicTextField
+            initialValue={name}
+            onSubmit={(name: string) =>
+              onActivityNameChanged(selectedNodeId!, name)
+            }
+            baseProps={{ size: "lg", placeholder: "Activity" }}
+          />
+        </div>
+      </Row>
+    );
+  }, [
+    rfInstance,
+    selectedNodeId,
+    props.procedure,
+    onActivityNameChanged,
+    nodes,
+  ]);
+
+  const getTypeNodeFromId = (id: string) => {
+    var node = nodes[0];
+    //setNodes has always the updated value
+    setNodes((prevNodes) => {
+      node = prevNodes.find((x) => x.id === id) ?? prevNodes[0];
+      return prevNodes;
+    });
+    return node.type;
+  };
+
+  //#region EventNode
+
+  const onClickDeleteEvent = useCallback(
+    (nodeId: string) => {
+      rfInstance!.deleteElements({
+        nodes: [{ id: nodeId }],
+      });
+    },
+    [rfInstance]
+  );
+
+  const onEventNameChanged = useCallback((id: string, newName: string) => {
+    setNodes((nodes) =>
+      nodes.map((node) => {
+        if (node.id === id) {
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              label: newName,
+            },
+          };
+        } else {
+          return node;
+        }
+      })
+    );
+  }, []);
+
+  const createNewEventNode = useCallback(() => {
+    const id = uuidv4();
+    const label = "Event " + nodes.length;
+    const position =
+      rfInstance && flowRef.current
+        ? rfInstance.screenToFlowPosition({
+            x: (flowRef.current as Element).getBoundingClientRect().width / 2,
+            y: (flowRef.current as Element).getBoundingClientRect().height / 2,
+          })
+        : { x: 0, y: 0 };
+    const obj: EventNodeObject = {
+      id: id,
+      position: {
+        x: position?.x ?? 0,
+        y: position?.y ?? 0,
+      },
+      data: {
+        label: label,
+        onClickDelete: onClickDeleteEvent,
+        onEventNameChanged: onEventNameChanged,
+      },
+      type: "eventNode",
+    };
+    return obj;
+  }, [rfInstance, nodes.length, onClickDeleteEvent, onEventNameChanged]);
+
+  const addEventNode = () => {
+    const newNode = createNewEventNode();
+    setNodes((prevNodes) => [...prevNodes, newNode]);
+  };
+
+  //#endregion
+
+  const restoreFlow = useCallback(
+    (flow: ReactFlowJsonObject) => {
+      console.log("Restore Flow");
+
+      const activityCallbacks = {
+        onClickEdit: onClickEdit,
+        onClickDelete: onClickDelete,
+        onActivityNameChanged: onActivityNameChanged,
+        onClickSubProcedure: onClickSubProcedure,
+      };
+      const eventCallbacks = {
+        onClickDelete: onClickDeleteEvent,
+        onEventNameChanged: onEventNameChanged,
+      };
+      //try {
+      const newNodes = instantiateNodeFromJsonObj(
+        flow,
+        props.procedure,
+        activityCallbacks,
+        eventCallbacks
+      );
+
+      props.setProcedure((procedure) =>
+        procedure.cloneAndAddFlow({
+          nodes: newNodes,
+          edges: flow.edges,
+          viewport: flow.viewport,
+        })
+      );
+      /*} catch {
+        console.error(flow);
+        setNodes([]);
+        setEdges([]);
+      }*/
+    },
+    [
+      rfInstance,
+      setNodes,
+      setEdges,
+      onClickDelete,
+      onActivityNameChanged,
+      onClickSubProcedure,
+      onEventNameChanged,
+      onClickDeleteEvent,
+    ]
+  );
+
   return (
     <>
       <Row>
@@ -313,7 +416,7 @@ function ProcedureFlowDiagram(props: {
       </Row>
       <Row>
         <Col xs={2}>
-          <LoadNodes instantiateActvity={instantiateActvity} />
+          <LoadNodes instantiateActvity={instantiateActivity} />
         </Col>
         <Col xs>
           <Container fluid style={{ height: "90vh", padding: "1%" }}>
@@ -322,6 +425,7 @@ function ProcedureFlowDiagram(props: {
                 nodes={nodes}
                 edges={edges}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 onConnect={onConnect}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
@@ -340,6 +444,13 @@ function ProcedureFlowDiagram(props: {
                     style={{ marginBottom: "10px" }}
                   >
                     Aggiungi Attività
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={addEventNode}
+                    style={{ marginBottom: "10px" }}
+                  >
+                    Aggiungi Evento
                   </Button>
                 </Panel>
                 {rfInstance && (

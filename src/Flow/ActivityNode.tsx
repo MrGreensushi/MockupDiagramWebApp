@@ -58,9 +58,9 @@ function ActivityNode(props: NodeProps<ActivityNodeType>) {
           }}
         />
       </Col>
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
-      <NodeToolbar>
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Bottom} />
+      <NodeToolbar position={Position.Right}>
         <ButtonGroup>
           <Button variant="secondary" onClick={handleSubProcedure}>
             <i className="bi bi-plus-circle-dotted" aria-label="subProcedure" />
