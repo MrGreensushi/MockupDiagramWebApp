@@ -2,7 +2,7 @@ import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges } from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, ReactFlowJsonObject } from "@xyflow/react";
 import SideTab from "../Layout/SideTab.tsx";
 import SceneEditor from "../Layout/SceneEditor.tsx";
 import SceneNode, { createNewNode, SceneNodeProps } from "./SceneNode.tsx";
@@ -10,11 +10,11 @@ import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
-function StoryFlowChart (props: {
+function StoryFlowChartEditor (props: {
   story: Story,
-  setStory: React.Dispatch<React.SetStateAction<Story>>,
-  editMode: boolean,
+  setStory: React.Dispatch<React.SetStateAction<Story>>
 }) {
+  const story = props.story;
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
@@ -23,11 +23,6 @@ function StoryFlowChart (props: {
   const [showSideTab, setShowSideTab] = useState(false);
 
   const flowRef = useRef(null);
-
-  useEffect(() => {
-    if (rfInstance) 
-      props.setStory(props.story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}))
-  }, [nodes, edges])
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes(nodes => applyNodeChanges(changes, nodes));
@@ -141,13 +136,17 @@ function StoryFlowChart (props: {
     setNodes(nodes => [...nodes, newNode]);
   }, [onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged])
 
-  const handleInit = (rfInstance: ReactFlowInstance) => {
-    props.story.flow.nodes.forEach(node => addExistingNode(node));
-    rfInstance.setEdges(props.story.flow.edges);
-    rfInstance.setViewport(props.story.flow.viewport);
+  const handleInit = useCallback((rfInstance: ReactFlowInstance) => {
+    story.flow.nodes.forEach(node => addExistingNode(node));
+    setEdges(story.flow.edges);
     rfInstance.fitView();
     setRfInstance(rfInstance);
-  }
+  }, [story]);
+
+  useEffect(() => {
+    if (rfInstance) 
+      props.setStory(story.cloneAndAddFlow({nodes: nodes, edges: edges, viewport: rfInstance.getViewport()}))
+  }, [nodes, edges, rfInstance])
   
   const nodeTypes = useMemo(() => ({sceneNode: SceneNode}), []);
 
@@ -195,43 +194,30 @@ function StoryFlowChart (props: {
         style={{ border: "1px solid black" }}
         className="gx-0"
         ref={flowRef}
-        fitView
-        nodesDraggable={props.editMode}
-        nodesConnectable={props.editMode}
-        elementsSelectable={props.editMode}
-        panOnDrag={props.editMode}
-        zoomOnScroll={props.editMode}
-        zoomOnDoubleClick={props.editMode}
-        >
-        {props.editMode &&
-          <Panel>
-            <Button variant="primary" onClick={addNewNode} style={{ margin: "0px 5px" }}>
-                {"Aggiungi Scena "}
-                <i className="bi bi-plus-square"/>
-            </Button>
-          </Panel>
-        }
-        {props.editMode && 
-          <Controls />
-        }
+        fitView >
+        <Panel>
+          <Button variant="primary" onClick={addNewNode} style={{ margin: "0px 5px" }}>
+              {"Aggiungi Scena "}
+              <i className="bi bi-plus-square"/>
+          </Button>
+        </Panel>
+        <Controls />
         <Background />
       </ReactFlow>
-      {props.editMode &&
-        <SideTab 
-          title={OffcanvasTitle}
-          showSideTab={showSideTab}
-          setShowSideTab={setShowSideTab} >
-          {showSideTab &&
-            <SceneEditor 
-              story={props.story}
-              setStory={props.setStory}
-              scene={rfInstance?.getNode(selectedNodeId!)?.data.scene as Scene}
-              setScene={onSceneEdited} />
-          }
-        </SideTab>
-      }
+      <SideTab 
+        title={OffcanvasTitle}
+        showSideTab={showSideTab}
+        setShowSideTab={setShowSideTab} >
+        {showSideTab &&
+          <SceneEditor 
+            story={story}
+            setStory={props.setStory}
+            scene={rfInstance?.getNode(selectedNodeId!)?.data.scene as Scene}
+            setScene={onSceneEdited} />
+        }
+      </SideTab>
     </Row>
   );
 };
 
-export default StoryFlowChart;
+export default StoryFlowChartEditor;
