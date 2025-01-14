@@ -53,6 +53,30 @@
   border: 1px solid #222; 
 }
 
+.decision-node {
+  padding: 0px 0px;
+  border-radius: 5px;
+  background-color: #b8b7f7; 
+  color: #222;
+  border: 1px solid #222;
+  rotate: 45deg; 
+  width: 100px;
+  height: 100px;
+  display: flex; /* Aggiunto */
+  justify-content: center; /* Centra orizzontalmente */
+  align-items: center; /* Centra verticalmente */
+}
+
+.decision-node-content{
+  rotate: -45deg;
+  width: 100%; 
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 .dynamic-text-field {
   padding: 0;
   border: 0;
@@ -115,3 +139,51 @@
 .fill-height {
   height: calc(100vh - 114px);
 }
+
+.react-flow__edge-path
+{
+  stroke-width: 2 !important;
+}
+
+.react-flow__edge-path.eventNode{
+  stroke-dasharray: 5,5;
+}
+
+
+
+:root {
+  --trigger-handle-color: #007bff; /* Blu */
+  --interrupt-handle-color: #ffc107; /* Giallo */
+  --yes-handle-color: #28a745; /* Verde */
+  --no-handle-color: #dc3545; /* Rosso */
+  --contorno: 0.15px black;
+}
+
+.trigger-handle {
+  stroke: var(--trigger-handle-color) !important;
+  color: var(--trigger-handle-color) !important;
+  background-color: var(--trigger-handle-color) !important;
+  -webkit-text-stroke: var(--contorno); /* Contorno nero */
+}
+
+.interrupt-handle {
+  stroke: var(--interrupt-handle-color) !important;
+  color: var(--interrupt-handle-color) !important;
+  background-color: var(--interrupt-handle-color) !important;
+  -webkit-text-stroke: var(--contorno);
+}
+
+.yes-handle {
+  stroke: var(--yes-handle-color) !important;
+  color: var(--yes-handle-color) !important;
+  background-color: var(--yes-handle-color) !important;
+  -webkit-text-stroke: var(--contorno);
+}
+
+.no-handle {
+  stroke: var(--no-handle-color) !important;
+  color: var(--no-handle-color) !important;
+  background-color: var(--no-handle-color) !important;
+  -webkit-text-stroke: var(--contorno);
+}
+

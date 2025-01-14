@@ -37,6 +37,7 @@ import LoadNodes from "../Misc/LoadNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
 import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
+import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
@@ -255,7 +256,11 @@ function ProcedureFlowDiagram(props: {
   //#endregion
 
   const nodeTypes = useMemo(
-    () => ({ activityNode: ActivityNode, eventNode: EventNode }),
+    () => ({
+      activityNode: ActivityNode,
+      eventNode: EventNode,
+      decisionNode: DecisionNode,
+    }),
     []
   );
 
@@ -298,15 +303,6 @@ function ProcedureFlowDiagram(props: {
 
   //#region EventNode
 
-  const onClickDeleteEvent = useCallback(
-    (nodeId: string) => {
-      rfInstance!.deleteElements({
-        nodes: [{ id: nodeId }],
-      });
-    },
-    [rfInstance]
-  );
-
   const onEventNameChanged = useCallback((id: string, newName: string) => {
     setNodes((nodes) =>
       nodes.map((node) => {
@@ -343,19 +339,49 @@ function ProcedureFlowDiagram(props: {
       },
       data: {
         label: label,
-        onClickDelete: onClickDeleteEvent,
+        onClickDelete: onClickDelete,
         onEventNameChanged: onEventNameChanged,
       },
       type: "eventNode",
     };
     return obj;
-  }, [rfInstance, nodes.length, onClickDeleteEvent, onEventNameChanged]);
+  }, [rfInstance, nodes.length, onClickDelete, onEventNameChanged]);
 
   const addEventNode = () => {
     const newNode = createNewEventNode();
     setNodes((prevNodes) => [...prevNodes, newNode]);
   };
 
+  const createNewDecisionNode = useCallback(() => {
+    const id = uuidv4();
+    const label = "Decision " + nodes.length;
+    const position =
+      rfInstance && flowRef.current
+        ? rfInstance.screenToFlowPosition({
+            x: (flowRef.current as Element).getBoundingClientRect().width / 2,
+            y: (flowRef.current as Element).getBoundingClientRect().height / 2,
+          })
+        : { x: 0, y: 0 };
+    const obj: DecisionNodeObject = {
+      id: id,
+      position: {
+        x: position?.x ?? 0,
+        y: position?.y ?? 0,
+      },
+      data: {
+        label: label,
+        onClickDelete: onClickDelete,
+        onEventNameChanged: onEventNameChanged,
+      },
+      type: "decisionNode",
+    };
+    return obj;
+  }, [rfInstance, nodes.length, onClickDelete, onEventNameChanged]);
+
+  const addDecisionNode = () => {
+    const newNode = createNewDecisionNode();
+    setNodes((prevNodes) => [...prevNodes, newNode]);
+  };
   //#endregion
 
   const restoreFlow = useCallback(
@@ -369,7 +395,7 @@ function ProcedureFlowDiagram(props: {
         onClickSubProcedure: onClickSubProcedure,
       };
       const eventCallbacks = {
-        onClickDelete: onClickDeleteEvent,
+        onClickDelete: onClickDelete,
         onEventNameChanged: onEventNameChanged,
       };
       //try {
@@ -401,7 +427,6 @@ function ProcedureFlowDiagram(props: {
       onActivityNameChanged,
       onClickSubProcedure,
       onEventNameChanged,
-      onClickDeleteEvent,
     ]
   );
 
@@ -452,6 +477,7 @@ function ProcedureFlowDiagram(props: {
                   >
                     Aggiungi Evento
                   </Button>
+                  <Button onClick={addDecisionNode}>Aggiungi Decisione</Button>
                 </Panel>
                 {rfInstance && (
                   <SaveLoadManager

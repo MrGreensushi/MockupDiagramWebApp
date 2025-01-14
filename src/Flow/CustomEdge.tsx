@@ -23,6 +23,7 @@ function CustomEdge(props: EdgeProps) {
 
   // Determina lo stile in base al tipo del nodo sorgente
   const isEventNode = data?.sourceNodeType === "eventNode";
+  const isDecisionNode = data?.sourceNodeType === "decisionNode";
   const isTriggerHandle = props.sourceHandleId === "trigger-handle";
 
   // Calcola il percorso dell'edge
@@ -36,17 +37,10 @@ function CustomEdge(props: EdgeProps) {
   });
 
   const handleStyle = useMemo(() => {
-    if (!isEventNode) return { strokeWidth: 2 };
+    if (!isEventNode || !isDecisionNode) return {};
     return {
-      strokeWidth: 2,
-      strokeDasharray: "5,5",
       stroke: isTriggerHandle ? "blue" : "red",
     };
-  }, [isEventNode, isTriggerHandle]);
-
-  const label = useMemo(() => {
-    if (!isEventNode) return undefined;
-    return isTriggerHandle ? "Triggers" : "Interrupts";
   }, [isEventNode, isTriggerHandle]);
 
   return (
@@ -54,7 +48,7 @@ function CustomEdge(props: EdgeProps) {
       <BaseEdge
         path={edgePath}
         style={handleStyle}
-        className={`react-flow__edge-path`}
+        className={`react-flow__edge-path ${data?.sourceNodeType} ${props.sourceHandleId}`}
         data-testid={`edge-${id}`}
         markerEnd={markerEnd}
       />

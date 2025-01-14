@@ -45,7 +45,7 @@ function instantiateNodeFromJsonObj(
       ...node,
       data: {
         ...node.data,
-        onClickDelete: eventCallbacks.onClickDeleteEvent,
+        onClickDelete: eventCallbacks.onClickDelete,
         onEventNameChanged: eventCallbacks.onEventNameChanged,
       },
     };

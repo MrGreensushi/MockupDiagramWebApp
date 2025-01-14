@@ -1,5 +1,6 @@
 import time
 import parseXml
+import writeXml
 import os
 from flask import Flask,jsonify,request
 
@@ -45,3 +46,18 @@ def user(node_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+@app.route('/procedure',methods=['POST'])
+def extract_XML_from_procedure():
+    try:
+        if request.method == 'POST':
+        
+                data = request.json 
+                if not data:
+                    return jsonify({"error": "No data provided"}), 400
+    
+                xmls=writeXml.retrieveAllActivities(data)
+    
+                return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
