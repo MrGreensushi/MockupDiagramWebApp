@@ -120,8 +120,20 @@
   }
 }
 
+
 .scene-node.selected {
-  border-color: #ff0072; /* corrisponde a theme.primary */
+  border-color: #ff0072; 
+}
+
+.event-node.selected {
+  border-color: #ff0072; 
+}
+.decision-node.selected {
+  border-color: #ff0072; 
+}
+
+.scene-node.hasSubProcedure {
+  background-color: #c1cfcb; 
 }
 
 .handleDiv:hover .handle {

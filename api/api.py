@@ -2,7 +2,8 @@ import time
 import parseXml
 import writeXml
 import os
-from flask import Flask,jsonify,request
+from flask import Flask,jsonify,request,send_file
+from io import BytesIO
 
 app = Flask(__name__)
 folder_path = r".\xmls\Educational-Contents\BLSDPro"
@@ -51,13 +52,13 @@ def user(node_id):
 def extract_XML_from_procedure():
     try:
         if request.method == 'POST':
-        
-                data = request.json 
-                if not data:
-                    return jsonify({"error": "No data provided"}), 400
-    
-                xmls=writeXml.retrieveAllActivities(data)
-    
-                return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
+            data = request.json 
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+
+            zip_folder=writeXml.zipAllActivitiesXmls(data)
+
+            return send_file(zip_folder, as_attachment=True, download_name='xml_files.zip', mimetype='application/zip')
+           # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

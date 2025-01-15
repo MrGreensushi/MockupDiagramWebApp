@@ -2,6 +2,8 @@ import os
 import json
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom.minidom import parseString
+from io import BytesIO
+import zipfile
 
 # Funzione per creare l'XML
 def create_activity_xml(node_phrases):
@@ -63,13 +65,22 @@ class Activity:
 
         return f"Start\n {self.name}\n NodePhrases:\n{phrases}END"  # Correct: Returning a string
 
-def writeXMLFile(output_dir,xml_content,xml_name):
-    output_file = os.path.join(output_dir, f"{xml_name}.xml")
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(xml_content)
+# def writeXMLFile(output_dir,xml_content,xml_name):
+#     output_file = os.path.join(output_dir, f"{xml_content}")
+#     with open(output_file, 'w', encoding='utf-8') as f:
+#         f.write(xml_content)
 
-def writeAllActivities(data,output_dir):
+def zipAllActivitiesXmls(data):
     activities=retrieveAllActivities(data)
+    xmls=[]
     for activity in activities:
         xml_content=create_activity_xml(activity.node_phrases)
-        writeXMLFile(output_dir,xml_content,activity.name)
+        #writeXMLFile(output_dir,xml_content,activity.name)
+        xmls.append((f"{activity.name}.xml", xml_content))
+    # Preparare un archivio ZIP contenente tutti i file XML
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for filename, xml_content  in xmls:
+            zip_file.writestr(filename, xml_content )
+    zip_buffer.seek(0)
+    return zip_buffer

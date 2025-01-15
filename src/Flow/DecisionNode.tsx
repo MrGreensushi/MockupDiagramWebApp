@@ -77,7 +77,7 @@ function DecisionNode(props: NodeProps<DecisionNodeType>) {
         type="source"
       />
 
-      <NodeToolbar>
+      <NodeToolbar position={Position.Right}>
         <ButtonGroup>
           <Button variant="secondary" onClick={handleDelete}>
             <i className="bi bi-trash3" aria-label="delete" />

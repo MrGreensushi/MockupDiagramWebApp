@@ -77,7 +77,7 @@ function EventNode(props: NodeProps<EventNodeType>) {
 
       <Handle type="target" id="await-handle" position={Position.Top} />
 
-      <NodeToolbar>
+      <NodeToolbar position={Position.Right}>
         <ButtonGroup>
           <Button variant="secondary" onClick={handleDelete}>
             <i className="bi bi-trash3" aria-label="delete" />

@@ -19,6 +19,10 @@ class SubProcedure extends Procedure {
     this.parent = parent;
   }
 
+  isEmpty(): boolean {
+    return this.flow.nodes.length == 0;
+  }
+
   clone(): SubProcedure {
     return new SubProcedure(this.flow, this.title, this.parent);
   }

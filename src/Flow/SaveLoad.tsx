@@ -9,6 +9,7 @@ import {
 import saveToDisk from "../Misc/SaveToDisk.ts";
 import React from "react";
 import Procedure from "../Procedure/Procedure.ts";
+import axios from "axios";
 
 function SaveLoadManager(props: {
   rfInstance: ReactFlowInstance;
@@ -30,14 +31,36 @@ function SaveLoadManager(props: {
       { nodes: nodes, edges: edges, viewport: rfInstance.getViewport() },
       procedure.title
     );
-    console.log(newProcedure);
     const jsonString = newProcedure.toJSONMethod();
     saveToDisk(
       jsonString,
       `${newProcedure.title}.procedure`,
       "application/json"
     );
+    downloadXML(jsonString);
   }, [rfInstance, procedure, edges, nodes]);
+
+  async function downloadXML(jsonProcedure: string) {
+    const response = await fetch("/procedure", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: jsonProcedure, // I dati da inviare al backend
+    });
+
+    if (response.ok) {
+      //saveToDisk(response, "xml_files.zip", "application/json");
+
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "xml_files.zip"; // Nome del file ZIP da scaricare
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } else {
+      console.error("Errore nel download dei file XML");
+    }
+  }
 
   const onLoad = useCallback(
     async (file?: File) => {

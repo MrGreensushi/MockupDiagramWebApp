@@ -45,7 +45,11 @@ function ActivityNode(props: NodeProps<ActivityNodeType>) {
   };
 
   return (
-    <div className={`scene-node ${props.selected ? "selected" : ""}`}>
+    <div
+      className={`scene-node ${props.selected ? "selected" : ""} ${
+        props.data.activity.subProcedure.isEmpty() ? "" : "hasSubProcedure"
+      }`}
+    >
       <Col>
         <DynamicTextField
           initialValue={props.data.label}
