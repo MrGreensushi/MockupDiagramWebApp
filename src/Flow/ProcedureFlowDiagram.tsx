@@ -38,14 +38,14 @@ import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
 import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
+import TitleBar from "../Layout/TitleBar.tsx";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
   setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
   handleSubProcedure: (newSubProcedure: SubProcedure) => void;
   handleProcedureUpdate: (ReactFlowJsonObject: ReactFlowJsonObject) => void;
-  handleBackButton: () => void;
-  showBackButton: boolean;
+  handleBackSubActivity: (subProcedure: SubProcedure) => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>(props.procedure.flow.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(props.procedure.flow.edges ?? []);
@@ -101,9 +101,9 @@ function ProcedureFlowDiagram(props: {
     props.handleProcedureUpdate(rfInstance!.toObject());
   };
 
-  const handleBackButton = () => {
+  const handleBackSubActivity = (subProcedure: SubProcedure) => {
     saveProcedure();
-    props.handleBackButton();
+    props.handleBackSubActivity(subProcedure);
   };
 
   //#region ActivityNode
@@ -164,7 +164,7 @@ function ProcedureFlowDiagram(props: {
         if (node.id === id) {
           return {
             ...node,
-            data: { ...node.data, activity: newActivity.copy() },
+            data: { ...node.data, activity: newActivity },
           };
         } else {
           return node;
@@ -239,7 +239,7 @@ function ProcedureFlowDiagram(props: {
           activity: new Activity(
             label,
             new SubProcedure(undefined, label, props.procedure),
-            activityDescription.nodePhrases
+            activityDescription.languages
           ),
           onClickEdit: onClickEdit,
           onClickDelete: onClickDelete,
@@ -385,7 +385,7 @@ function ProcedureFlowDiagram(props: {
   //#endregion
 
   const restoreFlow = useCallback(
-    (flow: ReactFlowJsonObject) => {
+    (flow: ReactFlowJsonObject, title: string) => {
       console.log("Restore Flow");
 
       const activityCallbacks = {
@@ -398,10 +398,12 @@ function ProcedureFlowDiagram(props: {
         onClickDelete: onClickDelete,
         onEventNameChanged: onEventNameChanged,
       };
+
+      const newProcedure = props.procedure.cloneAndSetTitle(title);
       //try {
       const newNodes = instantiateNodeFromJsonObj(
         flow,
-        props.procedure,
+        newProcedure,
         activityCallbacks,
         eventCallbacks
       );
@@ -433,11 +435,10 @@ function ProcedureFlowDiagram(props: {
   return (
     <>
       <Row>
-        {props.showBackButton && (
-          <Button onClick={handleBackButton}>
-            <i className="bi bi-arrow-left-circle" />
-          </Button>
-        )}
+        <TitleBar
+          subProcedure={props.procedure}
+          handleBackSubActivity={handleBackSubActivity}
+        />
       </Row>
       <Row>
         <Col xs={2}>

@@ -199,3 +199,10 @@
   -webkit-text-stroke: var(--contorno);
 }
 
+.breadcrumb-align {
+  display: flex;
+  justify-content: center;
+  font-size:x-large;
+  align-items:flex-end;
+  margin-top: 0.5rem;
+}

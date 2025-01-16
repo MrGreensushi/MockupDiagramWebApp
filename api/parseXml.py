@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 import os
 # Function to parse the XML file
-def parse_defibrillation_xml(file_path):
+def parse_activity_xml(file_path):
 # Parse the XML file
     tree = ET.parse(file_path)
     root = tree.getroot()
@@ -15,20 +15,27 @@ def parse_defibrillation_xml(file_path):
         lang_code = language.get('value')
         parsed_data[lang_code] = {
             'descriptions': {},
-            'nodePhrases': {}
+            'nodePhrases': {},
+            'details':{}
         }
 
         # Extract descriptions by level (Novice, Intermediate, Expert)
         for description in language.findall('description'):
             level = description.get('level')
-            text = description.text.strip() if description.text else "No description available"
+            text = description.text.strip() if description.text else ""
             parsed_data[lang_code]['descriptions'][level] = text
+        
+        #Extract details
+        for detail in language.findall('details'):
+            level = detail.get('level')
+            text = detail.text.strip() if detail.text else ""
+            parsed_data[lang_code]['details']= text
 
         # Extract node phrases by level (Novice, Intermediate, Expert)
         for nodePhrase in language.findall('nodePhrase'):
             level = nodePhrase.get('level')
             clipId = nodePhrase.get('clipId')
-            text = nodePhrase.text.strip() if nodePhrase.text else "No node phrase available"
+            text = nodePhrase.text.strip() if nodePhrase.text else ""
             
             if level not in parsed_data[lang_code]['nodePhrases']:
                 parsed_data[lang_code]['nodePhrases'][level] = {}
@@ -43,7 +50,7 @@ def parse_all_xmls(folder_path):
         for file in files:
             if file.endswith('.xml'):
                 file_path = os.path.join(root, file)
-                parsed_content.append(parse_defibrillation_xml(file_path))
+                parsed_content.append(parse_activity_xml(file_path))
     
     return parsed_content
                 
@@ -62,7 +69,7 @@ def write_node_to_xml(node,filepath):
             description_element.text = description
 
         # Add details for "Novice" level (empty tag)
-        #details_element = ET.SubElement(language_element, "details", level="Novice")
+        details_element = ET.SubElement(language_element, "details", level="Novice")
 
         # Add nodePhrases, assuming `nodePhrases` might also have similar structure
         for level, phrases in node['nodePhrases'].get(lang_code, {}).items():

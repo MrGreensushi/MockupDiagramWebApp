@@ -68,6 +68,7 @@ function ActivityDetails(props: {
               <Dropdown.Menu>
                 {Object.values(LevelsEnum).map((element, index) => (
                   <Dropdown.Item
+                    key={element}
                     eventKey={element}
                     active={element === level}
                     disabled={props.unavailableLevels[index]}

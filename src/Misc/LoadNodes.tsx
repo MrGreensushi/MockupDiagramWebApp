@@ -12,6 +12,8 @@ import {
 } from "react-bootstrap";
 import {
   ActivityDescription,
+  ActivityLanguage,
+  Languages,
   LevelsEnum,
   Phrase,
 } from "../Procedure/Activity.ts";
@@ -57,9 +59,20 @@ function LoadNodes(props: {
   };
 
   const getPhraseActivity = (data: any) => {
-    const ita = data.ITA;
-    const descriptions = ita.descriptions; // Parsing della stringa JSON in un oggetto
-    const nodePhrases = ita.nodePhrases;
+    const eng = getPhraseActivityOneLanguage(data.ENG);
+    const ita = getPhraseActivityOneLanguage(data.ITA);
+
+    return new ActivityDescription(data.Name, new Languages(ita, eng));
+  };
+
+  const getPhraseActivityOneLanguage = (data: any) => {
+    if (!data) {
+      return new ActivityLanguage();
+    }
+
+    const descriptions = data.descriptions; // Parsing della stringa JSON in un oggetto
+    const nodePhrases = data.nodePhrases;
+    const details = data.details;
 
     const descr = Object.keys(descriptions).map((key) => {
       return new Phrase("Description", key as LevelsEnum, descriptions[key]);
@@ -82,10 +95,7 @@ function LoadNodes(props: {
 
     // Aggiungi le descrizioni alle frasi
     const allPhrases = [...descr, ...phrases];
-
-    const activityName = data.Name;
-
-    return new ActivityDescription(activityName, allPhrases);
+    return new ActivityLanguage(allPhrases, details);
   };
 
   return (

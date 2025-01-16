@@ -29,7 +29,7 @@ def user(node_id):
             if not os.path.exists(file_path):
                 return jsonify({"error": "File not found"}), 404
             # Call the function and print parsed data
-            parsed_content = parseXml.parse_defibrillation_xml(file_path)
+            parsed_content = parseXml.parse_activity_xml(file_path)
             return jsonify(parsed_content)
         if request.method == 'POST':
 

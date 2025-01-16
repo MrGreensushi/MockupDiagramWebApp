@@ -6,27 +6,62 @@ enum LevelsEnum {
   expert = "Expert",
 }
 
-class Activity {
+class ActivityDescription {
   name: string;
-  nodePhrases: Phrase[];
+  languages: Languages;
+
+  constructor(name: string, languages?: Languages) {
+    this.name = name;
+    this.languages = languages ?? new Languages();
+  }
+}
+
+class Activity extends ActivityDescription {
   subProcedure: SubProcedure;
+  isEngActiveLanguage: boolean;
 
   constructor(
     name: string,
     subProcedure: SubProcedure,
-    nodePhrases?: Phrase[]
+    languages?: Languages,
+    isEngActiveLanguage?: boolean
   ) {
-    this.name = name;
-    this.nodePhrases = nodePhrases ?? [
-      new Phrase(undefined, LevelsEnum.novice, ""),
-      new Phrase(undefined, LevelsEnum.intermediate, ""),
-      new Phrase(undefined, LevelsEnum.expert, ""),
-    ];
+    super(name, languages);
     this.subProcedure = subProcedure;
+    this.isEngActiveLanguage = isEngActiveLanguage ?? true;
   }
 
-  copy(): Activity {
-    return new Activity(this.name, this.subProcedure, [...this.nodePhrases]);
+  public get nodePhrases() {
+    return this.activeLanguage.nodePhrases;
+  }
+
+  public set nodePhrases(value: Phrase[]) {
+    this.nodePhrases = value;
+  }
+
+  public get activeLanguage() {
+    return this.isEngActiveLanguage
+      ? this.languages.engActivity
+      : this.languages.itaActivity;
+  }
+
+  private updateActiveLanguage(lang: ActivityLanguage) {
+    const newIta = this.isEngActiveLanguage ? this.languages.itaActivity : lang;
+    const newEng = this.isEngActiveLanguage ? lang : this.languages.engActivity;
+
+    this.languages = new Languages(newIta, newEng);
+  }
+
+  public cloneAndSetPhrases(phrases: Phrase[], name?: string) {
+    const lang = this.activeLanguage.cloneAndSetPhrases(phrases);
+    this.updateActiveLanguage(lang);
+
+    return new Activity(
+      name ?? this.name,
+      this.subProcedure,
+      this.languages,
+      this.isEngActiveLanguage
+    );
   }
 
   static deserialize(
@@ -42,8 +77,12 @@ class Activity {
       callbacksEvent
     );
 
-    // console.log(subProcedure);
-    return new Activity(obj.name, subProcedure, obj.nodePhrases);
+    return new Activity(
+      obj.name,
+      subProcedure,
+      obj.languages,
+      obj.isEngActiveLanguage
+    );
   }
 
   // static fromJSON(json: string) {
@@ -86,19 +125,33 @@ class Phrase {
   }
 }
 
-class ActivityDescription {
-  name: string;
+class ActivityLanguage {
   nodePhrases: Phrase[];
+  details: string;
 
-  constructor(name: string, nodePhrases?: Phrase[]) {
-    this.name = name;
+  constructor(nodePhrases?: Phrase[], details?: string) {
     this.nodePhrases = nodePhrases ?? [
       new Phrase(undefined, LevelsEnum.novice, ""),
       new Phrase(undefined, LevelsEnum.intermediate, ""),
       new Phrase(undefined, LevelsEnum.expert, ""),
     ];
+    this.details = details ?? "";
+  }
+
+  public cloneAndSetPhrases(phrases: Phrase[]) {
+    return new ActivityLanguage(phrases, this.details);
+  }
+}
+
+class Languages {
+  itaActivity: ActivityLanguage;
+  engActivity: ActivityLanguage;
+
+  constructor(itaActivity?: ActivityLanguage, engActivity?: ActivityLanguage) {
+    this.engActivity = engActivity ?? new ActivityLanguage();
+    this.itaActivity = itaActivity ?? new ActivityLanguage();
   }
 }
 
 export default Activity;
-export { LevelsEnum, Phrase, ActivityDescription };
+export { LevelsEnum, Phrase, ActivityDescription, ActivityLanguage, Languages };

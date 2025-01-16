@@ -73,7 +73,7 @@ function ActivityEditor(props: {
           index !== id ? phrase : new Phrase(clipId, level, text)
         );
 
-        handleSave(new Activity(name, props.activity.subProcedure, newPhrases));
+        handleSave(props.activity.cloneAndSetPhrases(newPhrases, name));
         return newPhrases;
       });
     },
@@ -118,7 +118,7 @@ function ActivityEditor(props: {
         new Phrase("Nuovo", LevelsEnum.novice, ""),
       ];
 
-      handleSave(new Activity(name, props.activity.subProcedure, newPhrases));
+      handleSave(props.activity.cloneAndSetPhrases(newPhrases, name));
       return newPhrases;
     });
   };

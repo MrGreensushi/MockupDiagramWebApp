@@ -17,7 +17,7 @@ function SaveLoadManager(props: {
   setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
   nodes: Node[];
   edges: Edge[];
-  restoreFlow: (flow: ReactFlowJsonObject) => void;
+  restoreFlow: (flow: ReactFlowJsonObject, title: string) => void;
 }) {
   const rfInstance = props.rfInstance;
   const procedure = props.procedure;
@@ -70,7 +70,7 @@ function SaveLoadManager(props: {
         const newStory = Procedure.fromJSON(await file.text());
         console.log(newStory);
         setProcedure(newStory);
-        restoreFlow(newStory.flow);
+        restoreFlow(newStory.flow, newStory.title);
       } catch (err) {
         console.error(err);
       }

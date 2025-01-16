@@ -6,22 +6,29 @@ from io import BytesIO
 import zipfile
 
 # Funzione per creare l'XML
-def create_activity_xml(node_phrases):
+def create_activity_xml(activity):
     root = Element('node')
     # Lingua italiana
-    ita = SubElement(root, 'language', value='ITA')
-    for phrase in node_phrases:
+    language_xml(root,activity.ita,'ITA')
+    language_xml(root,activity.eng,'ENG')
+
+    # Convertire l'albero XML in una stringa formattata
+    xml_str = parseString(tostring(root, encoding="unicode")).toprettyxml(indent="   ").replace("&quot;","\"")
+
+    return xml_str
+
+def language_xml(root,activityLang,lang):
+    # Lingua italiana
+    ita = SubElement(root, 'language', value=lang)
+    for phrase in activityLang.node_phrases:
         if phrase['clipId'] == 'Description':
             desc = SubElement(ita, 'description', level=phrase['level'])
             desc.text = phrase.get('text', phrase['level'])
         else:
             node_phrase = SubElement(ita, 'nodePhrase', clipId=phrase['clipId'], level=phrase['level'])
             node_phrase.text = phrase.get('text', phrase['clipId'])
-
-    # Convertire l'albero XML in una stringa formattata
-    xml_str = parseString(tostring(root, encoding="unicode")).toprettyxml(indent="   ").replace("&quot;","\"")
-
-    return xml_str
+    details=SubElement(ita,'details',level='Notice')
+    details.text=activityLang.details
 
 def retrieveAllActivities(data):
     activities = []
@@ -33,7 +40,7 @@ def retrieveAllActivities(data):
             continue
         
         #activity contains aslo subProcedure but we are interested only in the name e phrases
-        slimActivity= Activity(activity.get('name',""), activity.get('nodePhrases',[]))
+        slimActivity= Activity(activity.get('name',""), activity.get('languages',{}))
         activities.append(slimActivity)
 
         #Retrieve all the activities present in the subProcedure
@@ -51,9 +58,16 @@ def retrieveAllActivities(data):
     return activities
 
 class Activity:
-    def __init__(self, name, node_phrases):
+    def __init__(self, name, languages):
         self.name = name  
-        self.node_phrases = node_phrases
+        itaLang=languages.get('itaActivity',None)
+        itaPhrase=itaLang.get('nodePhrases',[])
+        itaDetails=itaLang.get('details',"")
+        self.ita = LanguageActivity(itaPhrase,itaDetails)
+        engLang=languages.get('engActivity',None)
+        engPhrase=engLang.get('nodePhrases',[])
+        engDetails=engLang.get('details',"")
+        self.eng = LanguageActivity(engPhrase,engDetails)
     
     def printSinglePhrase(self,phrase):
         return f"{phrase['clipId']} {phrase['level']}: {phrase['text']}"
@@ -65,16 +79,17 @@ class Activity:
 
         return f"Start\n {self.name}\n NodePhrases:\n{phrases}END"  # Correct: Returning a string
 
-# def writeXMLFile(output_dir,xml_content,xml_name):
-#     output_file = os.path.join(output_dir, f"{xml_content}")
-#     with open(output_file, 'w', encoding='utf-8') as f:
-#         f.write(xml_content)
+class LanguageActivity:
+    def __init__(self,node_phrases,details):
+        self.details = details  
+        self.node_phrases = node_phrases
+
 
 def zipAllActivitiesXmls(data):
     activities=retrieveAllActivities(data)
     xmls=[]
     for activity in activities:
-        xml_content=create_activity_xml(activity.node_phrases)
+        xml_content=create_activity_xml(activity)
         #writeXMLFile(output_dir,xml_content,activity.name)
         xmls.append((f"{activity.name}.xml", xml_content))
     # Preparare un archivio ZIP contenente tutti i file XML

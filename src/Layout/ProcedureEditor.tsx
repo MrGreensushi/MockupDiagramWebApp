@@ -6,9 +6,10 @@ import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
 import LoadNodes from "../Misc/LoadNodes.tsx";
+import TitleBar from "./TitleBar.tsx";
 
-function ProcedureEditor(props: { procedure: Procedure }) {
-  const [procedure, setProcedure] = useState(props.procedure);
+function ProcedureEditor() {
+  const [procedure, setProcedure] = useState(new Procedure());
   const [subProcedure, setSubProcedure] = useState<SubProcedure | undefined>();
 
   const handleSubmit = (title: string) => {
@@ -37,7 +38,7 @@ function ProcedureEditor(props: { procedure: Procedure }) {
     });
   };
 
-  const handleBackSubActivity = () => {
+  const handleActiveBackSubActivity = () => {
     const toRet = subProcedure?.parent?.parent
       ? subProcedure.parent
       : undefined;
@@ -45,38 +46,23 @@ function ProcedureEditor(props: { procedure: Procedure }) {
     setSubProcedure(toRet);
   };
 
+  const handleBackSubActivity = (sub: SubProcedure) => {
+    handleProcedureUpdate(sub.flow);
+
+    const newSub = sub.parent ? sub : undefined;
+    setSubProcedure(newSub);
+  };
+
   return (
-    <Col>
-      <DynamicTextField
-        initialValue={
-          procedure.title + (subProcedure ? " > " + subProcedure?.title : "")
-        }
-        onSubmit={handleSubmit}
-        baseProps={{ size: "lg" }}
-        disable={subProcedure ? true : false}
-      />
-      {/* <Row>
-        {subProcedure && (
-          <Button onClick={handleBackSubActivity}>
-            <i className="bi bi-arrow-left-circle" />
-          </Button>
-        )}
-      </Row> */}
-      <Row style={{ width: "100%" }}>
-        <Col>
-          <ProcedureFlowDiagram
-            procedure={
-              subProcedure ?? new SubProcedure(procedure.flow, procedure.title)
-            }
-            setProcedure={setProcedure}
-            handleSubProcedure={handleSubProcedure}
-            handleProcedureUpdate={handleProcedureUpdate}
-            handleBackButton={handleBackSubActivity}
-            showBackButton={subProcedure ? true : false}
-          />
-        </Col>
-      </Row>
-    </Col>
+    <ProcedureFlowDiagram
+      procedure={
+        subProcedure ?? new SubProcedure(procedure.flow, procedure.title)
+      }
+      setProcedure={setProcedure}
+      handleSubProcedure={handleSubProcedure}
+      handleProcedureUpdate={handleProcedureUpdate}
+      handleBackSubActivity={handleBackSubActivity}
+    />
   );
 }
 

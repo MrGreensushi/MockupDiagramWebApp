@@ -10,7 +10,7 @@ import Procedure from "./Procedure/Procedure.ts";
 function App() {
   return (
     <div className="App">
-      <ProcedureEditor procedure={new Procedure()} />
+      <ProcedureEditor />
     </div>
   );
 }
