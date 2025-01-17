@@ -3,9 +3,9 @@ import { ReactFlowJsonObject } from "@xyflow/react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "./StoryElement.ts";
 
 type SerializedStory = {
-    characters: CharacterElement[],
-    objects: ObjectElement[],
-    locations: LocationElement[],
+    characters: [string, CharacterElement][],
+    objects: [string, ObjectElement][],
+    locations: [string, LocationElement][],
     flow: ReactFlowJsonObject,
     title: string
 }
@@ -18,24 +18,24 @@ class Story {
     title: string;
 
     constructor(
-        characters: CharacterElement[] = [],
-        objects: ObjectElement[] = [],
-        locations: LocationElement[] = [],
+        characters: CharacterElement[] | [string, CharacterElement][] = [],
+        objects: ObjectElement[] | [string, ObjectElement][] = [],
+        locations: LocationElement[] | [string, LocationElement][] = [],
         flow: ReactFlowJsonObject = {nodes: [], edges: [], viewport: {x: 0, y: 0, zoom: 1}},
         title?: string
     ) {
         this.characters = new Map();
-        characters.forEach(char => this.characters.set(uuidv4(), char));
+        characters.forEach(char => Array.isArray(char) ? this.characters.set(char[0], char[1]) : this.characters.set(uuidv4(), char));
         this.objects = new Map();
-        objects.forEach(obj => this.objects.set(uuidv4(), obj));
+        objects.forEach(obj => Array.isArray(obj) ? this.objects.set(obj[0], obj[1]) : this.objects.set(uuidv4(), obj));
         this.locations = new Map();
-        locations.forEach(loc => this.locations.set(uuidv4(), loc));
+        locations.forEach(loc => Array.isArray(loc) ? this.locations.set(loc[0], loc[1]) : this.locations.set(uuidv4(), loc));
         this.flow = flow;
         this.title = title ?? "Storia senza titolo";
     }
 
     clone(): Story {
-        return new Story([...this.characters.values()], [...this.objects.values()], [...this.locations.values()], this.flow, this.title); 
+        return new Story([...this.characters.entries()], [...this.objects.entries()], [...this.locations.entries()], this.flow, this.title); 
     }
 
     canAddElement(element: StoryElementType, type: StoryElementEnum): boolean {
@@ -136,25 +136,45 @@ class Story {
 
     serialize(): SerializedStory {
         return {
-            characters: Array.from(this.characters.values()),
-            objects: Array.from(this.objects.values()),
-            locations: Array.from(this.locations.values()),
+            characters: Array.from(this.characters.entries()),
+            objects: Array.from(this.objects.entries()),
+            locations: Array.from(this.locations.entries()),
             flow: this.flow,
             title: this.title
         }
     }
 
-    static deserialize(obj: SerializedStory) {
+    static deserialize(obj: SerializedStory): Story {
         return new Story(obj.characters, obj.objects, obj.locations, obj.flow, obj.title);
     }
 
-    toJSON() {
+    toJSON(): string {
         return JSON.stringify(this.serialize());
     }
 
-    static fromJSON(json: string) {
+    static fromJSON(json: string): Story {
         const obj = JSON.parse(json)
         return this.deserialize(obj);
+    }
+
+    instantiate(): Story {
+        const instance = this.clone();
+        for (const char of this.characters) {
+            if (char[1].isVariable) {
+                instance.characters[char[0]] = new CharacterElement(false, char[1].name + " (Istanziato)");
+            }
+        }
+        for (const obj of this.objects) {
+            if (obj[1].isVariable) {
+                instance.objects[obj[0]] = new ObjectElement(false, obj[1].name + " (Istanziato)");
+            }
+        }
+        for (const loc of this.locations) {
+            if (loc[1].isVariable) {
+                instance.locations[loc[0]] = new LocationElement(false, loc[1].name + " (Istanziato)");
+            }
+        }
+        return instance;
     }
 }
 

@@ -1,8 +1,10 @@
 import * as Blockly from 'blockly/core';
+import { LocationElement } from './StoryElement';
 
 type SceneDetails = {
     title: string;
     summary: string;
+    backgroundId: string;
     time: string;
     weather: string;
     tone: string;
@@ -22,6 +24,7 @@ class Scene {
         workspace?: Blockly.Workspace | {[key: string]: any},
         title?: string,
         summary?: string,
+        backgroundId?: string,
         time?: string,
         weather?: string,
         tone?: string,
@@ -34,6 +37,7 @@ class Scene {
             this.details = {
                 title: title ?? "",
                 summary: summary ?? "",
+                backgroundId: backgroundId ?? "",
                 time: time ?? "",
                 weather: weather ?? "",
                 tone: tone ?? "",
@@ -46,6 +50,7 @@ class Scene {
             this.workspace,
             this.details.title,
             this.details.summary,
+            this.details.backgroundId,
             this.details.time,
             this.details.weather,
             this.details.tone,
@@ -59,6 +64,7 @@ class Scene {
             details: {
                 title: this.details.title,
                 summary: this.details.summary,
+                backgroundId: this.details.backgroundId,
                 time: this.details.time,
                 weather: this.details.weather,
                 tone: this.details.tone,
@@ -72,6 +78,7 @@ class Scene {
             obj.workspace,
             obj.details.title,
             obj.details.summary,
+            obj.details.backgroundId,
             obj.details.time,
             obj.details.weather,
             obj.details.tone,

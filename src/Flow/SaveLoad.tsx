@@ -37,7 +37,6 @@ function SaveLoadManager (props: {
 
     try {
       const newStory = Story.fromJSON(await file.text());
-      console.log(newStory);
       setStory(newStory);
       restoreFlow(newStory.flow);
     } catch(err) {

@@ -6,14 +6,15 @@ import StoryElements from "./StoryElements.tsx";
 import Story from "../StoryElements/Story.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
 import saveToDisk from "../Misc/SaveToDisk.ts";
+import Template from "../StoryElements/Template.ts";
 
 function TemplateEditor(props: {
-	stories: Map<string, Story>,
-	setStories: React.Dispatch<React.SetStateAction<Map<string, Story>>>
+	stories: Map<string, Template>,
+	setStory: (id: string, newStory: Story) => void,
 }) {
 	const { id } = useParams();
 
-	const [localStory, setLocalStory] = useState(props.stories.get(id!)?.clone() ?? new Story([], [], []));
+	const [localStory, setLocalStory] = useState(props.stories.get(id!)?.template.clone() ?? new Story());
 	const [dirty, setDirty] = useState(false);
 
 	const navigate = useNavigate();
@@ -24,18 +25,9 @@ function TemplateEditor(props: {
 	}, []);
 
 	const handleSave = useCallback((id: string) => {
-		props.setStories(
-			stories => new Map(Array.from(stories).map(
-				storyIter => {
-					if (storyIter[0] === id)
-						return [storyIter[0], localStory.clone()];
-					else
-						return storyIter;
-				}
-			)
-		));
+		props.setStory(id, localStory);
 		setDirty(false);
-	}, [props.setStories, localStory]);
+	}, [props.setStory, localStory]);
 
 	return (
 		<Row style={{ height: "100%" }}>
@@ -53,7 +45,8 @@ function TemplateEditor(props: {
 				</ButtonGroup>
 				<StoryElements
 					story={localStory}
-					setStory={story => { setDirty(true); setLocalStory(story) }} />
+					setStory={story => { setDirty(true); setLocalStory(story) }}
+					editMode={true} />
 			</Col>
 			<Col className="template-editor" style={{ height: "90vh" }}>
 				<DynamicTextField

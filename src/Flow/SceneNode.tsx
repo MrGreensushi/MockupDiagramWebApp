@@ -7,9 +7,9 @@ import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 type FunctionProps = {
   onClickEdit: (scene: Scene | undefined, setScene: React.Dispatch<React.SetStateAction<Scene | undefined>>) => void;
-  onClickDelete: (id: string) => void;
-  onSceneNameChanged: (id: string, name: string) => void
-  onSceneTitleChanged: (id: string, title: string) => void
+  onClickDelete: () => void;
+  onSceneNameChanged: (name: string) => void
+  onSceneTitleChanged: (title: string) => void
 }
 
 type SceneNodeProps = {
@@ -51,15 +51,15 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
 
   const handleDelete = () => {
     setScene(undefined);
-    props.data.onClickDelete(props.id);
+    props.data.onClickDelete();
   }
 
   const handleSubmitSceneName = (name: string) => {
-    props.data.onSceneNameChanged(props.id, name);
+    props.data.onSceneNameChanged(name);
   }
 
   const handleSubmitSceneTitle = (title: string) => {
-    props.data.onSceneTitleChanged(props.id, title);
+    props.data.onSceneTitleChanged(title);
   }
 
   return (

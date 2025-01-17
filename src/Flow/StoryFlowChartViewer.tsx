@@ -20,8 +20,7 @@ function StoryFlowChartViewer (props: {story: Story, id: string}) {
         zoomOnScroll={false}
         zoomOnDoubleClick={false}
         fitView
-        fitViewOptions={{minZoom: 0}}
-        style={{ border: "1px solid black" }}
+        fitViewOptions={{minZoom: 0, padding: 0.025}}
         className="gx-0" />
     </Row>
   );

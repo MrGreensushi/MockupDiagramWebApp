@@ -26,6 +26,7 @@ function SceneEditor(props: {
 
 	const [title, setTitle] = useState(props.scene?.details.title ?? "");
 	const [summary, setSummary] = useState(props.scene?.details.summary ?? "");
+	const [backgroundId, setBackgroundId] = useState(props.scene?.details.backgroundId ?? "");
 	const [time, setTime] = useState(props.scene?.details.time ?? "");
 	const [weather, setWeather] = useState(props.scene?.details.weather ?? "");
 	const [tone, setTone] = useState(props.scene?.details.tone ?? "");
@@ -50,7 +51,7 @@ function SceneEditor(props: {
 	});
 
 	const handleSave = () => {
-		const newScene = new Scene(workspace!, title, summary, time, weather, tone, value);
+		const newScene = new Scene(workspace!, title, summary, backgroundId, time, weather, tone, value);
 		props.setScene(newScene);
 	}
 
@@ -107,10 +108,13 @@ function SceneEditor(props: {
 				</Col>
 				<Stack gap={2} style={{width:"50%"}}>
 					<SceneDetails
+						story={props.story}
 						title={title}
 						setTitle={setTitle}
 						summary={summary}
 						setSummary={setSummary}
+						backgroundId={backgroundId}
+						setBackgroundId={setBackgroundId}
 						time={time}
 						setTime={setTime}
 						weather={weather}

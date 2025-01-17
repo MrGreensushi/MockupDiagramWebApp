@@ -2,7 +2,7 @@ import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, ReactFlowJsonObject } from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges } from "@xyflow/react";
 import SideTab from "../Layout/SideTab.tsx";
 import SceneEditor from "../Layout/SceneEditor.tsx";
 import SceneNode, { createNewNode, SceneNodeProps } from "./SceneNode.tsx";
@@ -48,6 +48,12 @@ function StoryFlowChartEditor (props: {
     setShowSideTab(true);
   }, []);
 
+  const onClickDelete = useCallback((nodeId: string) => {
+    setNodes(nodes => nodes.filter(
+      node => node.id !== nodeId
+    ));
+  }, []);
+  
   const onSceneEdited = useCallback((newScene: Scene) => {
     if (selectedNodeId) {
       setNodes(nodes => nodes.map(
@@ -61,12 +67,6 @@ function StoryFlowChartEditor (props: {
       ));
     }
   }, [selectedNodeId]);
-
-  const onClickDelete = useCallback((nodeId: string) => {
-    rfInstance!.deleteElements({
-      nodes: [{ id: nodeId }],
-    });
-  }, [rfInstance]);
 
   const onSceneNameChanged = useCallback((id: string, newName: string) => {
     setNodes(nodes => nodes.map(
@@ -100,7 +100,8 @@ function StoryFlowChartEditor (props: {
           return node;
         }
       }
-    ))}, []);
+    )
+  )}, []);
 
   const addNewNode = useCallback(() => {
     const id = uuidv4();
@@ -115,9 +116,9 @@ function StoryFlowChartEditor (props: {
     const newNode = createNewNode(
       id,
       {onClickEdit: onClickEdit,
-      onClickDelete: onClickDelete,
-      onSceneNameChanged: onSceneNameChanged,
-      onSceneTitleChanged: onSceneTitleChanged},
+      onClickDelete: () => onClickDelete(id),
+      onSceneNameChanged: (name: string) => onSceneNameChanged(id, name),
+      onSceneTitleChanged: (title: string) => onSceneTitleChanged(id, title)},
       label,
       position);
     setNodes(nodes => [...nodes, newNode]);
@@ -127,9 +128,9 @@ function StoryFlowChartEditor (props: {
     const newNode = createNewNode(
       node.id,
       {onClickEdit: onClickEdit,
-      onClickDelete: onClickDelete,
-      onSceneNameChanged: onSceneNameChanged,
-      onSceneTitleChanged: onSceneTitleChanged},
+      onClickDelete: () => onClickDelete(node.id),
+      onSceneNameChanged: (name: string) => onSceneNameChanged(node.id, name),
+      onSceneTitleChanged: (title: string) => onSceneTitleChanged(node.id, title)},
       undefined,
       node.position,
       node.data as SceneNodeProps);
@@ -141,7 +142,7 @@ function StoryFlowChartEditor (props: {
     setEdges(story.flow.edges);
     rfInstance.fitView();
     setRfInstance(rfInstance);
-  }, [story]);
+  }, [story, addExistingNode]);
 
   useEffect(() => {
     if (rfInstance) 
@@ -194,6 +195,7 @@ function StoryFlowChartEditor (props: {
         style={{ border: "1px solid black" }}
         className="gx-0"
         ref={flowRef}
+        minZoom={0.2}
         fitView >
         <Panel>
           <Button variant="primary" onClick={addNewNode} style={{ margin: "0px 5px" }}>
