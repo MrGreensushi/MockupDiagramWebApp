@@ -19,6 +19,7 @@ import {
   Phrase,
 } from "../Procedure/Activity.ts";
 import SideBar from "../Layout/SideBar.tsx";
+import "../CSS/LoadedNodes.css"
 
 function LoadNodes(props: {
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
@@ -119,8 +120,18 @@ function LoadNodes(props: {
   };
 
   return (
-    <SideBar header={"Node List"} body={InstantiateAllNodes()} />
+    <SideBar header={<h2>Nodes List</h2>} isLeft={true}>
+    {loading && (
+      <div className="text-center">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Caricamento </span>
+        </Spinner>
+      </div>
+)}
+{error && <Alert variant="danger">{error}</Alert>}
+{InstantiateAllNodes()}
 
+    </SideBar>
     // <div className="sidebar">
     //   <h2>Nodes list</h2>
     //   {loading && (

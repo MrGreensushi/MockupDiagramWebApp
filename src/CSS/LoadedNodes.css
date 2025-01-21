@@ -1,0 +1,6 @@
+button.list-nodes-item {
+    text-align: left;
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}

@@ -5,7 +5,7 @@ import SubProcedure from "../Procedure/SubProcedure.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
-import LoadNodes from "../Misc/LoadNodes.tsx";
+import LoadNodes from "../Misc/LoadedNodes.tsx";
 import TitleBar from "./TitleBar.tsx";
 
 function ProcedureEditor() {

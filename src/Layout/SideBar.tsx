@@ -1,21 +1,35 @@
-import React from "react";
+import React, { ReactNode, useMemo } from "react";
+import{Col, Row} from "react-bootstrap"
 
-function SideBar(props: { header: any; body: any; isLeft?: boolean }) {
+function SideBar(props: { header: string|ReactNode;children: ReactNode; isLeft?: boolean }) {
+
+
+  const style=useMemo(()=>{
+    var baseStyle:React.CSSProperties={
+      height: "80vh",
+      width: "100%",
+      position: "relative",
+    };
+
+    if(props.isLeft){
+      baseStyle={...baseStyle, left:"0px"}
+    }
+    else
+      baseStyle={...baseStyle, right:"0px"}
+
+    return baseStyle
+  },[])
+
   return (
-    <div
-      style={{
-        height: "80vh",
-        width: "100%",
-        left: "0px",
-        position: "relative",
-        display: "flex",
-        flexWrap: "wrap",
-        flexDirection: "row",
-      }}
+    <Col
+      style={style}
     >
-      <h2>{props.header}</h2>
-      <div style={{ flex: "auto", overflowY: "auto" }}>{props.body}</div>
-    </div>
+      <Row>
+        {props.header}
+      </Row>
+     
+      <Row style={{  maxHeight:"100%", overflowY: "auto", maxWidth:"100%" }}>{props.children}</Row>
+    </Col>
   );
 }
 

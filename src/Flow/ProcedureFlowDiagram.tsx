@@ -33,13 +33,14 @@ import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
 import SubProcedure from "../Procedure/SubProcedure.ts";
 import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
-import LoadNodes from "../Misc/LoadNodes.tsx";
+import LoadNodes from "../Misc/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
 import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
 import OperationMenu from "../Layout/OperationMenu.tsx";
+import SideBar from "../Layout/SideBar.tsx";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
@@ -54,6 +55,7 @@ function ProcedureFlowDiagram(props: {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
 
   const [selectedNodeId, setSelectedNodeId] = useState<string>();
+  const [selectedNodeActivity, setSelectedNodeActivity] = useState<Activity>();
   const [showSideTab, setShowSideTab] = useState(false);
 
   const flowRef = useRef(null);
@@ -92,7 +94,15 @@ function ProcedureFlowDiagram(props: {
   const onNodeClick = useCallback((_, node: Node) => {
     console.log("Flow:OnNodeClick");
     setSelectedNodeId(node.id);
+    
+    setSelectedNodeActivity(node.data.activity as Activity??undefined);
+     
   }, []);
+
+  const onPaneClick = useCallback((event:React.MouseEvent)=>{
+    setSelectedNodeId(undefined);
+    setSelectedNodeActivity(undefined);
+  },[])
 
   const onBlur = useCallback(() => {
     console.log("Flow:OnBlur");
@@ -135,6 +145,9 @@ function ProcedureFlowDiagram(props: {
       rfInstance!.deleteElements({
         nodes: [{ id: nodeId }],
       });
+    
+      setSelectedNodeId(undefined)
+      setSelectedNodeActivity(undefined)
     },
     [rfInstance]
   );
@@ -303,7 +316,7 @@ function ProcedureFlowDiagram(props: {
     return node.type;
   };
 
-  //#region EventNode
+  //#region EventNode & DecisionNode
 
   const onEventNameChanged = useCallback((id: string, newName: string) => {
     setNodes((nodes) =>
@@ -468,6 +481,7 @@ function ProcedureFlowDiagram(props: {
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
             onInit={setRfInstance}
+            onPaneClick={onPaneClick}
             deleteKeyCode={["Backspace", "Delete"]}
             style={{ border: "1px solid black" }}
             ref={flowRef}
@@ -477,10 +491,28 @@ function ProcedureFlowDiagram(props: {
             <Background />
           </ReactFlow>
         </Col>
+
+        <Col xs={2}>
+        <SideBar header={OffcanvasTitle}>
+          {selectedNodeActivity&&(<ActivityEditor
+            procedure={props.procedure}
+            activity={
+              selectedNodeActivity
+            }
+            setActivity={onActivityEdited}
+          />)}
+          {!selectedNodeActivity&&(
+            <h2>Select an Activity</h2>
+          )}
+
+          
+        </SideBar>
+        
+        </Col>
       </Row>
 
       {/* SideTab: opzioni dinamiche */}
-      <SideTab
+      {/* <SideTab
         title={OffcanvasTitle}
         showSideTab={showSideTab}
         setShowSideTab={setShowSideTab}
@@ -494,7 +526,7 @@ function ProcedureFlowDiagram(props: {
             setActivity={onActivityEdited}
           />
         )}
-      </SideTab>
+      </SideTab> */}
     </Container>
   );
 }

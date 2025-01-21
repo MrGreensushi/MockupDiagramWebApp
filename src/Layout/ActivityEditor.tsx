@@ -22,6 +22,7 @@ function ActivityEditor(props: {
   const [details, setDetails] = useState(props.activity?.details ?? "");
 
   useEffect(() => {
+    if(props.activity)
     handleSave(props.activity.cloneAndSet(phrases, details, name));
   }, [name, phrases, details]);
 
