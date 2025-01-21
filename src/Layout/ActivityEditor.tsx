@@ -21,10 +21,15 @@ function ActivityEditor(props: {
   const [phrases, setPhrases] = useState(props.activity?.nodePhrases ?? []);
   const [details, setDetails] = useState(props.activity?.details ?? "");
 
+  // useEffect(() => {
+  //   handleSave(props.activity.cloneAndSet(phrases, details, name));
+  // }, [name, phrases, details]);
+
   useEffect(() => {
-    if(props.activity)
-    handleSave(props.activity.cloneAndSet(phrases, details, name));
-  }, [name, phrases, details]);
+    setName(props.activity?.name ?? "");
+    setPhrases(props.activity?.nodePhrases ?? []);
+    setDetails(props.activity?.details ?? "");
+  }, [props.activity]);
 
   const availableLevelsForClipId = (clipId: string) => {
     var toRet = [true, true, true];
@@ -75,25 +80,16 @@ function ActivityEditor(props: {
         return;
       }
 
-      setPhrases((prevPhrases) => {
-        const newPhrases = prevPhrases.map((phrase, index) =>
-          index !== id ? phrase : new Phrase(clipId, level, text)
-        );
-        return newPhrases;
-      });
+      const newPhrases = phrases.map((phrase, index) =>
+        index !== id ? phrase : new Phrase(clipId, level, text)
+      );
+      handleSave(props.activity.cloneAndSet(newPhrases, details, name));
     },
     []
   );
 
-  const instantiateActivitiesPhrases = () => {
-    return phrases.map((phrase, index) =>
-      instantiateActivityPhrase(
-        index,
-        phrase,
-        unavailableLvls.find((x) => x.clipId === phrase.clipId)
-          ?.unavailableLevels ?? [true, false, false]
-      )
-    );
+  const handleDetailsUpdate = (newDet: string) => {
+    handleSave(props.activity.cloneAndSet(phrases, newDet, name));
   };
 
   const instantiateActivityPhrase = (
@@ -135,15 +131,28 @@ function ActivityEditor(props: {
   };
 
   return (
-    <Col>
-      <Row>
-        <Col>
-          <ActivityDetails text={details} handleDetailsUpdate={setDetails} />
-          {instantiateActivitiesPhrases()}
-        </Col>
-      </Row>
-      <Button onClick={addNewPhrase}>+</Button>
-    </Col>
+    <div style={{ paddingLeft: "0px" }}>
+      <ActivityDetails
+        text={details}
+        handleDetailsUpdate={handleDetailsUpdate}
+      />
+
+      {phrases.map((phrase, index) =>
+        instantiateActivityPhrase(
+          index,
+          phrase,
+          unavailableLvls.find((x) => x.clipId === phrase.clipId)
+            ?.unavailableLevels ?? [true, false, false]
+        )
+      )}
+      <Button
+        className="mt-2"
+        style={{ alignSelf: "center" }}
+        onClick={addNewPhrase}
+      >
+        +
+      </Button>
+    </div>
   );
 }
 

@@ -19,7 +19,7 @@ import {
   Phrase,
 } from "../Procedure/Activity.ts";
 import SideBar from "../Layout/SideBar.tsx";
-import "../CSS/LoadedNodes.css"
+import "../CSS/LoadedNodes.css";
 
 function LoadNodes(props: {
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
@@ -104,7 +104,7 @@ function LoadNodes(props: {
   const InstantiateAllNodes = () => {
     if (!loading && !error && nodes)
       return (
-        <ButtonGroup vertical>
+        <ButtonGroup vertical style={{ paddingLeft: "0px" }}>
           {nodes.map((node, index) => (
             <Button
               className="list-nodes-item"
@@ -121,16 +121,15 @@ function LoadNodes(props: {
 
   return (
     <SideBar header={<h2>Nodes List</h2>} isLeft={true}>
-    {loading && (
-      <div className="text-center">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Caricamento </span>
-        </Spinner>
-      </div>
-)}
-{error && <Alert variant="danger">{error}</Alert>}
-{InstantiateAllNodes()}
-
+      {loading && (
+        <div className="text-center">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Caricamento </span>
+          </Spinner>
+        </div>
+      )}
+      {error && <Alert variant="danger">{error}</Alert>}
+      {InstantiateAllNodes()}
     </SideBar>
     // <div className="sidebar">
     //   <h2>Nodes list</h2>

@@ -8,8 +8,6 @@ import NamedHandle from "../Layout/NamedHandle.tsx";
 
 type EventNodeProps = {
   label: string;
-  onClickDelete: (id: string) => void;
-  onEventNameChanged: (id: string, name: string) => void;
 };
 
 type EventNodeObject = {
@@ -22,27 +20,11 @@ type EventNodeObject = {
 type EventNodeType = Node<EventNodeProps, "EventNode">;
 
 function EventNode(props: NodeProps<EventNodeType>) {
-  const handleDelete = () => {
-    props.data.onClickDelete(props.id);
-  };
-
-  const handleSubmitActivityName = (name: string) => {
-    props.data.onEventNameChanged(props.id, name);
-  };
 
   return (
     <div className={`event-node ${props.selected ? "selected" : ""}`}>
       <Col>
-        <DynamicTextField
-          initialValue={props.data.label}
-          focusOnDoubleClick={true}
-          onSubmit={handleSubmitActivityName}
-          isInvalid={(label) => label === ""}
-          baseProps={{
-            htmlSize: 15,
-            size: "sm",
-          }}
-        />
+      {props.data.label}
       </Col>
       <NamedHandle
         id="interrupt-handle"
@@ -76,14 +58,6 @@ function EventNode(props: NodeProps<EventNodeType>) {
       />
 
       <Handle type="target" id="await-handle" position={Position.Top} />
-
-      <NodeToolbar position={Position.Right}>
-        <ButtonGroup>
-          <Button variant="secondary" onClick={handleDelete}>
-            <i className="bi bi-trash3" aria-label="delete" />
-          </Button>
-        </ButtonGroup>
-      </NodeToolbar>
     </div>
   );
 }

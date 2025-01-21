@@ -27,7 +27,7 @@ def language_xml(root,activityLang,lang):
         else:
             node_phrase = SubElement(ita, 'nodePhrase', clipId=phrase['clipId'], level=phrase['level'])
             node_phrase.text = phrase.get('text', phrase['clipId'])
-    details=SubElement(ita,'details',level='Notice')
+    details=SubElement(ita,'details',level='Novice')
     details.text=activityLang.details
 
 def retrieveAllActivities(data):

@@ -19,7 +19,6 @@ function instantiateNodeFromJsonObj(
   flow: ReactFlowJsonObject,
   parent: SubProcedure,
   activityCallbacks: any,
-  eventCallbacks: any
 ) {
   return [...flow.nodes].map((node) => {
     if (node.type === "activityNode")
@@ -30,12 +29,9 @@ function instantiateNodeFromJsonObj(
           activity: Activity.fromJSONObject(
             node.data.activity,
             parent,
-            activityCallbacks,
-            eventCallbacks
+            activityCallbacks
           ),
-          onClickEdit: activityCallbacks.onClickEdit,
-          onClickDelete: activityCallbacks.onClickDelete,
-          onActivityNameChanged: activityCallbacks.onActivityNameChanged,
+         
           onClickSubProcedure: activityCallbacks.onClickSubProcedure,
         },
       };
@@ -45,8 +41,6 @@ function instantiateNodeFromJsonObj(
       ...node,
       data: {
         ...node.data,
-        onClickDelete: eventCallbacks.onClickDelete,
-        onEventNameChanged: eventCallbacks.onEventNameChanged,
       },
     };
   });

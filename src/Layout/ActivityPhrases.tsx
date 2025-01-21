@@ -16,6 +16,12 @@ function ActivityPhrases(props: {
   const [level, setLevel] = useState(props.phrase.level);
   const [text, setText] = useState(props.phrase.text);
 
+  useEffect(() => {
+    setClipId(props.phrase.clipId);
+    setLevel(props.phrase.level);
+    setText(props.phrase.text);
+  }, [props.phrase]);
+
   const [dataChanged, setDataChanged] = useState(false);
 
   const handleOnBlur = useCallback(() => {
@@ -47,7 +53,7 @@ function ActivityPhrases(props: {
   }, []);
 
   return (
-    <Card onBlur={handleOnBlur}>
+    <Card onBlur={handleOnBlur} className="mt-2 p-0">
       <Card.Header>
         <DynamicTextField
           initialValue={clipId}

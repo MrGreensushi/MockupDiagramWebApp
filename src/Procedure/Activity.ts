@@ -78,14 +78,12 @@ class Activity extends ActivityDescription {
   static deserialize(
     obj: any,
     parent: SubProcedure,
-    callbacksActivity: any,
-    callbacksEvent: any
+    callbacksActivity: any
   ) {
     const subProcedure = SubProcedure.fromJSONObject(
       obj.subProcedure,
       parent,
-      callbacksActivity,
-      callbacksEvent
+      callbacksActivity
     );
 
     const languages = Languages.fromJSONObject(obj.languages);
@@ -109,15 +107,13 @@ class Activity extends ActivityDescription {
   static fromJSONObject(
     object: any,
     parent: SubProcedure,
-    callbacksActivity: any,
-    callbacksEvent: any
+    callbacksActivity: any
   ) {
     try {
       return this.deserialize(
         object,
         parent,
-        callbacksActivity,
-        callbacksEvent
+        callbacksActivity
       );
     } catch (ex) {
       throw new Error("Failed to parse Serialized Activity Object: " + ex);

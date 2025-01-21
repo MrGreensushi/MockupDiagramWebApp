@@ -41,6 +41,7 @@ import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
 import OperationMenu from "../Layout/OperationMenu.tsx";
 import SideBar from "../Layout/SideBar.tsx";
+import NodeEditor from "./NodeEditor.tsx";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
@@ -94,15 +95,14 @@ function ProcedureFlowDiagram(props: {
   const onNodeClick = useCallback((_, node: Node) => {
     console.log("Flow:OnNodeClick");
     setSelectedNodeId(node.id);
-    
-    setSelectedNodeActivity(node.data.activity as Activity??undefined);
-     
+
+    setSelectedNodeActivity((node.data.activity as Activity) ?? undefined);
   }, []);
 
-  const onPaneClick = useCallback((event:React.MouseEvent)=>{
+  const onPaneClick = useCallback((event: React.MouseEvent) => {
     setSelectedNodeId(undefined);
     setSelectedNodeActivity(undefined);
-  },[])
+  }, []);
 
   const onBlur = useCallback(() => {
     console.log("Flow:OnBlur");
@@ -145,9 +145,9 @@ function ProcedureFlowDiagram(props: {
       rfInstance!.deleteElements({
         nodes: [{ id: nodeId }],
       });
-    
-      setSelectedNodeId(undefined)
-      setSelectedNodeActivity(undefined)
+
+      setSelectedNodeId(undefined);
+      setSelectedNodeActivity(undefined);
     },
     [rfInstance]
   );
@@ -211,9 +211,6 @@ function ProcedureFlowDiagram(props: {
           new SubProcedure(undefined, label, props.procedure),
           undefined
         ),
-        onClickEdit: onClickEdit,
-        onClickDelete: onClickDelete,
-        onActivityNameChanged: onActivityNameChanged,
         onClickSubProcedure: onClickSubProcedure,
       },
       type: "activityNode",
@@ -256,9 +253,6 @@ function ProcedureFlowDiagram(props: {
             new SubProcedure(undefined, label, props.procedure),
             activityDescription.languages
           ),
-          onClickEdit: onClickEdit,
-          onClickDelete: onClickDelete,
-          onActivityNameChanged: onActivityNameChanged,
           onClickSubProcedure: onClickSubProcedure,
         },
         type: "activityNode",
@@ -354,8 +348,6 @@ function ProcedureFlowDiagram(props: {
       },
       data: {
         label: label,
-        onClickDelete: onClickDelete,
-        onEventNameChanged: onEventNameChanged,
       },
       type: "eventNode",
     };
@@ -385,8 +377,6 @@ function ProcedureFlowDiagram(props: {
       },
       data: {
         label: label,
-        onClickDelete: onClickDelete,
-        onEventNameChanged: onEventNameChanged,
       },
       type: "decisionNode",
     };
@@ -404,14 +394,7 @@ function ProcedureFlowDiagram(props: {
       console.log("Restore Flow");
 
       const activityCallbacks = {
-        onClickEdit: onClickEdit,
-        onClickDelete: onClickDelete,
-        onActivityNameChanged: onActivityNameChanged,
         onClickSubProcedure: onClickSubProcedure,
-      };
-      const eventCallbacks = {
-        onClickDelete: onClickDelete,
-        onEventNameChanged: onEventNameChanged,
       };
 
       const newProcedure = props.procedure.cloneAndSetTitle(title);
@@ -419,8 +402,7 @@ function ProcedureFlowDiagram(props: {
       const newNodes = instantiateNodeFromJsonObj(
         flow,
         newProcedure,
-        activityCallbacks,
-        eventCallbacks
+        activityCallbacks
       );
 
       props.setProcedure((procedure) =>
@@ -436,15 +418,7 @@ function ProcedureFlowDiagram(props: {
         setEdges([]);
       }*/
     },
-    [
-      rfInstance,
-      setNodes,
-      setEdges,
-      onClickDelete,
-      onActivityNameChanged,
-      onClickSubProcedure,
-      onEventNameChanged,
-    ]
+    [rfInstance, setNodes, setEdges, onClickSubProcedure]
   );
 
   return (
@@ -493,21 +467,13 @@ function ProcedureFlowDiagram(props: {
         </Col>
 
         <Col xs={2}>
-        <SideBar header={OffcanvasTitle}>
-          {selectedNodeActivity&&(<ActivityEditor
+          <NodeEditor
             procedure={props.procedure}
-            activity={
-              selectedNodeActivity
+            selectedNode={
+              selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined
             }
             setActivity={onActivityEdited}
-          />)}
-          {!selectedNodeActivity&&(
-            <h2>Select an Activity</h2>
-          )}
-
-          
-        </SideBar>
-        
+          />
         </Col>
       </Row>
 

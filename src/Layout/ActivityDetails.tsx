@@ -12,6 +12,10 @@ function ActivityDetails(props: {
   const [text, setText] = useState(props.text);
   const [dataChanged, setDataChanged] = useState(false);
 
+  useEffect(() => {
+    setText(props.text);
+  }, [props.text]);
+
   const handleOnBlur = useCallback(() => {
     if (!dataChanged) return;
 
@@ -22,7 +26,7 @@ function ActivityDetails(props: {
   }, [text]);
 
   return (
-    <Card onBlur={handleOnBlur}>
+    <Card className="p-0" onBlur={handleOnBlur}>
       <Card.Header>Details</Card.Header>
       <Card.Body>
         <Form>

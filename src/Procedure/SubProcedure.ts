@@ -50,8 +50,7 @@ class SubProcedure extends Procedure {
   static fromJSONObject(
     json: any,
     parent: SubProcedure,
-    callbacksActivity: any,
-    callbacksEvent: any
+    callbacksActivity: any
   ): SubProcedure {
     const subProcedure = new SubProcedure(json.flow, json.title, parent);
     console.log("SubProcedure:FromJSONObject");
@@ -63,8 +62,7 @@ class SubProcedure extends Procedure {
     const newNodes = instantiateNodeFromJsonObj(
       subProcedure.flow,
       subProcedure,
-      callbacksActivity,
-      callbacksEvent
+      callbacksActivity
     );
 
     subProcedure.cloneAndAddFlow({

@@ -6,8 +6,6 @@ import NamedHandle from "../Layout/NamedHandle.tsx";
 
 type DecisionNodeProps = {
   label: string;
-  onClickDelete: (id: string) => void;
-  onEventNameChanged: (id: string, name: string) => void;
 };
 
 type DecisionNodeObject = {
@@ -20,27 +18,11 @@ type DecisionNodeObject = {
 type DecisionNodeType = Node<DecisionNodeProps, "DecisionNode">;
 
 function DecisionNode(props: NodeProps<DecisionNodeType>) {
-  const handleDelete = () => {
-    props.data.onClickDelete(props.id);
-  };
-
-  const handleSubmitActivityName = (name: string) => {
-    props.data.onEventNameChanged(props.id, name);
-  };
 
   return (
     <div className={`decision-node ${props.selected ? "selected" : ""}`}>
       <Col className="decision-node-content">
-        <DynamicTextField
-          initialValue={props.data.label}
-          focusOnDoubleClick={true}
-          onSubmit={handleSubmitActivityName}
-          isInvalid={(label) => label === ""}
-          baseProps={{
-            htmlSize: 15,
-            size: "sm",
-          }}
-        />
+      {props.data.label}
       </Col>
 
       <Handle type="target" position={Position.Top} style={{ left: "0%" }} />
@@ -77,13 +59,7 @@ function DecisionNode(props: NodeProps<DecisionNodeType>) {
         type="source"
       />
 
-      <NodeToolbar position={Position.Right}>
-        <ButtonGroup>
-          <Button variant="secondary" onClick={handleDelete}>
-            <i className="bi bi-trash3" aria-label="delete" />
-          </Button>
-        </ButtonGroup>
-      </NodeToolbar>
+      
     </div>
   );
 }
