@@ -6,10 +6,11 @@ import React, {
   useMemo,
 } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
-import ActivityDetails from "./ActivityDetails.tsx";
+import ActivityPhrases from "./ActivityPhrases.tsx";
 
 import Activity, { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
 import Procedure from "../Procedure/Procedure.ts";
+import ActivityDetails from "./ActivityDetails.tsx";
 
 function ActivityEditor(props: {
   procedure: Procedure;
@@ -18,6 +19,11 @@ function ActivityEditor(props: {
 }) {
   const [name, setName] = useState(props.activity?.name ?? "");
   const [phrases, setPhrases] = useState(props.activity?.nodePhrases ?? []);
+  const [details, setDetails] = useState(props.activity?.details ?? "");
+
+  useEffect(() => {
+    handleSave(props.activity.cloneAndSet(phrases, details, name));
+  }, [name, phrases, details]);
 
   const availableLevelsForClipId = (clipId: string) => {
     var toRet = [true, true, true];
@@ -72,17 +78,15 @@ function ActivityEditor(props: {
         const newPhrases = prevPhrases.map((phrase, index) =>
           index !== id ? phrase : new Phrase(clipId, level, text)
         );
-
-        handleSave(props.activity.cloneAndSetPhrases(newPhrases, name));
         return newPhrases;
       });
     },
     []
   );
 
-  const instantiateActivitiesDetails = () => {
+  const instantiateActivitiesPhrases = () => {
     return phrases.map((phrase, index) =>
-      instantiateActivityDetails(
+      instantiateActivityPhrase(
         index,
         phrase,
         unavailableLvls.find((x) => x.clipId === phrase.clipId)
@@ -91,13 +95,13 @@ function ActivityEditor(props: {
     );
   };
 
-  const instantiateActivityDetails = (
+  const instantiateActivityPhrase = (
     index: number,
     phrase: Phrase,
     unavailableLvl: boolean[]
   ) => {
     return (
-      <ActivityDetails
+      <ActivityPhrases
         key={index}
         phrase={phrase}
         unavailableLevels={unavailableLvl}
@@ -118,7 +122,7 @@ function ActivityEditor(props: {
         new Phrase("Nuovo", LevelsEnum.novice, ""),
       ];
 
-      handleSave(props.activity.cloneAndSetPhrases(newPhrases, name));
+      handleSave(props.activity.cloneAndSet(newPhrases, undefined, name));
       return newPhrases;
     });
   };
@@ -132,7 +136,10 @@ function ActivityEditor(props: {
   return (
     <Col>
       <Row>
-        <Col>{instantiateActivitiesDetails()}</Col>
+        <Col>
+          <ActivityDetails text={details} handleDetailsUpdate={setDetails} />
+          {instantiateActivitiesPhrases()}
+        </Col>
       </Row>
       <Button onClick={addNewPhrase}>+</Button>
     </Col>

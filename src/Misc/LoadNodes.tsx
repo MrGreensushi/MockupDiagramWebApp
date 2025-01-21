@@ -9,6 +9,7 @@ import {
   Alert,
   ListGroup,
   Button,
+  ButtonGroup,
 } from "react-bootstrap";
 import {
   ActivityDescription,
@@ -17,6 +18,7 @@ import {
   LevelsEnum,
   Phrase,
 } from "../Procedure/Activity.ts";
+import SideBar from "../Layout/SideBar.tsx";
 
 function LoadNodes(props: {
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
@@ -98,34 +100,39 @@ function LoadNodes(props: {
     return new ActivityLanguage(allPhrases, details);
   };
 
+  const InstantiateAllNodes = () => {
+    if (!loading && !error && nodes)
+      return (
+        <ButtonGroup vertical>
+          {nodes.map((node, index) => (
+            <Button
+              className="list-nodes-item"
+              key={index}
+              onClick={() => props.instantiateActvity(node)}
+            >
+              {node.name}
+            </Button>
+          ))}
+        </ButtonGroup>
+      );
+    else return <></>;
+  };
+
   return (
-    <Container className="mt-4">
-      <Row>
-        <Col>
-          <h2>Lista dei nodi</h2>
-          {loading && (
-            <div className="text-center">
-              <Spinner animation="border" role="status">
-                <span className="visually-hidden">Caricamento...</span>
-              </Spinner>
-            </div>
-          )}
-          {error && <Alert variant="danger">{error}</Alert>}
-          {!loading && !error && nodes && (
-            <ListGroup>
-              {nodes.map((node, index) => (
-                <ListGroup.Item
-                  key={index}
-                  onClick={() => props.instantiateActvity(node)}
-                >
-                  {node.name}
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          )}
-        </Col>
-      </Row>
-    </Container>
+    <SideBar header={"Node List"} body={InstantiateAllNodes()} />
+
+    // <div className="sidebar">
+    //   <h2>Nodes list</h2>
+    //   {loading && (
+    //     <div className="text-center">
+    //       <Spinner animation="border" role="status">
+    //         <span className="visually-hidden">Caricamento...</span>
+    //       </Spinner>
+    //     </div>
+    //   )}
+    //   {error && <Alert variant="danger">{error}</Alert>}
+
+    // </div>
   );
 }
 

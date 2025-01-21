@@ -39,6 +39,14 @@ class Activity extends ActivityDescription {
     this.nodePhrases = value;
   }
 
+  public get details() {
+    return this.activeLanguage.details;
+  }
+
+  public set details(value: string) {
+    this.details = value;
+  }
+
   public get activeLanguage() {
     return this.isEngActiveLanguage
       ? this.languages.engActivity
@@ -49,17 +57,20 @@ class Activity extends ActivityDescription {
     const newIta = this.isEngActiveLanguage ? this.languages.itaActivity : lang;
     const newEng = this.isEngActiveLanguage ? lang : this.languages.engActivity;
 
-    this.languages = new Languages(newIta, newEng);
+    return new Languages(newIta, newEng);
   }
 
-  public cloneAndSetPhrases(phrases: Phrase[], name?: string) {
-    const lang = this.activeLanguage.cloneAndSetPhrases(phrases);
-    this.updateActiveLanguage(lang);
-
+  public cloneAndSet(
+    phrases = this.nodePhrases,
+    details = this.details,
+    title = this.name
+  ) {
+    const updatedLanguage = this.activeLanguage.cloneAndSet(phrases, details);
+    const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
     return new Activity(
-      name ?? this.name,
+      title,
       this.subProcedure,
-      this.languages,
+      updatedLanguages,
       this.isEngActiveLanguage
     );
   }
@@ -77,10 +88,11 @@ class Activity extends ActivityDescription {
       callbacksEvent
     );
 
+    const languages = Languages.fromJSONObject(obj.languages);
     return new Activity(
       obj.name,
       subProcedure,
-      obj.languages,
+      languages,
       obj.isEngActiveLanguage
     );
   }
@@ -138,8 +150,21 @@ class ActivityLanguage {
     this.details = details ?? "";
   }
 
-  public cloneAndSetPhrases(phrases: Phrase[]) {
-    return new ActivityLanguage(phrases, this.details);
+  public cloneAndSet(phrases: Phrase[]): ActivityLanguage;
+  public cloneAndSet(details: string): ActivityLanguage;
+  public cloneAndSet(phrases: Phrase[], details: string);
+  public cloneAndSet(
+    param1: Phrase[] | string,
+    param2?: string
+  ): ActivityLanguage {
+    const phrases = Array.isArray(param1) ? param1 : this.nodePhrases;
+    const details =
+      typeof param1 === "string"
+        ? param1
+        : typeof param2 === "string"
+        ? param2
+        : this.details;
+    return new ActivityLanguage(phrases, details);
   }
 }
 
@@ -150,6 +175,19 @@ class Languages {
   constructor(itaActivity?: ActivityLanguage, engActivity?: ActivityLanguage) {
     this.engActivity = engActivity ?? new ActivityLanguage();
     this.itaActivity = itaActivity ?? new ActivityLanguage();
+  }
+
+  static fromJSONObject(object: any) {
+    try {
+      const ita = object.itaActivity;
+      const eng = object.engActivity;
+      return new Languages(
+        new ActivityLanguage(ita.nodePhrases, ita.details),
+        new ActivityLanguage(eng.nodePhrases, eng.details)
+      );
+    } catch (ex) {
+      throw new Error("Failed to parse Serialized Languages Object: " + ex);
+    }
   }
 }
 

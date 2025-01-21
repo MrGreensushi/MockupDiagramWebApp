@@ -39,6 +39,7 @@ import CustomEdge from "./CustomEdge.tsx";
 import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
+import OperationMenu from "../Layout/OperationMenu.tsx";
 
 function ProcedureFlowDiagram(props: {
   procedure: SubProcedure;
@@ -46,6 +47,7 @@ function ProcedureFlowDiagram(props: {
   handleSubProcedure: (newSubProcedure: SubProcedure) => void;
   handleProcedureUpdate: (ReactFlowJsonObject: ReactFlowJsonObject) => void;
   handleBackSubActivity: (subProcedure: SubProcedure) => void;
+  handleSubmitTitle: (title: string) => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>(props.procedure.flow.nodes ?? []);
   const [edges, setEdges] = useState<Edge[]>(props.procedure.flow.edges ?? []);
@@ -433,87 +435,67 @@ function ProcedureFlowDiagram(props: {
   );
 
   return (
-    <>
+    <Container fluid>
       <Row>
         <TitleBar
           subProcedure={props.procedure}
           handleBackSubActivity={handleBackSubActivity}
+          handleSubmitTitle={props.handleSubmitTitle}
+        />
+
+        <OperationMenu
+          addNode={addNode}
+          addEventNode={addEventNode}
+          addDecisionNode={addDecisionNode}
+          restoreFlow={restoreFlow}
+          rfInstance={rfInstance!}
+          procedureTitle={""}
+          setProcedure={props.setProcedure}
         />
       </Row>
-      <Row>
+      <Row className="p-2">
         <Col xs={2}>
           <LoadNodes instantiateActvity={instantiateActivity} />
         </Col>
-        <Col xs>
-          <Container fluid style={{ height: "90vh", padding: "1%" }}>
-            <Row style={{ height: "100%" }}>
-              <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                nodeTypes={nodeTypes}
-                edgeTypes={edgeTypes}
-                onConnect={onConnect}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onNodeClick={onNodeClick}
-                //onBlur={onBlur}
-                onInit={setRfInstance}
-                deleteKeyCode={["Backspace", "Delete"]}
-                style={{ border: "1px solid black" }}
-                ref={flowRef}
-                fitView
-              >
-                <Panel>
-                  <Button
-                    variant="primary"
-                    onClick={addNode}
-                    style={{ marginBottom: "10px" }}
-                  >
-                    Aggiungi Attività
-                  </Button>
-                  <Button
-                    variant="primary"
-                    onClick={addEventNode}
-                    style={{ marginBottom: "10px" }}
-                  >
-                    Aggiungi Evento
-                  </Button>
-                  <Button onClick={addDecisionNode}>Aggiungi Decisione</Button>
-                </Panel>
-                {rfInstance && (
-                  <SaveLoadManager
-                    rfInstance={rfInstance}
-                    procedure={props.procedure}
-                    setProcedure={props.setProcedure}
-                    nodes={nodes}
-                    edges={edges}
-                    restoreFlow={restoreFlow}
-                  />
-                )}
-                <Controls />
-                <Background />
-              </ReactFlow>
-              <SideTab
-                title={OffcanvasTitle}
-                showSideTab={showSideTab}
-                setShowSideTab={setShowSideTab}
-              >
-                {showSideTab && (
-                  <ActivityEditor
-                    procedure={props.procedure}
-                    activity={
-                      rfInstance?.getNode(selectedNodeId!)?.data
-                        .activity as Activity
-                    }
-                    setActivity={onActivityEdited}
-                  />
-                )}
-              </SideTab>
-            </Row>
-          </Container>
+        <Col>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            onConnect={onConnect}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeClick={onNodeClick}
+            onInit={setRfInstance}
+            deleteKeyCode={["Backspace", "Delete"]}
+            style={{ border: "1px solid black" }}
+            ref={flowRef}
+            fitView
+          >
+            <Controls />
+            <Background />
+          </ReactFlow>
         </Col>
       </Row>
-    </>
+
+      {/* SideTab: opzioni dinamiche */}
+      <SideTab
+        title={OffcanvasTitle}
+        showSideTab={showSideTab}
+        setShowSideTab={setShowSideTab}
+      >
+        {showSideTab && (
+          <ActivityEditor
+            procedure={props.procedure}
+            activity={
+              rfInstance?.getNode(selectedNodeId!)?.data.activity as Activity
+            }
+            setActivity={onActivityEdited}
+          />
+        )}
+      </SideTab>
+    </Container>
   );
 }
 

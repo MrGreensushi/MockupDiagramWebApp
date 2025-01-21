@@ -12,7 +12,7 @@ function ProcedureEditor() {
   const [procedure, setProcedure] = useState(new Procedure());
   const [subProcedure, setSubProcedure] = useState<SubProcedure | undefined>();
 
-  const handleSubmit = (title: string) => {
+  const handleSubmitTitle = (title: string) => {
     setProcedure((prevProcedure) => {
       const newProcedure = prevProcedure.cloneAndSetTitle(title);
       console.log(newProcedure);
@@ -62,6 +62,7 @@ function ProcedureEditor() {
       handleSubProcedure={handleSubProcedure}
       handleProcedureUpdate={handleProcedureUpdate}
       handleBackSubActivity={handleBackSubActivity}
+      handleSubmitTitle={handleSubmitTitle}
     />
   );
 }

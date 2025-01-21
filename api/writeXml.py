@@ -95,6 +95,7 @@ def zipAllActivitiesXmls(data):
     # Preparare un archivio ZIP contenente tutti i file XML
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_file.writestr(f"{data.get('title','no-title')}.procedure", json.dumps(data, ensure_ascii=False))
         for filename, xml_content  in xmls:
             zip_file.writestr(filename, xml_content )
     zip_buffer.seek(0)

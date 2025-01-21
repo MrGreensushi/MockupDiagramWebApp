@@ -5,98 +5,36 @@ import { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
 
 function ActivityDetails(props: {
-  phrase: Phrase;
-  unavailableLevels: boolean[];
-  handlePhraseUpdate: (clipId: string, level: LevelsEnum, text: string) => void;
-  checkValidClipId: (name: string, level: LevelsEnum) => boolean;
+  text: string;
+  handleDetailsUpdate: (value: string) => void;
 }) {
-  const textWidth = "25%";
-  const [clipId, setClipId] = useState(props.phrase.clipId);
-  const [level, setLevel] = useState(props.phrase.level);
-  const [text, setText] = useState(props.phrase.text);
-
+  const textWidth = "12%";
+  const [text, setText] = useState(props.text);
   const [dataChanged, setDataChanged] = useState(false);
 
   const handleOnBlur = useCallback(() => {
     if (!dataChanged) return;
 
     console.log("ActivityDetails:OnBlur");
-    props.handlePhraseUpdate(clipId, level, text);
+    props.handleDetailsUpdate(text);
 
     setDataChanged(false);
-  }, [clipId, level, text, dataChanged]);
-
-  const handleChangeLevel = useCallback(
-    (newLevel: LevelsEnum) => {
-      if (newLevel === level) return;
-
-      setLevel(newLevel);
-      props.handlePhraseUpdate(clipId, newLevel, text);
-    },
-    [level]
-  );
-
-  const handleInvalidClipId = (newClipId: string) => {
-    return props.checkValidClipId(newClipId, level);
-  };
-
-  const handleChangeClipId = useCallback((value: string) => {
-    setClipId(value);
-    setDataChanged(true);
-  }, []);
+  }, [text]);
 
   return (
     <Card onBlur={handleOnBlur}>
-      <Card.Header>
-        <Row>
-          <Col xs={10}>
-            <DynamicTextField
-              initialValue={clipId}
-              onChange={handleChangeClipId}
-              isInvalid={handleInvalidClipId}
-              //onSubmit={props.handlePhraseClipIdUpdate}
-            />
-          </Col>
-          <Col xs={2}>
-            <Dropdown
-              onSelect={(eventKey) => handleChangeLevel(eventKey as LevelsEnum)}
-            >
-              <Dropdown.Toggle variant="success" id="dropdown-basic">
-                {level}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu>
-                {Object.values(LevelsEnum).map((element, index) => (
-                  <Dropdown.Item
-                    key={element}
-                    eventKey={element}
-                    active={element === level}
-                    disabled={props.unavailableLevels[index]}
-                  >
-                    {element}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </Col>
-        </Row>
-      </Card.Header>
+      <Card.Header>Details</Card.Header>
       <Card.Body>
         <Form>
-          <InputGroup>
-            <InputGroup.Text style={{ width: textWidth }}>
-              Testo
-            </InputGroup.Text>
-            <Form.Control
-              as="textarea"
-              style={{ maxHeight: "10em" }}
-              value={text}
-              onChange={(e) => {
-                setDataChanged(true);
-                setText(e.target.value);
-              }}
-            />
-          </InputGroup>
+          <Form.Control
+            as="textarea"
+            style={{ maxHeight: "10em" }}
+            value={text}
+            onChange={(e) => {
+              setDataChanged(true);
+              setText(e.target.value);
+            }}
+          />
         </Form>
       </Card.Body>
     </Card>
