@@ -1,68 +1,55 @@
-import React, { useState } from "react";
-import SubProcedure from "../Procedure/SubProcedure.ts";
+import React, { useMemo, useState } from "react";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
 
 function ProcedureEditor() {
-  const [procedure, setProcedure] = useState(new Procedure());
-  const [subProcedure, setSubProcedure] = useState<SubProcedure | undefined>();
+  const [procedures, setProcedures] = useState<Procedure[]>([new Procedure()]);
+  const [activeProcedureId, setActiveProcedureId] = useState(procedures[0].id);
 
-  const handleSubmitTitle = (title: string) => {
-    setProcedure((prevProcedure) => {
-      const newProcedure = prevProcedure.cloneAndSetTitle(title);
-      console.log(newProcedure);
-      return newProcedure;
-    });
+  const updateProcedure = (
+    id: string,
+    flow?: ReactFlowJsonObject,
+    title?: string
+  ) => {
+    setProcedures((prevProcedures) =>
+      prevProcedures.map((proc) => {
+        if (proc.id === id) return proc.cloneAndSet(flow, title);
+        return proc;
+      })
+    );
   };
 
-  const handleSubProcedure = (newSubProcedure: SubProcedure) => {
+  const handleSubmitActiveTitle = (title: string) => {
+    updateProcedure(activeProcedureId, undefined, title);
+  };
+
+  const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
+    updateProcedure(activeProcedureId, flow, undefined);
+  };
+  const setActiveProcedure = (newProcedureId: string) => {
     //TODO: if subProcedure is empty add an output Node
-    console.log("handleSubProcedure");
-
-    //update subProcedureParent
-    newSubProcedure.parent =
-      subProcedure ?? new SubProcedure(procedure.flow, procedure.title);
-    setSubProcedure(newSubProcedure);
+    setActiveProcedureId(newProcedureId);
   };
 
-  const handleProcedureUpdate = (reactFlowObject: ReactFlowJsonObject) => {
-    setSubProcedure((prevSub) => {
-      if (prevSub) {
-        return prevSub.cloneAndAddFlow(reactFlowObject);
-      }
-      setProcedure((prevProcedure) =>
-        prevProcedure.cloneAndAddFlow(reactFlowObject)
-      );
-      return prevSub;
-    });
+  const handleBackSubActivity = (procedureId: string) => {
+    setActiveProcedureId(procedureId);
   };
 
-  const handleActiveBackSubActivity = () => {
-    const toRet = subProcedure?.parent?.parent
-      ? subProcedure.parent
-      : undefined;
-
-    setSubProcedure(toRet);
-  };
-
-  const handleBackSubActivity = (sub: SubProcedure) => {
-    handleProcedureUpdate(sub.flow);
-
-    const newSub = sub.parent ? sub : undefined;
-    setSubProcedure(newSub);
-  };
+  const activeProcedure: Procedure = useMemo(() => {
+    const proc = procedures.find((x) => x.id === activeProcedureId);
+    if (!proc)
+      console.error("Nessuna procedura trovata con id: " + activeProcedureId);
+    return proc ?? new Procedure();
+  }, [activeProcedureId]);
 
   return (
     <ProcedureFlowDiagram
-      procedure={
-        subProcedure ?? new SubProcedure(procedure.flow, procedure.title)
-      }
-      setProcedure={setProcedure}
-      handleSubProcedure={handleSubProcedure}
-      handleProcedureUpdate={handleProcedureUpdate}
+      activeProcedure={activeProcedure}
+      setActiveProcedure={setActiveProcedure}
+      handleProcedureUpdate={handleUpdateActiveFlow}
       handleBackSubActivity={handleBackSubActivity}
-      handleSubmitTitle={handleSubmitTitle}
+      handleSubmitTitle={handleSubmitActiveTitle}
     />
   );
 }

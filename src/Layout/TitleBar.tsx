@@ -1,18 +1,14 @@
-import React, { useMemo, useState } from "react";
-import DynamicTextField from "./DynamicTextField.tsx";
-import { Breadcrumb, Row, Button, Navbar, Modal, Form } from "react-bootstrap";
+import React, { useState } from "react";
+import { Breadcrumb, Button, Navbar, Modal, Form } from "react-bootstrap";
 import SubProcedure from "../Procedure/SubProcedure";
-import OperationMenu from "./OperationMenu.tsx";
-import { ReactFlowInstance, ReactFlowJsonObject } from "@xyflow/react";
-import Procedure from "../Procedure/Procedure.ts";
 
 function TitleBar(props: {
   subProcedure: SubProcedure;
-  handleBackSubActivity: (subProcedure: SubProcedure) => void;
+  changeActiveProcedure: (procedureId: string) => void;
   handleSubmitTitle: (title: string) => void;
 }) {
   const handleClickSubProcedure = (subProcedure: SubProcedure) => {
-    props.handleBackSubActivity(subProcedure);
+    props.changeActiveProcedure(subProcedure);
   };
 
   const handleChangeProcedureName = (name: string) => {

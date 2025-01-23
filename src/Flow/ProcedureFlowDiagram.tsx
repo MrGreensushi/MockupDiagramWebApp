@@ -27,7 +27,6 @@ import "@xyflow/react/dist/style.css";
 import ActivityNode, { ActivityNodeObject } from "./ActivityNode.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
-import SubProcedure from "../Procedure/SubProcedure.ts";
 import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
 import LoadNodes from "../Layout/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
@@ -39,24 +38,26 @@ import OperationMenu from "../Layout/OperationMenu.tsx";
 import NodeEditor from "./NodeEditor.tsx";
 
 function ProcedureFlowDiagram(props: {
-  procedure: SubProcedure;
+  activeProcedure: Procedure;
   setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
-  handleSubProcedure: (newSubProcedure: SubProcedure) => void;
+  setActiveProcedure: (procedureId: string) => void;
   handleProcedureUpdate: (ReactFlowJsonObject: ReactFlowJsonObject) => void;
-  handleBackSubActivity: (subProcedure: SubProcedure) => void;
+  handleBackSubActivity: (subProcedure: Procedure) => void;
   handleSubmitTitle: (title: string) => void;
 }) {
-  const [nodes, setNodes] = useState<Node[]>(props.procedure.flow.nodes ?? []);
-  const [edges, setEdges] = useState<Edge[]>(props.procedure.flow.edges ?? []);
+  const [nodes, setNodes] = useState<Node[]>(
+    props.activeProcedure.flow.nodes ?? []
+  );
+  const [edges, setEdges] = useState<Edge[]>(
+    props.activeProcedure.flow.edges ?? []
+  );
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
 
   const [selectedNodeId, setSelectedNodeId] = useState<string>();
-  const [selectedNodeActivity, setSelectedNodeActivity] = useState<Activity>();
-  const [showSideTab, setShowSideTab] = useState(false);
 
   const flowRef = useRef(null);
 
-  const propsFlow = props.procedure.flow;
+  const propsFlow = props.activeProcedure.flow;
 
   useEffect(() => {
     setNodes(propsFlow.nodes);
@@ -90,37 +91,22 @@ function ProcedureFlowDiagram(props: {
   const onNodeClick = useCallback((_, node: Node) => {
     console.log("Flow:OnNodeClick");
     setSelectedNodeId(node.id);
-
-    setSelectedNodeActivity((node.data.activity as Activity) ?? undefined);
   }, []);
 
   const onPaneClick = useCallback((event: React.MouseEvent) => {
     setSelectedNodeId(undefined);
-    setSelectedNodeActivity(undefined);
   }, []);
 
-  const onBlur = useCallback(() => {
-    console.log("Flow:OnBlur");
-    setSelectedNodeId(undefined);
-  }, []);
-
-  const saveProcedure = () => {
+  const saveActiveProcedure = () => {
     props.handleProcedureUpdate(rfInstance!.toObject());
   };
 
-  const handleBackSubActivity = (subProcedure: SubProcedure) => {
-    saveProcedure();
-    props.handleBackSubActivity(subProcedure);
-  };
-
-  //#region ActivityNode
-
-  const onClickSubProcedure = (subProcedure: SubProcedure) => {
-    saveProcedure();
-
+  const changeActiveProcedure = (procedureId: string) => {
+    saveActiveProcedure();
     //open the new sub procedure
-    props.handleSubProcedure(subProcedure);
+    props.setActiveProcedure(procedureId);
   };
+  //#region ActivityNode
 
   const onActivityEdited = (newActivity: Activity) => {
     if (selectedNodeId) onActivityChanged(selectedNodeId, newActivity);
@@ -133,7 +119,6 @@ function ProcedureFlowDiagram(props: {
       });
 
       setSelectedNodeId(undefined);
-      setSelectedNodeActivity(undefined);
     },
     [rfInstance]
   );
@@ -196,12 +181,8 @@ function ProcedureFlowDiagram(props: {
       },
       data: {
         label: label,
-        activity: new Activity(
-          label,
-          new SubProcedure(undefined, label, props.procedure),
-          undefined
-        ),
-        onClickSubProcedure: onClickSubProcedure,
+        activity: new Activity(label, props.activeProcedure.id, undefined),
+        onDoubleClickActivity: changeActiveProcedure,
       },
       type: "activityNode",
     };
@@ -240,10 +221,10 @@ function ProcedureFlowDiagram(props: {
           label: label,
           activity: new Activity(
             label,
-            new SubProcedure(undefined, label, props.procedure),
+            props.activeProcedure.id,
             activityDescription.languages
           ),
-          onClickSubProcedure: onClickSubProcedure,
+          onDoubleClickActivity: changeActiveProcedure,
         },
         type: "activityNode",
       };
@@ -285,7 +266,7 @@ function ProcedureFlowDiagram(props: {
   }, [
     rfInstance,
     selectedNodeId,
-    props.procedure,
+    props.activeProcedure,
     onActivityNameChanged,
     nodes,
   ]);
@@ -384,42 +365,39 @@ function ProcedureFlowDiagram(props: {
 
   const restoreFlow = useCallback(
     (flow: ReactFlowJsonObject, title: string) => {
-      console.log("Restore Flow");
-
-      const activityCallbacks = {
-        onClickSubProcedure: onClickSubProcedure,
-      };
-
-      const newProcedure = props.procedure.cloneAndSetTitle(title);
-      //try {
-      const newNodes = instantiateNodeFromJsonObj(
-        flow,
-        newProcedure,
-        activityCallbacks
-      );
-
-      props.setProcedure((procedure) =>
-        procedure.cloneAndAddFlow({
-          nodes: newNodes,
-          edges: flow.edges,
-          viewport: flow.viewport,
-        })
-      );
+      // console.log("Restore Flow");
+      // const activityCallbacks = {
+      //   onClickSubProcedure: onDoubleClickActivity,
+      // };
+      // const newProcedure = props.activeProcedure.cloneAndSetTitle(title);
+      // //try {
+      // const newNodes = instantiateNodeFromJsonObj(
+      //   flow,
+      //   newProcedure,
+      //   activityCallbacks
+      // );
+      // props.setProcedure((procedure) =>
+      //   procedure.cloneAndAddFlow({
+      //     nodes: newNodes,
+      //     edges: flow.edges,
+      //     viewport: flow.viewport,
+      //   })
+      // );
       /*} catch {
         console.error(flow);
         setNodes([]);
         setEdges([]);
       }*/
     },
-    [rfInstance, setNodes, setEdges, onClickSubProcedure]
+    [rfInstance, setNodes, setEdges, changeActiveProcedure]
   );
 
   return (
     <Container fluid>
       <Row>
         <TitleBar
-          subProcedure={props.procedure}
-          handleBackSubActivity={handleBackSubActivity}
+          subProcedure={props.activeProcedure}
+          changeActiveProcedure={changeActiveProcedure}
           handleSubmitTitle={props.handleSubmitTitle}
         />
 
@@ -429,7 +407,9 @@ function ProcedureFlowDiagram(props: {
           addDecisionNode={addDecisionNode}
           restoreFlow={restoreFlow}
           rfInstance={rfInstance!}
-          procedureTitle={props.procedure.title ?? "Procedura senza titolo"}
+          procedureTitle={
+            props.activeProcedure.title ?? "Procedura senza titolo"
+          }
           setProcedure={props.setProcedure}
         />
       </Row>
@@ -461,7 +441,7 @@ function ProcedureFlowDiagram(props: {
 
         <Col xs={2}>
           <NodeEditor
-            procedure={props.procedure}
+            procedure={props.activeProcedure}
             selectedNode={
               selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined
             }

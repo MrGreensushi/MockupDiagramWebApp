@@ -1,3 +1,4 @@
+import Procedure from "./Procedure.ts";
 import SubProcedure from "./SubProcedure.ts";
 
 enum LevelsEnum {
@@ -17,17 +18,17 @@ class ActivityDescription {
 }
 
 class Activity extends ActivityDescription {
-  subProcedure: SubProcedure;
+  subProcedureId: string | undefined;
   isEngActiveLanguage: boolean;
 
   constructor(
     name: string,
-    subProcedure: SubProcedure,
+    subProcedureId?: string,
     languages?: Languages,
     isEngActiveLanguage?: boolean
   ) {
     super(name, languages);
-    this.subProcedure = subProcedure;
+    this.subProcedureId = subProcedureId;
     this.isEngActiveLanguage = isEngActiveLanguage ?? true;
   }
 
@@ -69,17 +70,13 @@ class Activity extends ActivityDescription {
     const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
     return new Activity(
       title,
-      this.subProcedure,
+      this.subProcedureId,
       updatedLanguages,
       this.isEngActiveLanguage
     );
   }
 
-  static deserialize(
-    obj: any,
-    parent: SubProcedure,
-    callbacksActivity: any
-  ) {
+  static deserialize(obj: any, parent: SubProcedure, callbacksActivity: any) {
     const subProcedure = SubProcedure.fromJSONObject(
       obj.subProcedure,
       parent,
@@ -110,11 +107,7 @@ class Activity extends ActivityDescription {
     callbacksActivity: any
   ) {
     try {
-      return this.deserialize(
-        object,
-        parent,
-        callbacksActivity
-      );
+      return this.deserialize(object, parent, callbacksActivity);
     } catch (ex) {
       throw new Error("Failed to parse Serialized Activity Object: " + ex);
     }
