@@ -22,8 +22,6 @@ function OperationMenu(props: {
   procedureTitle: string;
   setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
 }) {
-  const [showModal, setShowModal] = useState(false);
-
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
   const setProcedure = props.setProcedure;
@@ -78,7 +76,6 @@ function OperationMenu(props: {
         console.log(newStory);
         setProcedure(newStory);
         restoreFlow(newStory.flow, newStory.title);
-        setShowModal(false);
       } catch (err) {
         console.error(err);
       }
@@ -107,22 +104,9 @@ function OperationMenu(props: {
           disabled={rfInstance ? false : true}
           onClick={onSave}
         >
-          Savea Procedure
+          Save Procedure
         </Button>
-        <Button variant="outline-primary" onClick={() => setShowModal(true)}>
-          Load Procedure
-        </Button>
-
-        <Modal show={showModal}>
-          <Modal.Header>Select .procedure file</Modal.Header>
-          <Modal.Body>
-            <input
-              type="file"
-              accept=".procedure"
-              onChange={(e) => onLoad((e.target as HTMLInputElement).files![0])}
-            />
-          </Modal.Body>
-        </Modal>
+        <LoadModal onLoad={onLoad} />
 
         {/* <input
         type="file"
@@ -134,4 +118,30 @@ function OperationMenu(props: {
   );
 }
 
+function LoadModal(props: { onLoad: (file?: File) => Promise<void> }) {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
+
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleClose();
+    props.onLoad((e.target as HTMLInputElement).files![0]);
+  };
+  return (
+    <>
+      <Button variant="outline-primary" onClick={handleShow}>
+        Load Procedure
+      </Button>
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Select .procedure file</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <input type="file" accept=".procedure" onChange={handleInput} />
+        </Modal.Body>
+      </Modal>
+    </>
+  );
+}
 export default OperationMenu;

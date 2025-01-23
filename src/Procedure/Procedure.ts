@@ -20,6 +20,12 @@ class Procedure {
     return new Procedure(this.flow, this.title);
   }
 
+  cloneAndSet(flow=this.flow,title=this.title) {
+    this.flow = flow;
+    this.title = title;
+    return this.clone();
+  }
+
   cloneAndAddFlow(flow: ReactFlowJsonObject): Procedure {
     this.flow = flow;
     return this.clone();

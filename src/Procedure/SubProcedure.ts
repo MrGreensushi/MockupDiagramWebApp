@@ -27,6 +27,12 @@ class SubProcedure extends Procedure {
     return new SubProcedure(this.flow, this.title, this.parent);
   }
 
+  cloneAndSet(flow=this.flow,title=this.title) {
+    this.flow = flow;
+    this.title = title;
+    return this.clone();
+  }
+
   cloneAndAddFlow(flow: ReactFlowJsonObject): SubProcedure {
     this.flow = flow;
     return this.clone();

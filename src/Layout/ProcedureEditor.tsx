@@ -1,12 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Button, Col, Row } from "react-bootstrap";
-import DynamicTextField from "./DynamicTextField.tsx";
+import React, { useState } from "react";
 import SubProcedure from "../Procedure/SubProcedure.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
-import LoadNodes from "../Misc/LoadedNodes.tsx";
-import TitleBar from "./TitleBar.tsx";
 
 function ProcedureEditor() {
   const [procedure, setProcedure] = useState(new Procedure());
@@ -23,6 +19,10 @@ function ProcedureEditor() {
   const handleSubProcedure = (newSubProcedure: SubProcedure) => {
     //TODO: if subProcedure is empty add an output Node
     console.log("handleSubProcedure");
+
+    //update subProcedureParent
+    newSubProcedure.parent =
+      subProcedure ?? new SubProcedure(procedure.flow, procedure.title);
     setSubProcedure(newSubProcedure);
   };
 

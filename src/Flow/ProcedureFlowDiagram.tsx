@@ -6,13 +6,12 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import {
   ReactFlow,
   Controls,
   Background,
   applyNodeChanges,
-  Panel,
   ReactFlowInstance,
   Edge,
   NodeChange,
@@ -25,22 +24,18 @@ import {
   MarkerType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import SaveLoadManager from "./SaveLoad.tsx";
-import SideTab from "../Layout/SideTab.tsx";
-import ActivityEditor from "../Layout/ActivityEditor.tsx";
 import ActivityNode, { ActivityNodeObject } from "./ActivityNode.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
 import SubProcedure from "../Procedure/SubProcedure.ts";
 import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
-import LoadNodes from "../Misc/LoadedNodes.tsx";
+import LoadNodes from "../Layout/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
 import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
 import OperationMenu from "../Layout/OperationMenu.tsx";
-import SideBar from "../Layout/SideBar.tsx";
 import NodeEditor from "./NodeEditor.tsx";
 
 function ProcedureFlowDiagram(props: {
@@ -120,15 +115,6 @@ function ProcedureFlowDiagram(props: {
 
   //#region ActivityNode
 
-  const onClickEdit = () => {
-    setShowSideTab(true);
-
-    if (!selectedNodeId) {
-      console.log("SelectedNodeId undefined:" + selectedNodeId);
-      return;
-    }
-  };
-
   const onClickSubProcedure = (subProcedure: SubProcedure) => {
     saveProcedure();
 
@@ -179,7 +165,11 @@ function ProcedureFlowDiagram(props: {
         if (node.id === id) {
           return {
             ...node,
-            data: { ...node.data, activity: newActivity },
+            data: {
+              ...node.data,
+              activity: newActivity,
+              label: newActivity.name,
+            },
           };
         } else {
           return node;
@@ -312,23 +302,26 @@ function ProcedureFlowDiagram(props: {
 
   //#region EventNode & DecisionNode
 
-  const onEventNameChanged = useCallback((id: string, newName: string) => {
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: newName,
-            },
-          };
-        } else {
-          return node;
-        }
-      })
-    );
-  }, []);
+  const onEventorDecisionNameChanged = useCallback(
+    (id: string, newName: string) => {
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                label: newName,
+              },
+            };
+          } else {
+            return node;
+          }
+        })
+      );
+    },
+    []
+  );
 
   const createNewEventNode = useCallback(() => {
     const id = uuidv4();
@@ -352,7 +345,7 @@ function ProcedureFlowDiagram(props: {
       type: "eventNode",
     };
     return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onEventNameChanged]);
+  }, [rfInstance, nodes.length, onClickDelete, onEventorDecisionNameChanged]);
 
   const addEventNode = () => {
     const newNode = createNewEventNode();
@@ -381,7 +374,7 @@ function ProcedureFlowDiagram(props: {
       type: "decisionNode",
     };
     return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onEventNameChanged]);
+  }, [rfInstance, nodes.length, onClickDelete, onEventorDecisionNameChanged]);
 
   const addDecisionNode = () => {
     const newNode = createNewDecisionNode();
@@ -436,7 +429,7 @@ function ProcedureFlowDiagram(props: {
           addDecisionNode={addDecisionNode}
           restoreFlow={restoreFlow}
           rfInstance={rfInstance!}
-          procedureTitle={""}
+          procedureTitle={props.procedure.title ?? "Procedura senza titolo"}
           setProcedure={props.setProcedure}
         />
       </Row>
@@ -473,6 +466,7 @@ function ProcedureFlowDiagram(props: {
               selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined
             }
             setActivity={onActivityEdited}
+            setEventOrDecisionName={onEventorDecisionNameChanged}
           />
         </Col>
       </Row>

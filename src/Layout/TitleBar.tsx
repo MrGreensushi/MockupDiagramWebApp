@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import DynamicTextField from "./DynamicTextField.tsx";
-import { Breadcrumb, Row, Button, Navbar } from "react-bootstrap";
+import { Breadcrumb, Row, Button, Navbar, Modal, Form } from "react-bootstrap";
 import SubProcedure from "../Procedure/SubProcedure";
 import OperationMenu from "./OperationMenu.tsx";
 import { ReactFlowInstance, ReactFlowJsonObject } from "@xyflow/react";
@@ -37,6 +37,14 @@ function TitleBar(props: {
     index: number,
     isActive: boolean
   ) => {
+    if (index === 0 && isActive)
+      return (
+        <ModifiableTitle
+          title={props.subProcedure.title}
+          handleChangeProcedureName={handleChangeProcedureName}
+        />
+      );
+
     return (
       <Breadcrumb.Item
         key={"Breadcrub " + index}
@@ -50,12 +58,61 @@ function TitleBar(props: {
 
   return (
     <Navbar>
-      <Navbar.Brand>
+      <Navbar.Brand key={"navBar brand"}>
         <Breadcrumb className="breadcrumb-align">
           {instantiateBreadcrums()}
         </Breadcrumb>
       </Navbar.Brand>
     </Navbar>
+  );
+}
+
+function ModifiableTitle(props: {
+  title: string;
+  handleChangeProcedureName: (value: string) => void;
+}) {
+  const [show, setShow] = useState(false);
+  const [title, setTitle] = useState(props.title);
+
+  const handleClose = () => setShow(isInvalid(title));
+  const handleShow = () => setShow(true);
+
+  const handleSave = () => {
+    props.handleChangeProcedureName(title);
+    handleClose();
+  };
+
+  const isInvalid = (value: string) => {
+    return value === "";
+  };
+  return (
+    <>
+      <Breadcrumb.Item key={"Breadcrub-title"} onClick={handleShow} active>
+        {title}
+      </Breadcrumb.Item>
+
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Title</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Control
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            isInvalid={isInvalid(title)}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 

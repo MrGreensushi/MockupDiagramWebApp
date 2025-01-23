@@ -18,7 +18,7 @@ import {
   LevelsEnum,
   Phrase,
 } from "../Procedure/Activity.ts";
-import SideBar from "../Layout/SideBar.tsx";
+import SideBar from "./SideBar.tsx";
 import "../CSS/LoadedNodes.css";
 
 function LoadNodes(props: {
