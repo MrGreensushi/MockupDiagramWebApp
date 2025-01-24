@@ -28,7 +28,10 @@ import ActivityNode, { ActivityNodeObject } from "./ActivityNode.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
 import SubProcedure from "../Procedure/SubProcedure.ts";
-import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
+import Activity, {
+  ActivityDescription,
+  Phrase,
+} from "../Procedure/Activity.ts";
 import LoadNodes from "../Layout/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
@@ -51,9 +54,6 @@ function ProcedureFlowDiagram(props: {
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance>();
 
   const [selectedNodeId, setSelectedNodeId] = useState<string>();
-  const [selectedNodeActivity, setSelectedNodeActivity] = useState<Activity>();
-  const [showSideTab, setShowSideTab] = useState(false);
-
   const flowRef = useRef(null);
 
   const propsFlow = props.procedure.flow;
@@ -90,17 +90,9 @@ function ProcedureFlowDiagram(props: {
   const onNodeClick = useCallback((_, node: Node) => {
     console.log("Flow:OnNodeClick");
     setSelectedNodeId(node.id);
-
-    setSelectedNodeActivity((node.data.activity as Activity) ?? undefined);
   }, []);
 
   const onPaneClick = useCallback((event: React.MouseEvent) => {
-    setSelectedNodeId(undefined);
-    setSelectedNodeActivity(undefined);
-  }, []);
-
-  const onBlur = useCallback(() => {
-    console.log("Flow:OnBlur");
     setSelectedNodeId(undefined);
   }, []);
 
@@ -122,8 +114,13 @@ function ProcedureFlowDiagram(props: {
     props.handleSubProcedure(subProcedure);
   };
 
-  const onActivityEdited = (newActivity: Activity) => {
-    if (selectedNodeId) onActivityChanged(selectedNodeId, newActivity);
+  const onActivityEdited = (
+    phrases?: Phrase[],
+    details?: string,
+    newName?: string
+  ) => {
+    if (!selectedNodeId) return;
+    onActivityChanged(selectedNodeId, phrases, details, newName);
   };
 
   const onClickDelete = useCallback(
@@ -133,95 +130,43 @@ function ProcedureFlowDiagram(props: {
       });
 
       setSelectedNodeId(undefined);
-      setSelectedNodeActivity(undefined);
     },
     [rfInstance]
   );
 
-  const onActivityNameChanged = useCallback((id: string, newName: string) => {
-    //update label, activity name and subProcess name
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          node.data.activity.name = newName;
-          node.data.activity.subProcedure.title = newName;
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: newName,
-            },
-          };
-        } else {
-          return node;
-        }
-      })
-    );
-  }, []);
+  const onActivityChanged = useCallback(
+    (id: string, phrases?: Phrase[], details?: string, newName?: string) => {
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            const nodeActivity = node.data.activity as Activity;
+            const updatedActivity = nodeActivity.cloneAndSet(
+              phrases,
+              details,
+              newName
+            );
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                activity: updatedActivity,
+                label: newName,
+              },
+            };
+          } else {
+            return node;
+          }
+        })
+      );
+    },
+    []
+  );
 
-  const onActivityChanged = useCallback((id: string, newActivity: Activity) => {
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              activity: newActivity,
-              label: newActivity.name,
-            },
-          };
-        } else {
-          return node;
-        }
-      })
-    );
-  }, []);
-
-  const createNewNode = useCallback(() => {
-    const id = uuidv4();
-    const label = "Procedura " + (nodes.length + 1);
-    const position =
-      rfInstance && flowRef.current
-        ? rfInstance.screenToFlowPosition({
-            x: (flowRef.current as Element).getBoundingClientRect().width / 2,
-            y: (flowRef.current as Element).getBoundingClientRect().height / 2,
-          })
-        : { x: 0, y: 0 };
-    const obj: ActivityNodeObject = {
-      id: id,
-      position: {
-        x: position?.x ?? 0,
-        y: position?.y ?? 0,
-      },
-      data: {
-        label: label,
-        activity: new Activity(
-          label,
-          new SubProcedure(undefined, label, props.procedure),
-          undefined
-        ),
-        onClickSubProcedure: onClickSubProcedure,
-      },
-      type: "activityNode",
-    };
-    return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]);
-
-  const addNode = useCallback(() => {
-    const newNode = createNewNode();
-    setNodes((nodes) => [...nodes, newNode]);
-  }, [createNewNode]);
-
-  const instantiateActivity = (activityDescription: ActivityDescription) => {
-    const newNode = createExistingNode(activityDescription);
-    setNodes((nodes) => [...nodes, newNode]);
-  };
-
-  const createExistingNode = useCallback(
-    (activityDescription: ActivityDescription) => {
+  const createNewActivityNode = useCallback(
+    (activityDescription?: ActivityDescription) => {
       const id = uuidv4();
-      const label = activityDescription.name;
+      const label =
+        activityDescription?.name ?? "Procedure " + (nodes.length + 1);
       const position =
         rfInstance && flowRef.current
           ? rfInstance.screenToFlowPosition({
@@ -241,7 +186,7 @@ function ProcedureFlowDiagram(props: {
           activity: new Activity(
             label,
             new SubProcedure(undefined, label, props.procedure),
-            activityDescription.languages
+            activityDescription?.languages
           ),
           onClickSubProcedure: onClickSubProcedure,
         },
@@ -249,8 +194,18 @@ function ProcedureFlowDiagram(props: {
       };
       return obj;
     },
-    [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]
+    [rfInstance, nodes.length, onClickSubProcedure]
   );
+
+  const addNode = useCallback(() => {
+    const newNode = createNewActivityNode();
+    setNodes((nodes) => [...nodes, newNode]);
+  }, [createNewActivityNode]);
+
+  const instantiateActivity = (activityDescription: ActivityDescription) => {
+    const newNode = createNewActivityNode(activityDescription);
+    setNodes((nodes) => [...nodes, newNode]);
+  };
 
   //#endregion
 
@@ -275,20 +230,14 @@ function ProcedureFlowDiagram(props: {
           <DynamicTextField
             initialValue={name}
             onSubmit={(name: string) =>
-              onActivityNameChanged(selectedNodeId!, name)
+              onActivityChanged(selectedNodeId!, undefined, undefined, name)
             }
             baseProps={{ size: "lg", placeholder: "Activity" }}
           />
         </div>
       </Row>
     );
-  }, [
-    rfInstance,
-    selectedNodeId,
-    props.procedure,
-    onActivityNameChanged,
-    nodes,
-  ]);
+  }, [rfInstance, selectedNodeId, props.procedure, onActivityChanged, nodes]);
 
   const getTypeNodeFromId = (id: string) => {
     var node = nodes[0];

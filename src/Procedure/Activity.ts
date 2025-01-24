@@ -67,19 +67,16 @@ class Activity extends ActivityDescription {
   ) {
     const updatedLanguage = this.activeLanguage.cloneAndSet(phrases, details);
     const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
+    const upddatedSubProcedure = this.subProcedure.cloneAndSetTitle(title);
     return new Activity(
       title,
-      this.subProcedure,
+      upddatedSubProcedure,
       updatedLanguages,
       this.isEngActiveLanguage
     );
   }
 
-  static deserialize(
-    obj: any,
-    parent: SubProcedure,
-    callbacksActivity: any
-  ) {
+  static deserialize(obj: any, parent: SubProcedure, callbacksActivity: any) {
     const subProcedure = SubProcedure.fromJSONObject(
       obj.subProcedure,
       parent,
@@ -110,11 +107,7 @@ class Activity extends ActivityDescription {
     callbacksActivity: any
   ) {
     try {
-      return this.deserialize(
-        object,
-        parent,
-        callbacksActivity
-      );
+      return this.deserialize(object, parent, callbacksActivity);
     } catch (ex) {
       throw new Error("Failed to parse Serialized Activity Object: " + ex);
     }

@@ -2,14 +2,18 @@ import React, { useMemo } from "react";
 import SideBar from "../Layout/SideBar.tsx";
 import { Node } from "@xyflow/react";
 import ActivityEditor from "../Layout/ActivityEditor.tsx";
-import Activity from "../Procedure/Activity.ts";
+import Activity, { Phrase } from "../Procedure/Activity.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 function NodeEditor(props: {
   selectedNode: Node | undefined;
   procedure: Procedure;
-  setActivity: (newActivity: Activity) => void;
+  setActivity: (
+    newPhrases?: Phrase[],
+    newDetails?: string,
+    newName?: string
+  ) => void;
   setEventOrDecisionName: (id: string, value: string) => void;
 }) {
   const editor = useMemo(() => {
@@ -40,8 +44,7 @@ function NodeEditor(props: {
       props.setEventOrDecisionName(props.selectedNode!.id, value);
       return;
     }
-    const newActivity = activity.cloneAndSet(undefined, undefined, value);
-    props.setActivity(newActivity);
+    props.setActivity(undefined, undefined, value);
   };
 
   return (

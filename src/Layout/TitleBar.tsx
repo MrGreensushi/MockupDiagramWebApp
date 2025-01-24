@@ -1,10 +1,6 @@
-import React, { useMemo, useState } from "react";
-import DynamicTextField from "./DynamicTextField.tsx";
-import { Breadcrumb, Row, Button, Navbar, Modal, Form } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Breadcrumb, Button, Navbar, Modal, Form } from "react-bootstrap";
 import SubProcedure from "../Procedure/SubProcedure";
-import OperationMenu from "./OperationMenu.tsx";
-import { ReactFlowInstance, ReactFlowJsonObject } from "@xyflow/react";
-import Procedure from "../Procedure/Procedure.ts";
 
 function TitleBar(props: {
   subProcedure: SubProcedure;
@@ -73,6 +69,10 @@ function ModifiableTitle(props: {
 }) {
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState(props.title);
+
+  useEffect(() => {
+    setTitle(props.title);
+  }, [props.title]);
 
   const handleClose = () => setShow(isInvalid(title));
   const handleShow = () => setShow(true);
