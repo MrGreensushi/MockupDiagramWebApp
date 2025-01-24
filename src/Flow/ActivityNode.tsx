@@ -1,12 +1,12 @@
-import { Handle, Node, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import React, { useState } from "react";
-import { Button, ButtonGroup, Col } from "react-bootstrap";
+import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import React, { useMemo } from "react";
+import { Col } from "react-bootstrap";
 import Activity from "../Procedure/Activity.ts";
 
 type ActivityNodeProps = {
   label: string;
   activity: Activity;
-  onDoubleClickActivity: (procedureId: string) => void;
+  onDoubleClickActivity: (subProcedureId: string) => void;
 };
 
 type ActivityNodeObject = {
@@ -19,19 +19,20 @@ type ActivityNodeObject = {
 type ActivityNodeType = Node<ActivityNodeProps, "ActivityNode">;
 
 function ActivityNode(props: NodeProps<ActivityNodeType>) {
-  const [activity, setActivity] = useState<Activity | undefined>(undefined);
+  const isEmpty = useMemo(() => {
+    return props.data.activity.isSubProcedureEmpty;
+  }, [props.data.activity.isSubProcedureEmpty]);
 
-  const handleSubProcedure = () => {
-    const subProcedureId = props.data.activity.subProcedureId as string;
-    props.data.onDoubleClickActivity(subProcedureId);
+  const handleDoubleClick = () => {
+    props.data.onDoubleClickActivity(props.data.activity.subProcedureId);
   };
 
   return (
     <div
       className={`scene-node ${props.selected ? "selected" : ""} ${
-        props.data.activity.subProcedureId ? "" : "hasSubProcedure"
+        isEmpty ? "" : "hasSubProcedure"
       }`}
-      onDoubleClick={handleSubProcedure}
+      onDoubleClick={handleDoubleClick}
     >
       <Col>{props.data.label}</Col>
       <Handle type="target" position={Position.Top} />

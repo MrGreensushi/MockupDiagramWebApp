@@ -44,6 +44,9 @@ function ProcedureFlowDiagram(props: {
   handleProcedureUpdate: (ReactFlowJsonObject: ReactFlowJsonObject) => void;
   handleBackSubActivity: (subProcedure: Procedure) => void;
   handleSubmitTitle: (title: string) => void;
+  addProcedure: (newProcedure: Procedure) => void;
+  getProcedure: (procedureId: string) => Procedure | undefined;
+  isProcedureEmpty: (procedureId: string) => boolean;
 }) {
   const [nodes, setNodes] = useState<Node[]>(
     props.activeProcedure.flow.nodes ?? []
@@ -102,10 +105,12 @@ function ProcedureFlowDiagram(props: {
   };
 
   const changeActiveProcedure = (procedureId: string) => {
+    console.log(procedureId);
     saveActiveProcedure();
     //open the new sub procedure
     props.setActiveProcedure(procedureId);
   };
+
   //#region ActivityNode
 
   const onActivityEdited = (newActivity: Activity) => {
@@ -122,6 +127,14 @@ function ProcedureFlowDiagram(props: {
     },
     [rfInstance]
   );
+
+  const createNewProcedure = (title: string, parentProcedureId: string) => {
+    //create new subProcedure and update the activity
+    const id = uuidv4();
+    const procedure = new Procedure(undefined, title, id, parentProcedureId);
+    props.addProcedure(procedure);
+    return procedure;
+  };
 
   const onActivityNameChanged = useCallback((id: string, newName: string) => {
     //update label, activity name and subProcess name
@@ -163,46 +176,15 @@ function ProcedureFlowDiagram(props: {
     );
   }, []);
 
-  const createNewNode = useCallback(() => {
-    const id = uuidv4();
-    const label = "Procedura " + (nodes.length + 1);
-    const position =
-      rfInstance && flowRef.current
-        ? rfInstance.screenToFlowPosition({
-            x: (flowRef.current as Element).getBoundingClientRect().width / 2,
-            y: (flowRef.current as Element).getBoundingClientRect().height / 2,
-          })
-        : { x: 0, y: 0 };
-    const obj: ActivityNodeObject = {
-      id: id,
-      position: {
-        x: position?.x ?? 0,
-        y: position?.y ?? 0,
-      },
-      data: {
-        label: label,
-        activity: new Activity(label, props.activeProcedure.id, undefined),
-        onDoubleClickActivity: changeActiveProcedure,
-      },
-      type: "activityNode",
-    };
-    return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]);
-
-  const addNode = useCallback(() => {
-    const newNode = createNewNode();
-    setNodes((nodes) => [...nodes, newNode]);
-  }, [createNewNode]);
-
-  const instantiateActivity = (activityDescription: ActivityDescription) => {
-    const newNode = createExistingNode(activityDescription);
-    setNodes((nodes) => [...nodes, newNode]);
-  };
-
-  const createExistingNode = useCallback(
-    (activityDescription: ActivityDescription) => {
+  const createNewActivityNode = useCallback(
+    (activityDescription?: ActivityDescription) => {
       const id = uuidv4();
-      const label = activityDescription.name;
+      const label =
+        activityDescription?.name ?? "Procedure " + (nodes.length + 1);
+
+      //create new Procedure to set as subProcedure of this node
+      const subProcedure = createNewProcedure(label, props.activeProcedure.id);
+
       const position =
         rfInstance && flowRef.current
           ? rfInstance.screenToFlowPosition({
@@ -221,10 +203,11 @@ function ProcedureFlowDiagram(props: {
           label: label,
           activity: new Activity(
             label,
-            props.activeProcedure.id,
-            activityDescription.languages
+            subProcedure.id,
+            activityDescription?.languages
           ),
           onDoubleClickActivity: changeActiveProcedure,
+          isEmpty: subProcedure.isEmpty,
         },
         type: "activityNode",
       };
@@ -232,6 +215,16 @@ function ProcedureFlowDiagram(props: {
     },
     [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]
   );
+
+  const addNode = useCallback(() => {
+    const newNode = createNewActivityNode();
+    setNodes((nodes) => [...nodes, newNode]);
+  }, [createNewActivityNode]);
+
+  const instantiateActivity = (activityDescription: ActivityDescription) => {
+    const newNode = createNewActivityNode(activityDescription);
+    setNodes((nodes) => [...nodes, newNode]);
+  };
 
   //#endregion
 
@@ -396,9 +389,10 @@ function ProcedureFlowDiagram(props: {
     <Container fluid>
       <Row>
         <TitleBar
-          subProcedure={props.activeProcedure}
+          activeProcedure={props.activeProcedure}
           changeActiveProcedure={changeActiveProcedure}
           handleSubmitTitle={props.handleSubmitTitle}
+          getProcedure={props.getProcedure}
         />
 
         <OperationMenu

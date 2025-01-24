@@ -1,6 +1,4 @@
 import Procedure from "./Procedure.ts";
-import SubProcedure from "./SubProcedure.ts";
-
 enum LevelsEnum {
   novice = "Novice",
   intermediate = "Intermediate",
@@ -18,18 +16,21 @@ class ActivityDescription {
 }
 
 class Activity extends ActivityDescription {
-  subProcedureId: string | undefined;
+  subProcedureId: string;
   isEngActiveLanguage: boolean;
+  isSubProcedureEmpty: boolean;
 
   constructor(
     name: string,
-    subProcedureId?: string,
+    subProcedureId: string,
     languages?: Languages,
-    isEngActiveLanguage?: boolean
+    isEngActiveLanguage?: boolean,
+    isSubProcedureEmpty = true
   ) {
     super(name, languages);
     this.subProcedureId = subProcedureId;
     this.isEngActiveLanguage = isEngActiveLanguage ?? true;
+    this.isSubProcedureEmpty = isSubProcedureEmpty;
   }
 
   public get nodePhrases() {

@@ -5,6 +5,7 @@ class Procedure {
   id: string;
   flow: ReactFlowJsonObject;
   title: string;
+  parentId?: string;
 
   constructor(
     flow: ReactFlowJsonObject = {
@@ -19,16 +20,23 @@ class Procedure {
     this.flow = flow;
     this.title = title ?? "Procedura senza titolo";
     this.id = id ?? uuidv4();
+    this.parentId = parentId;
   }
 
   clone(): Procedure {
-    return new Procedure(this.flow, this.title, this.id);
+    return new Procedure(this.flow, this.title, this.id, this.parentId);
   }
 
-  cloneAndSet(flow = this.flow, title = this.title, id = this.id) {
+  cloneAndSet(
+    flow = this.flow,
+    title = this.title,
+    id = this.id,
+    parentId = this.parentId
+  ) {
     this.flow = flow;
     this.title = title;
     this.id = id;
+    this.parentId = parentId;
     return this.clone();
   }
 
@@ -39,6 +47,10 @@ class Procedure {
   static fromJSON(json: string) {
     const obj = JSON.parse(json);
     return new Procedure(obj.flow, obj.title, obj.id);
+  }
+
+  isEmpty() {
+    return this.flow.nodes.length <= 0;
   }
 }
 

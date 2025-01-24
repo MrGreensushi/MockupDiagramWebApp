@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import { Breadcrumb, Button, Navbar, Modal, Form } from "react-bootstrap";
-import SubProcedure from "../Procedure/SubProcedure";
+import Procedure from "../Procedure/Procedure";
 
 function TitleBar(props: {
-  subProcedure: SubProcedure;
+  activeProcedure: Procedure;
   changeActiveProcedure: (procedureId: string) => void;
   handleSubmitTitle: (title: string) => void;
+  getProcedure: (procedureId: string) => Procedure | undefined;
 }) {
-  const handleClickSubProcedure = (subProcedure: SubProcedure) => {
-    props.changeActiveProcedure(subProcedure);
+  const handleClickSubProcedure = (procedure: Procedure) => {
+    props.changeActiveProcedure(procedure.id);
   };
 
   const handleChangeProcedureName = (name: string) => {
@@ -16,11 +17,12 @@ function TitleBar(props: {
   };
 
   const instantiateBreadcrums = () => {
-    const procedures = [props.subProcedure];
-    var subProc = props.subProcedure;
-    while (subProc.parent) {
-      procedures.push(subProc.parent);
-      subProc = subProc.parent;
+    //create an array with all the parentId
+    const procedures = [props.activeProcedure];
+    var procedure = props.activeProcedure;
+    while (procedure.parentId) {
+      procedure = props.getProcedure(procedure.parentId)!;
+      procedures.push(procedure);
     }
     procedures.reverse();
     return procedures.map((element, index) =>
@@ -29,14 +31,15 @@ function TitleBar(props: {
   };
 
   const BreadrcrumTitle = (
-    sub: SubProcedure,
+    sub: Procedure,
     index: number,
     isActive: boolean
   ) => {
     if (index === 0 && isActive)
       return (
         <ModifiableTitle
-          title={props.subProcedure.title}
+          key={"Modifiable Title"}
+          title={props.activeProcedure.title}
           handleChangeProcedureName={handleChangeProcedureName}
         />
       );
