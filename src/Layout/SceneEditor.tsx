@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Col, Row, Stack } from "react-bootstrap";
+import { Card, Col, Row, Stack } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
@@ -31,6 +31,7 @@ function SceneEditor(props: {
 	const [weather, setWeather] = useState(props.scene?.details.weather ?? "");
 	const [tone, setTone] = useState(props.scene?.details.tone ?? "");
 	const [value, setValue] = useState(props.scene?.details.value ?? "");
+	
 	const [blocks, setBlocks] = useState<[string, StoryElementEnum][]>([]);
 
 	const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
@@ -90,21 +91,38 @@ function SceneEditor(props: {
 			workspace.render();
 			workspace.scrollCenter()
 		}
-	}, [blocks])
+	}, [blocks]);
 
 	return (
-		<Col>
+		<Col className="h-100">
 			<ElementModal
 				modal={modal}
 				setModal={setModal}
 				modalAction="add"
 				elementType={modalType}
 				onSubmit={element => onSubmitNewElement(element, modalType)} />
-			<Row>
-				<Col xs={6}>
-					<BlocklyCanvas
-						blocklyRef={blocklyRef}
-						onBlur={handleBlur} />
+			<Row className="h-100">
+				<Col xs={6} className="h-100">
+				<Card className="h-100">
+					<Card.Header>Prompt</Card.Header>
+					<Card.Body className="h-100">
+						<div className="h-75">
+							<BlocklyCanvas
+								blocklyRef={blocklyRef}
+								onBlur={handleBlur} />
+						</div>
+						<PromptArea
+							initialText={
+								promptElements.map(e => {
+									if (e.type === "SceneCharacterObject" || e.type === "SceneObjectObject" || e.type === "SceneLocationObject") return `@${e.outputText}`
+									else return e.outputText ?? ""
+								}).join("")
+							}
+							story={props.story}
+							setBlocks={setBlocks}
+							onBlur={handleBlur} />
+					</Card.Body>
+				</Card>
 				</Col>
 				<Stack gap={2} style={{width:"50%"}}>
 					<SceneDetails
@@ -124,16 +142,7 @@ function SceneEditor(props: {
 						value={value}
 						setValue={setValue}
 						onBlur={handleBlur} />
-					<PromptArea
-						initialText={
-							promptElements.map(e => {
-								if (e.type === "SceneCharacterObject" || e.type === "SceneObjectObject" || e.type === "SceneLocationObject") return `@${e.outputText}`
-								else return e.outputText ?? ""
-							}).join("")
-						}
-						story={props.story}
-						setBlocks={setBlocks}
-						onBlur={handleBlur} />
+					
 				</Stack>
 			</Row>
 		</Col>

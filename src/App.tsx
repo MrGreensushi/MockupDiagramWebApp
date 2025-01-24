@@ -25,6 +25,11 @@ function App() {
   )));}, []);
 
   useEffect(() => initBlocks(), []);
+  useEffect(() => {
+    const handleContextmenu = (e: MouseEvent) => e.preventDefault();
+    document.addEventListener('contextmenu', handleContextmenu);
+    return function cleanup() {document.removeEventListener('contextmenu', handleContextmenu)}
+  }, [])
 
   return (
     <div className="App">

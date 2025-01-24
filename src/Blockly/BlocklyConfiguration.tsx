@@ -147,10 +147,10 @@ function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCall
   workspace.updateToolbox(customToolboxCategories);
 }
 
-function BlocklyCanvas(props: { blocklyRef: Ref<HTMLDivElement>, onBlur: () => void }): ReactElement {
+function BlocklyCanvas(props: { blocklyRef: Ref<HTMLDivElement>, onBlur?: () => void, className?: string}): ReactElement {
   return(
     <div ref={props.blocklyRef}
-      className="fill-height"
+      className="h-100"
       onBlur={props.onBlur} />
   );
 }

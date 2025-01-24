@@ -2,17 +2,18 @@ import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
 import React, { useCallback, useState, useMemo, useEffect, useRef } from "react";
 import { Button, Col, Row } from "react-bootstrap";
-import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges } from "@xyflow/react";
+import { ReactFlow, Controls, Background, applyNodeChanges, Panel, ReactFlowInstance, Edge, NodeChange, Node, addEdge, Connection, EdgeChange, applyEdgeChanges, MarkerType } from "@xyflow/react";
 import SideTab from "../Layout/SideTab.tsx";
 import SceneEditor from "../Layout/SceneEditor.tsx";
-import SceneNode, { createNewNode, SceneNodeProps } from "./SceneNode.tsx";
+import SceneNode, { createNewSceneNode, SceneNodeProps } from "./SceneNode.tsx";
 import Story from "../StoryElements/Story.ts";
 import Scene from "../StoryElements/Scene.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 function StoryFlowChartEditor (props: {
   story: Story,
-  setStory: React.Dispatch<React.SetStateAction<Story>>
+  setStory: React.Dispatch<React.SetStateAction<Story>>,
+  onClickEditNode: (id: string) => void,
 }) {
   const story = props.story;
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -33,10 +34,14 @@ function StoryFlowChartEditor (props: {
   }, []);
   
   const onConnect = useCallback((connection: Connection) =>
-    setEdges(eds => addEdge({ ...connection }, eds),
+    setEdges(eds => addEdge({ ...connection, markerEnd: {type: MarkerType.ArrowClosed, width: 15, height: 15} }, eds),
   ), []);
 
   const onNodeClick = useCallback((_, node: Node) => {
+    setSelectedNodeId(node.id);  
+  }, []);
+
+  const onNodeContextMenu = useCallback((_, node: Node) => {
     setSelectedNodeId(node.id);  
   }, []);
 
@@ -44,9 +49,9 @@ function StoryFlowChartEditor (props: {
     setSelectedNodeId(undefined);
   }, []);
 
-  const onClickEdit = useCallback(() => {
-    setShowSideTab(true);
-  }, []);
+  const onClickEdit = useCallback((id: string) => {
+    props.onClickEditNode(id);
+  }, [props.onClickEditNode]);
 
   const onClickDelete = useCallback((nodeId: string) => {
     setNodes(nodes => nodes.filter(
@@ -113,9 +118,9 @@ function StoryFlowChartEditor (props: {
           y: (flowRef.current as Element).getBoundingClientRect().height/2})
         :
         {x: 0, y: 0};
-    const newNode = createNewNode(
+    const newNode = createNewSceneNode(
       id,
-      {onClickEdit: onClickEdit,
+      {onClickEdit: () => onClickEdit(id),
       onClickDelete: () => onClickDelete(id),
       onSceneNameChanged: (name: string) => onSceneNameChanged(id, name),
       onSceneTitleChanged: (title: string) => onSceneTitleChanged(id, title)},
@@ -125,9 +130,9 @@ function StoryFlowChartEditor (props: {
   }, [rfInstance, flowRef, nodes, setNodes, onClickEdit, onClickDelete, onSceneNameChanged, onSceneTitleChanged]);
 
   const addExistingNode = useCallback((node: Node) => {
-    const newNode = createNewNode(
+    const newNode = createNewSceneNode(
       node.id,
-      {onClickEdit: onClickEdit,
+      {onClickEdit: () => onClickEdit(node.id),
       onClickDelete: () => onClickDelete(node.id),
       onSceneNameChanged: (name: string) => onSceneNameChanged(node.id, name),
       onSceneTitleChanged: (title: string) => onSceneTitleChanged(node.id, title)},
@@ -156,8 +161,8 @@ function StoryFlowChartEditor (props: {
     const name = node ? node.data.label as string : "";
     const title = node ? (node.data.scene as Scene)?.details.title : "";
     return (
-      <Row style={{width:"100%"}}>
-        <Col style={{width:"50%"}}>
+      <Row className="h-100">
+        <Col className="w-50">
           <DynamicTextField 
             initialValue={name}
             onSubmit={(name: string) => onSceneNameChanged(selectedNodeId!, name)}
@@ -166,7 +171,7 @@ function StoryFlowChartEditor (props: {
               className: "scene-node-name",
               placeholder: "ID Scena"}}/>
         </Col>
-        <Col style={{width:"50%"}}>
+        <Col className="w-50">
           <DynamicTextField 
             initialValue={title}
             onSubmit={(title: string) => onSceneTitleChanged(selectedNodeId!, title)}
@@ -180,7 +185,7 @@ function StoryFlowChartEditor (props: {
   }, [nodes, selectedNodeId, onSceneTitleChanged, onSceneNameChanged])
 
   return (
-    <Row style={{ height: "100%" }} className="gx-0">
+    <Row className="gx-0 h-100">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -189,11 +194,12 @@ function StoryFlowChartEditor (props: {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onNodeContextMenu={onNodeContextMenu}
         onPaneClick={onPaneClick}
         onInit={handleInit}
         deleteKeyCode={['Backspace', 'Delete']}
         style={{ border: "1px solid black" }}
-        className="gx-0"
+        className="gx-0 h-100"
         ref={flowRef}
         minZoom={0.2}
         fitView >

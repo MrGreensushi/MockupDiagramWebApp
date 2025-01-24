@@ -126,3 +126,21 @@
 .fill-height {
   height: calc(100vh - 114px);
 }
+
+.utility-tabs {
+  .tab-content {
+    height: 93%;
+  }
+  
+  .tab-pane {
+    height: 100%
+  }
+
+  .nav-link {
+    padding: 0;
+  }
+
+  .nav-link .custom-nav-link {
+    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+  }
+}

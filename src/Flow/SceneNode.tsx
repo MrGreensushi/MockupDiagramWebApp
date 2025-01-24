@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Handle, Node, NodeProps, NodeToolbar, Position, XYPosition } from "@xyflow/react";
 import Scene from "../StoryElements/Scene.ts";
 import React, { useState } from "react";
-import { Button, ButtonGroup, Col } from "react-bootstrap";
+import { Button, ButtonGroup, Col, InputGroup } from "react-bootstrap";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 
 type FunctionProps = {
@@ -29,8 +29,8 @@ type SceneNodeType = Node<
   "SceneNode"
 >;
 
-function createNewNode(id: string, callbacks: FunctionProps, label?: string, position?: XYPosition, data?: SceneNodeProps) {
-  const node: SceneNodeObject = {
+function createNewSceneNode(id: string, callbacks: FunctionProps, label?: string, position?: XYPosition, data?: SceneNodeProps): SceneNodeObject {
+  return {
     id: id ?? uuidv4(),
     position: position ?? {x: 0, y: 0},
     data: {
@@ -43,7 +43,6 @@ function createNewNode(id: string, callbacks: FunctionProps, label?: string, pos
     }, 
     type: "sceneNode"
   };
-  return node
 }
 
 function SceneNode(props: NodeProps<SceneNodeType>) {
@@ -88,19 +87,26 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
       </Col>
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
-      <NodeToolbar>
-        <ButtonGroup>
-          <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)}>
-            <i className="bi bi-pencil" aria-label="edit" />
-          </Button>
-          <Button variant="secondary" onClick={handleDelete}>
-            <i className="bi bi-trash3" aria-label="delete" />
-          </Button>
-        </ButtonGroup>
+      <NodeToolbar isVisible={props.selected}>
+          <InputGroup>
+          {props.data.scene?.details.summary && 
+            <InputGroup.Text style={{maxWidth: "10em", textWrap:"pretty", textAlign:"start", overflowY: "auto", fontSize:"0.9em"}}>
+              {props.data.scene?.details.summary ?? "Nessun Riassunto"}
+            </InputGroup.Text>
+          }
+          <ButtonGroup vertical={!!props.data.scene?.details.summary}>
+            <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)}>
+              <i className="bi bi-pencil" aria-label="edit" />
+            </Button>
+            <Button variant="secondary" onClick={handleDelete}>
+              <i className="bi bi-trash3" aria-label="delete" />
+            </Button>
+          </ButtonGroup>
+        </InputGroup>
       </NodeToolbar>
     </div>
   );
 }
 
 export default SceneNode;
-export {SceneNodeProps, SceneNodeObject, createNewNode};
+export {SceneNodeProps, SceneNodeObject, createNewSceneNode};

@@ -1,4 +1,4 @@
-import { Button, Card, Col, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
+import { Button, Card, Col, Container, ListGroup, Row, Spinner, Stack } from "react-bootstrap";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -53,13 +53,13 @@ function StoryEditor(props: {
 	}, [props.setStories, template])
 	
 	return (
-		<Col style={{height:"100%"}}>
+		<Container className="h-100" fluid>
 			<Row style={{height:"10%", alignItems:"center"}}>
 				<h3>Story Editor</h3>
 			</Row>
 			<Row style={{height:"90%"}}>
-				<Col sm={3} style={{height:"100%"}}>
-					<Card style={{height:"100%"}}>
+				<Col sm={3} className="h-100">
+					<Card className="h-100">
 						<Card.Header>
 							<Stack gap={1} direction="horizontal">
 								<h5> Template Salvati </h5>
@@ -107,8 +107,8 @@ function StoryEditor(props: {
 						</Card.Body>
 					</Card>
 				</Col>
-					<Col style={{height:"100%"}}>
-						<Card style={{height:"100%"}}>
+					<Col className="h-100">
+						<Card className="h-100">
 							{id && template &&
 								<>
 									<Card.Header>
@@ -116,7 +116,7 @@ function StoryEditor(props: {
 									</Card.Header>
 									<Card.Body>
 										<Card style={{height:"40%"}}>
-											<StoryFlowChartViewer story={template.template} id={id}/>
+											<StoryFlowChartViewer story={template.template} storyId={id}/>
 										</Card>
 										<Row style={{height:"60%"}}>
 										<TemplateDetails
@@ -129,7 +129,7 @@ function StoryEditor(props: {
 					</Card>
 				</Col>
 			</Row>
-		</Col>
+		</Container>
 	);
 }
 

@@ -84,15 +84,27 @@ const StoryElements = (props: {
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
-        className="mb-2" >
-        <Tab eventKey={StoryElementEnum.character} title={<>Personaggi <Badge>{props.story.characters.size}</Badge></>}>
-          {props.editMode && <Button onClick={onAddButtonClicked}>Aggiungi Personaggio</Button> }
+        className="mb-2">
+        <Tab eventKey={StoryElementEnum.character} title={<><span style={{fontSize:"2em"}}>🙋</span><Badge pill>{props.story.characters.size}</Badge></>}>
+          {props.editMode &&
+            <Button onClick={onAddButtonClicked}>
+              {"Personaggi "}
+              <i className="bi bi-plus-square"/>
+            </Button>}
         </Tab>
-        <Tab eventKey={StoryElementEnum.object} title={<>Oggetti <Badge>{props.story.objects.size}</Badge></>}>
-          {props.editMode && <Button onClick={onAddButtonClicked}>Aggiungi Oggetto</Button> }
+        <Tab eventKey={StoryElementEnum.object} title={<><span style={{fontSize:"2em"}}>⚱️</span><Badge pill>{props.story.objects.size}</Badge></>}>
+          {props.editMode &&
+            <Button onClick={onAddButtonClicked}>
+              {"Oggetti "}
+              <i className="bi bi-plus-square"/>
+            </Button>}
         </Tab>
-        <Tab eventKey={StoryElementEnum.location} title={<>Luoghi <Badge>{props.story.locations.size}</Badge></>}>
-          {props.editMode && <Button onClick={onAddButtonClicked}>Aggiungi Luogo</Button> }
+        <Tab eventKey={StoryElementEnum.location} title={<><span style={{fontSize:"2em"}}>🏛️</span><Badge pill>{props.story.locations.size}</Badge></>}>
+          {props.editMode &&
+            <Button onClick={onAddButtonClicked}>
+              {"Luoghi "}
+              <i className="bi bi-plus-square"/>
+            </Button>}
         </Tab>
       </Tabs>
       <ListGroup variant="flush">

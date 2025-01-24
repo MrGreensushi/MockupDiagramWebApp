@@ -121,83 +121,76 @@ function PromptArea(props: {
 	}, [textSplitter, mentionMatcher]);
 
 	return (
-		<Card>
-			<Card.Header>
-				<h4>
-					Prompt
-				</h4>
-			</Card.Header>
-			<Card.Body className="prompt-area">
-				<RichTextarea
-					ref={ref}
-					value={text}
-					style={{ width:"100%"}}
-					autoHeight
-					onBlur={props.onBlur}
-					onChange={e => {
-						setText(e.target.value);
-						props.setBlocks(
-							textSplitter(e.target.value, false)
-							.filter(s => !s.match(/^ +$/))
-							.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
-						);
-					}}
-					onKeyDown={e => {
-						if (!pos || !filtered.length) return;
-						switch (e.code) {
-							case "ArrowUp":
-								e.preventDefault();
-								const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
-								setIndex(nextIndex);
-							break;
-							case "ArrowDown":
-								e.preventDefault();
-								const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
-								setIndex(prevIndex);
-							break;
-							case "Enter":
-							case "Tab":
-								e.preventDefault();
-								complete(index);
-							break;
-							case "Escape":
-								e.preventDefault();
-								setPos(null);
-								setIndex(0);
-							break;
-							default:
-								break;
-						}
-					}}
-					onSelectionChange={r => {
-						if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-							setPos({
-								top: r.top + r.height,
-								left: r.left,
-								caret: r.selectionStart
-							});
-							setIndex(0);
-						} else {
+		<div className="prompt-area">
+			<RichTextarea
+				ref={ref}
+				value={text}
+				style={{ width:"100%", left:"0px"}}
+				autoHeight
+				onBlur={props.onBlur}
+				onChange={e => {
+					setText(e.target.value);
+					props.setBlocks(
+						textSplitter(e.target.value, false)
+						.filter(s => !s.match(/^ +$/))
+						.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
+					);
+				}}
+				onKeyDown={e => {
+					if (!pos || !filtered.length) return;
+					switch (e.code) {
+						case "ArrowUp":
+							e.preventDefault();
+							const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
+							setIndex(nextIndex);
+						break;
+						case "ArrowDown":
+							e.preventDefault();
+							const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
+							setIndex(prevIndex);
+						break;
+						case "Enter":
+						case "Tab":
+							e.preventDefault();
+							complete(index);
+						break;
+						case "Escape":
+							e.preventDefault();
 							setPos(null);
 							setIndex(0);
-						}
-					}}>
-					{renderer}
-				</RichTextarea>
-				{pos &&
-					createPortal(
-						<PromptAreaMenu
-							top={pos.top}
-							left={pos.left}
-							elements={filteredMap}
-							noElements={elements.length === 0}
-							index={index}
-							setIndex={setIndex}
-							complete={complete} />,
-						document.body)
-				}
-			</Card.Body>
-		</Card>
+						break;
+						default:
+							break;
+					}
+				}}
+				onSelectionChange={r => {
+					if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+						setPos({
+							top: r.top + r.height,
+							left: r.left,
+							caret: r.selectionStart
+						});
+						setIndex(0);
+					} else {
+						setPos(null);
+						setIndex(0);
+					}
+				}}>
+				{renderer}
+			</RichTextarea>
+			{pos &&
+				createPortal(
+					<PromptAreaMenu
+						top={pos.top}
+						left={pos.left}
+						elements={filteredMap}
+						noElements={elements.length === 0}
+						index={index}
+						setIndex={setIndex}
+						complete={complete} />,
+					document.body)
+			}
+		</div>
 	);
 }
 

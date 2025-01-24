@@ -1,24 +1,29 @@
 import "@xyflow/react/dist/style.css";
 import React, { useMemo } from "react";
 import { Row } from "react-bootstrap";
-import { ReactFlow } from "@xyflow/react";
+import { Node, ReactFlow } from "@xyflow/react";
 import SceneNode from "./SceneNode.tsx";
 import Story from "../StoryElements/Story.ts";
 
-function StoryFlowChartViewer (props: {story: Story, id: string}) {  
+function StoryFlowChartViewer (props: {
+  story: Story,
+  storyId: string,
+  onNodeClick?: (node: Node) => void
+}) {  
   const nodeTypes = useMemo(() => ({sceneNode: SceneNode}), []);
   return (
-    <Row style={{ height: "100%" }} className="gx-0">
-      <ReactFlow key={props.id}
+    <Row className="gx-0 h-100">
+      <ReactFlow key={props.storyId}
         nodes={props.story.flow.nodes.map(node => {return {...node, selected: false}}) ?? []}
         edges={props.story.flow.edges ?? []}
         nodeTypes={nodeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
-        elementsSelectable={false}
+        elementsSelectable={!!props.onNodeClick}
         panOnDrag={false}
         zoomOnScroll={false}
         zoomOnDoubleClick={false}
+        onNodeClick={(_, node) => props.onNodeClick?.(node)}
         fitView
         fitViewOptions={{minZoom: 0, padding: 0.025}}
         className="gx-0" />
