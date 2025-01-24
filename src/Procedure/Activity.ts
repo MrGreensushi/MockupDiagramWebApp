@@ -65,7 +65,8 @@ class Activity extends ActivityDescription {
   public cloneAndSet(
     phrases = this.nodePhrases,
     details = this.details,
-    title = this.name
+    title = this.name,
+    isSubProcedureEmpty = this.isSubProcedureEmpty
   ) {
     const updatedLanguage = this.activeLanguage.cloneAndSet(phrases, details);
     const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
@@ -73,7 +74,8 @@ class Activity extends ActivityDescription {
       title,
       this.subProcedureId,
       updatedLanguages,
-      this.isEngActiveLanguage
+      this.isEngActiveLanguage,
+      isSubProcedureEmpty
     );
   }
 

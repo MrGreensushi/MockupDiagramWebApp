@@ -27,7 +27,10 @@ import "@xyflow/react/dist/style.css";
 import ActivityNode, { ActivityNodeObject } from "./ActivityNode.tsx";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
-import Activity, { ActivityDescription } from "../Procedure/Activity.ts";
+import Activity, {
+  ActivityDescription,
+  Phrase,
+} from "../Procedure/Activity.ts";
 import LoadNodes from "../Layout/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
@@ -39,14 +42,18 @@ import NodeEditor from "./NodeEditor.tsx";
 
 function ProcedureFlowDiagram(props: {
   activeProcedure: Procedure;
-  setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
   setActiveProcedure: (procedureId: string) => void;
-  handleProcedureUpdate: (ReactFlowJsonObject: ReactFlowJsonObject) => void;
-  handleBackSubActivity: (subProcedure: Procedure) => void;
+  handleActiveProcedureUpdate: (
+    ReactFlowJsonObject: ReactFlowJsonObject
+  ) => void;
   handleSubmitTitle: (title: string) => void;
   addProcedure: (newProcedure: Procedure) => void;
   getProcedure: (procedureId: string) => Procedure | undefined;
-  isProcedureEmpty: (procedureId: string) => boolean;
+  updateProcedureById: (
+    id: string,
+    flow?: ReactFlowJsonObject,
+    title?: string
+  ) => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>(
     props.activeProcedure.flow.nodes ?? []
@@ -92,7 +99,6 @@ function ProcedureFlowDiagram(props: {
   }, []);
 
   const onNodeClick = useCallback((_, node: Node) => {
-    console.log("Flow:OnNodeClick");
     setSelectedNodeId(node.id);
   }, []);
 
@@ -101,20 +107,25 @@ function ProcedureFlowDiagram(props: {
   }, []);
 
   const saveActiveProcedure = () => {
-    props.handleProcedureUpdate(rfInstance!.toObject());
+    props.handleActiveProcedureUpdate(rfInstance!.toObject());
   };
 
   const changeActiveProcedure = (procedureId: string) => {
-    console.log(procedureId);
     saveActiveProcedure();
+    setSelectedNodeId(undefined);
     //open the new sub procedure
     props.setActiveProcedure(procedureId);
   };
 
   //#region ActivityNode
 
-  const onActivityEdited = (newActivity: Activity) => {
-    if (selectedNodeId) onActivityChanged(selectedNodeId, newActivity);
+  const onSelectedActivityEdited = (
+    newPhrases?: Phrase[],
+    details?: string,
+    newName?: string
+  ) => {
+    if (selectedNodeId)
+      onActivityChanged(selectedNodeId, newPhrases, details, newName);
   };
 
   const onClickDelete = useCallback(
@@ -136,45 +147,37 @@ function ProcedureFlowDiagram(props: {
     return procedure;
   };
 
-  const onActivityNameChanged = useCallback((id: string, newName: string) => {
-    //update label, activity name and subProcess name
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          node.data.activity.name = newName;
-          node.data.activity.subProcedure.title = newName;
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              label: newName,
-            },
-          };
-        } else {
-          return node;
-        }
-      })
-    );
-  }, []);
+  const onActivityChanged = useCallback(
+    (id: string, newPhrases?: Phrase[], details?: string, newName?: string) => {
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === id) {
+            var newActivity = node.data.activity as Activity;
+            newActivity = newActivity.cloneAndSet(newPhrases, details, newName);
 
-  const onActivityChanged = useCallback((id: string, newActivity: Activity) => {
-    setNodes((nodes) =>
-      nodes.map((node) => {
-        if (node.id === id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              activity: newActivity,
-              label: newActivity.name,
-            },
-          };
-        } else {
-          return node;
-        }
-      })
-    );
-  }, []);
+            //update the title of the subProcedure
+            props.updateProcedureById(
+              newActivity.subProcedureId,
+              undefined,
+              newName
+            );
+
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                activity: newActivity,
+                label: newActivity.name,
+              },
+            };
+          } else {
+            return node;
+          }
+        })
+      );
+    },
+    []
+  );
 
   const createNewActivityNode = useCallback(
     (activityDescription?: ActivityDescription) => {
@@ -207,13 +210,12 @@ function ProcedureFlowDiagram(props: {
             activityDescription?.languages
           ),
           onDoubleClickActivity: changeActiveProcedure,
-          isEmpty: subProcedure.isEmpty,
         },
         type: "activityNode",
       };
       return obj;
     },
-    [rfInstance, nodes.length, onClickDelete, onActivityNameChanged]
+    [rfInstance, nodes.length, changeActiveProcedure]
   );
 
   const addNode = useCallback(() => {
@@ -238,31 +240,6 @@ function ProcedureFlowDiagram(props: {
   );
 
   const edgeTypes = useMemo(() => ({ customEdge: CustomEdge }), []);
-
-  const OffcanvasTitle = useMemo(() => {
-    const node = rfInstance?.getNode(selectedNodeId!);
-    const name = node ? (node.data.label as string) : "";
-
-    return (
-      <Row>
-        <div style={{ width: "100%" }}>
-          <DynamicTextField
-            initialValue={name}
-            onSubmit={(name: string) =>
-              onActivityNameChanged(selectedNodeId!, name)
-            }
-            baseProps={{ size: "lg", placeholder: "Activity" }}
-          />
-        </div>
-      </Row>
-    );
-  }, [
-    rfInstance,
-    selectedNodeId,
-    props.activeProcedure,
-    onActivityNameChanged,
-    nodes,
-  ]);
 
   const getTypeNodeFromId = (id: string) => {
     var node = nodes[0];
@@ -439,7 +416,7 @@ function ProcedureFlowDiagram(props: {
             selectedNode={
               selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined
             }
-            setActivity={onActivityEdited}
+            setActivity={onSelectedActivityEdited}
             setEventOrDecisionName={onEventorDecisionNameChanged}
           />
         </Col>

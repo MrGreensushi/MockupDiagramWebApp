@@ -19,10 +19,6 @@ type ActivityNodeObject = {
 type ActivityNodeType = Node<ActivityNodeProps, "ActivityNode">;
 
 function ActivityNode(props: NodeProps<ActivityNodeType>) {
-  const isEmpty = useMemo(() => {
-    return props.data.activity.isSubProcedureEmpty;
-  }, [props.data.activity.isSubProcedureEmpty]);
-
   const handleDoubleClick = () => {
     props.data.onDoubleClickActivity(props.data.activity.subProcedureId);
   };
@@ -30,7 +26,7 @@ function ActivityNode(props: NodeProps<ActivityNodeType>) {
   return (
     <div
       className={`scene-node ${props.selected ? "selected" : ""} ${
-        isEmpty ? "" : "hasSubProcedure"
+        props.data.activity.isSubProcedureEmpty ? "" : "hasSubProcedure"
       }`}
       onDoubleClick={handleDoubleClick}
     >

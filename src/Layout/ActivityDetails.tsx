@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { Card, Col, Dropdown, Form, InputGroup, Row } from "react-bootstrap";
+import { Card, Form } from "react-bootstrap";
 import React from "react";
-import { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
-import DynamicTextField from "./DynamicTextField.tsx";
+import { Phrase } from "../Procedure/Activity.ts";
 
 function ActivityDetails(props: {
   text: string;
-  handleDetailsUpdate: (value: string) => void;
+  handleDetailsUpdate: (
+    newPhrases?: Phrase[],
+    details?: string,
+    newName?: string
+  ) => void;
 }) {
-  const textWidth = "12%";
   const [text, setText] = useState(props.text);
   const [dataChanged, setDataChanged] = useState(false);
 
@@ -20,7 +22,7 @@ function ActivityDetails(props: {
     if (!dataChanged) return;
 
     console.log("ActivityDetails:OnBlur");
-    props.handleDetailsUpdate(text);
+    props.handleDetailsUpdate(undefined, undefined, text);
 
     setDataChanged(false);
   }, [text]);

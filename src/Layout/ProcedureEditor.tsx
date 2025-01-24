@@ -13,6 +13,8 @@ function ProcedureEditor() {
     flow?: ReactFlowJsonObject,
     title?: string
   ) => {
+    //Ogni volta che aggiorno una procedura devo aggiornare il parametro isSubProcedureEmpty dell'attività padre della procedura
+
     setProcedures((prevProcedures) =>
       prevProcedures.map((proc) => {
         if (proc.id === id) return proc.cloneAndSet(flow, title);
@@ -37,32 +39,29 @@ function ProcedureEditor() {
   const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
     updateProcedure(activeProcedureId, flow, undefined);
 
-    //update the activity parent of the procedure to know that it has a length > 0
-    const parentProcedure = activeProcedure.parentId
-      ? getProcedure(activeProcedure.parentId)
-      : undefined;
+    //se la procedura era figlia di un attività, bisogna aggiornare il valore di empty dell'attività madre.
+
+    //1. trovare nella procedura padre l'attività
+    if (!activeProcedure.parentId) return;
+    const parentProcedure = getProcedure(activeProcedure.parentId);
     if (!parentProcedure) return;
 
-    var flowParent = parentProcedure.flow;
-    const newNodes = flowParent.nodes.map((x) => {
-      const activity = x.data.activity as Activity;
-      if (activity.subProcedureId !== activeProcedureId) return x;
+    //l'attività avra come subProcedureID l'id della procedura che stiamo aggiornando
+    const activityParent =
+      parentProcedure.getNodeByItsSubProcedureId(activeProcedureId);
+    if (!activityParent) return;
 
-      return {
-        ...x,
-        data: {
-          ...x.data,
-          activity: {
-            ...x.data.activity,
-            isSubProcedureEmpty: flow.nodes.length <= 0,
-          },
-        },
-      };
+    //evaluate the new nodes
+    const newNodes = parentProcedure.flow.nodes.map((node) => {
+      if (!node.data.activity) return node;
+      const activity = node.data.activity as Activity;
+      if (activity.subProcedureId !== activeProcedureId) return node;
+      activity.isSubProcedureEmpty = flow.nodes.length <= 0;
+      return { ...node, data: { ...node.data, activity: activity } };
     });
 
-    flowParent = { ...flowParent, nodes: newNodes };
-
-    updateProcedure(parentProcedure.id, flowParent);
+    const newFlow = { ...parentProcedure.flow, nodes: newNodes };
+    updateProcedure(parentProcedure.id, newFlow, undefined);
   };
 
   const setActiveProcedure = (newProcedureId: string) => {
@@ -75,16 +74,6 @@ function ProcedureEditor() {
     setProcedures((prev) => [...prev, newProc]);
   };
 
-  const handleBackSubActivity = (procedureId: string) => {
-    setActiveProcedureId(procedureId);
-  };
-
-  const isProcedureEmpty = (procedureId: string) => {
-    const procedure = getProcedure(procedureId);
-    if (!procedure) return true;
-    return procedure.isEmpty();
-  };
-
   const activeProcedure: Procedure = useMemo(() => {
     const proc = getProcedure(activeProcedureId);
     return proc ?? new Procedure();
@@ -94,12 +83,11 @@ function ProcedureEditor() {
     <ProcedureFlowDiagram
       activeProcedure={activeProcedure}
       setActiveProcedure={setActiveProcedure}
-      handleProcedureUpdate={handleUpdateActiveFlow}
-      handleBackSubActivity={handleBackSubActivity}
+      handleActiveProcedureUpdate={handleUpdateActiveFlow}
       handleSubmitTitle={handleSubmitActiveTitle}
       addProcedure={addProcedure}
       getProcedure={getProcedure}
-      isProcedureEmpty={isProcedureEmpty}
+      updateProcedureById={updateProcedure}
     />
   );
 }

@@ -1,5 +1,6 @@
 import { ReactFlowJsonObject } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
+import Activity from "./Activity";
 
 class Procedure {
   id: string;
@@ -51,6 +52,18 @@ class Procedure {
 
   isEmpty() {
     return this.flow.nodes.length <= 0;
+  }
+
+  getNodeById(id: string) {
+    return this.flow.nodes.find((x) => x.id === id);
+  }
+  getNodeByItsSubProcedureId(id: string) {
+    return this.flow.nodes.find((x) => {
+      const activity = x.data?.activity as Activity;
+      if (!activity) return false;
+
+      return activity.subProcedureId === id;
+    });
   }
 }
 

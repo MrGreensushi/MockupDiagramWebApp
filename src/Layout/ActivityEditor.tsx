@@ -15,7 +15,11 @@ import ActivityDetails from "./ActivityDetails.tsx";
 function ActivityEditor(props: {
   procedure: Procedure;
   activity: Activity;
-  setActivity: (newActivity: Activity) => void;
+  setActivity: (
+    newPhrases?: Phrase[],
+    details?: string,
+    newName?: string
+  ) => void;
 }) {
   const [name, setName] = useState(props.activity?.name ?? "");
   const [phrases, setPhrases] = useState(props.activity?.nodePhrases ?? []);
@@ -61,10 +65,13 @@ function ActivityEditor(props: {
     return evaluateUnavailableLvls(phrases);
   }, [phrases]);
 
-  const handleSave = (newActivity: Activity) => {
+  const handleSave = (
+    newPhrases?: Phrase[],
+    details?: string,
+    newName?: string
+  ) => {
     console.log("ActivityEditor:HandleSave");
-    console.log(newActivity);
-    props.setActivity(newActivity);
+    props.setActivity(newPhrases, details, newName);
   };
 
   const handlePhraseUpdate = useCallback(
@@ -83,13 +90,13 @@ function ActivityEditor(props: {
       const newPhrases = phrases.map((phrase, index) =>
         index !== id ? phrase : new Phrase(clipId, level, text)
       );
-      handleSave(props.activity.cloneAndSet(newPhrases, details, name));
+      handleSave(newPhrases, details, name);
     },
     []
   );
 
   const handleDetailsUpdate = (newDet: string) => {
-    handleSave(props.activity.cloneAndSet(phrases, newDet, name));
+    handleSave(phrases, newDet, name);
   };
 
   const instantiateActivityPhrase = (
@@ -119,7 +126,7 @@ function ActivityEditor(props: {
         new Phrase("Nuovo", LevelsEnum.novice, ""),
       ];
 
-      handleSave(props.activity.cloneAndSet(newPhrases, undefined, name));
+      handleSave(newPhrases, undefined, name);
       return newPhrases;
     });
   };
