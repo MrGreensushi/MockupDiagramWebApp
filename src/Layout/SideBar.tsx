@@ -6,7 +6,7 @@ function SideBar(props: {
   children: ReactNode;
   isLeft?: boolean;
 }) {
-  const style = useMemo(() => {
+  const style = () => {
     var baseStyle: React.CSSProperties = {
       height: "80vh",
       width: "100%",
@@ -18,10 +18,10 @@ function SideBar(props: {
     } else baseStyle = { ...baseStyle, right: "0px" };
 
     return baseStyle;
-  }, []);
+  };
 
   return (
-    <Col style={style}>
+    <Col style={style()}>
       <Row>{props.header}</Row>
 
       <Row

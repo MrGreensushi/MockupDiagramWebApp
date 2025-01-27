@@ -131,26 +131,6 @@ function ProcedureFlowDiagram(props: {
 
   //#region ActivityNode
 
-  const onSelectedActivityEdited = (
-    newPhrases?: Phrase[],
-    details?: string,
-    newName?: string
-  ) => {
-    if (selectedNodeId)
-      onActivityChanged(selectedNodeId, newPhrases, details, newName);
-  };
-
-  const onClickDelete = useCallback(
-    (nodeId: string) => {
-      rfInstance!.deleteElements({
-        nodes: [{ id: nodeId }],
-      });
-
-      setSelectedNodeId(undefined);
-    },
-    [rfInstance]
-  );
-
   const createNewProcedure = (title: string, parentProcedureId: string) => {
     //create new subProcedure and update the activity
     const id = uuidv4();
@@ -159,7 +139,7 @@ function ProcedureFlowDiagram(props: {
     return procedure;
   };
 
-  const onActivityChanged = useCallback(
+  const updateActivityById = useCallback(
     (id: string, newPhrases?: Phrase[], details?: string, newName?: string) => {
       setNodes((nodes) =>
         nodes.map((node) => {
@@ -187,7 +167,7 @@ function ProcedureFlowDiagram(props: {
         })
       );
     },
-    []
+    [setNodes]
   );
 
   const createNewActivityNode = useCallback(
@@ -262,16 +242,16 @@ function ProcedureFlowDiagram(props: {
 
   //#region EventNode & DecisionNode
 
-  const onEventorDecisionNameChanged = useCallback(
-    (id: string, newName: string) => {
+  const onEventOrDecisionChanged = useCallback(
+    (id: string, newName?: string, newDetails?: string) => {
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
             return {
               ...node,
               data: {
-                ...node.data,
-                label: newName,
+                name: newName ?? node.data.name,
+                details: newDetails ?? node.data.details,
               },
             };
           } else {
@@ -283,9 +263,18 @@ function ProcedureFlowDiagram(props: {
     []
   );
 
+  const updatedActiveEventOrDecision = useCallback(
+    (newName?: string, newDetails?: string) => {
+      if (!selectedNodeId) return;
+      onEventOrDecisionChanged(selectedNodeId, newName, newDetails);
+    },
+    [selectedNodeId, onEventOrDecisionChanged]
+  );
+
   const createNewEventNode = useCallback(() => {
     const id = uuidv4();
     const label = "Event " + nodes.length;
+    const data = { name: label, details: "" };
     const position =
       rfInstance && flowRef.current
         ? rfInstance.screenToFlowPosition({
@@ -299,13 +288,11 @@ function ProcedureFlowDiagram(props: {
         x: position?.x ?? 0,
         y: position?.y ?? 0,
       },
-      data: {
-        name: label,
-      },
+      data: data,
       type: "eventNode",
     };
     return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onEventorDecisionNameChanged]);
+  }, [rfInstance, nodes.length]);
 
   const addEventNode = () => {
     const newNode = createNewEventNode();
@@ -315,6 +302,7 @@ function ProcedureFlowDiagram(props: {
   const createNewDecisionNode = useCallback(() => {
     const id = uuidv4();
     const label = "Decision " + nodes.length;
+    const data = { name: label, details: "" };
     const position =
       rfInstance && flowRef.current
         ? rfInstance.screenToFlowPosition({
@@ -328,13 +316,11 @@ function ProcedureFlowDiagram(props: {
         x: position?.x ?? 0,
         y: position?.y ?? 0,
       },
-      data: {
-        name: label,
-      },
+      data: data,
       type: "decisionNode",
     };
     return obj;
-  }, [rfInstance, nodes.length, onClickDelete, onEventorDecisionNameChanged]);
+  }, [rfInstance, nodes.length]);
 
   const addDecisionNode = () => {
     const newNode = createNewDecisionNode();
@@ -421,14 +407,14 @@ function ProcedureFlowDiagram(props: {
           </ReactFlow>
         </Col>
 
-        <Col xs={2}>
+        <Col xs={3}>
           <NodeEditor
             procedure={props.activeProcedure}
             selectedNode={
               selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined
             }
-            setActivity={onSelectedActivityEdited}
-            setEventOrDecisionName={onEventorDecisionNameChanged}
+            updateActivity={updateActivityById}
+            updateEventOrDecision={updatedActiveEventOrDecision}
           />
         </Col>
       </Row>

@@ -5,32 +5,44 @@ import ActivityEditor from "../Layout/ActivityEditor.tsx";
 import Activity, { Phrase } from "../Procedure/Activity.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
+import EventDecisionEditor from "../Layout/EventDecisionEditor.tsx";
 
 function NodeEditor(props: {
   selectedNode: Node | undefined;
   procedure: Procedure;
-  setActivity: (
+  updateActivity: (
+    id: string,
     newPhrases?: Phrase[],
     details?: string,
     newName?: string
   ) => void;
-  setEventOrDecisionName: (id: string, value: string) => void;
+  updateEventOrDecision: (name?: string, details?: string) => void;
 }) {
   const editor = useMemo(() => {
-    if (!props.selectedNode) return <></>;
+    if (!props.selectedNode) return <>No node selected.</>;
 
+    const data = props.selectedNode.data;
     //check if activityNode
-    const activity = props.selectedNode.data.activity ?? undefined;
+    const activity = data.activity ?? undefined;
 
     if (activity)
       return (
         <ActivityEditor
+          key={"ActivityEditor: " + props.selectedNode.id}
           procedure={props.procedure}
+          activityId={props.selectedNode.id}
           activity={activity as Activity}
-          setActivity={props.setActivity}
+          setActivity={props.updateActivity}
         />
       );
-    else return <>Not an Activity Node</>;
+
+    return (
+      <EventDecisionEditor
+        key={"EventDecisionEditor: " + props.selectedNode.id}
+        details={(data.details as string) ?? ""}
+        updateEventDecision={props.updateEventOrDecision}
+      />
+    );
   }, [props.selectedNode]);
 
   const title = useMemo(() => {
@@ -51,11 +63,9 @@ function NodeEditor(props: {
     const activity =
       (props.selectedNode?.data.activity as Activity) ?? undefined;
 
-    if (!activity) {
-      props.setEventOrDecisionName(props.selectedNode!.id, value);
-      return;
-    }
-    props.setActivity(undefined, undefined, value);
+    if (!activity) props.updateEventOrDecision(value);
+    else
+      props.updateActivity(props.selectedNode.id, undefined, undefined, value);
   };
 
   return (
@@ -76,7 +86,7 @@ function EditableTitle(props: {
 }) {
   return (
     <DynamicTextField
-      initialValue={props.title ?? "Selected a Node"}
+      initialValue={props.title ?? "Selecte a Node"}
       focusOnDoubleClick={true}
       isInvalid={(value: string) => value === ""}
       onSubmit={props.handleNameChange}

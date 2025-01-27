@@ -1,30 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Card, Form } from "react-bootstrap";
 import React from "react";
-import { Phrase } from "../Procedure/Activity.ts";
 
 function ActivityDetails(props: {
   text: string;
-  handleDetailsUpdate: (
-    newPhrases?: Phrase[],
-    details?: string,
-    newName?: string
-  ) => void;
+  handleDetailsUpdate: (details: string) => void;
 }) {
   const [text, setText] = useState(props.text);
-  const [dataChanged, setDataChanged] = useState(false);
 
   useEffect(() => {
     setText(props.text);
   }, [props.text]);
 
   const handleOnBlur = useCallback(() => {
-    if (!dataChanged) return;
-
-    console.log("ActivityDetails:OnBlur");
-    props.handleDetailsUpdate(undefined, undefined, text);
-
-    setDataChanged(false);
+    props.handleDetailsUpdate(text);
   }, [text]);
 
   return (
@@ -37,7 +26,6 @@ function ActivityDetails(props: {
             style={{ maxHeight: "10em" }}
             value={text}
             onChange={(e) => {
-              setDataChanged(true);
               setText(e.target.value);
             }}
           />

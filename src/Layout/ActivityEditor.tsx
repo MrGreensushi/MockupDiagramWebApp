@@ -14,26 +14,20 @@ import ActivityDetails from "./ActivityDetails.tsx";
 
 function ActivityEditor(props: {
   procedure: Procedure;
+  activityId: string;
   activity: Activity;
   setActivity: (
+    id: string,
     newPhrases?: Phrase[],
     details?: string,
     newName?: string
   ) => void;
 }) {
-  const [name, setName] = useState(props.activity?.name ?? "");
-  const [phrases, setPhrases] = useState(props.activity?.nodePhrases ?? []);
+  const [phrases, setPhrases] = useState<Phrase[]>(
+    props.activity?.nodePhrases ?? []
+  );
+
   const [details, setDetails] = useState(props.activity?.details ?? "");
-
-  // useEffect(() => {
-  //   handleSave(props.activity.cloneAndSet(phrases, details, name));
-  // }, [name, phrases, details]);
-
-  useEffect(() => {
-    setName(props.activity?.name ?? "");
-    setPhrases(props.activity?.nodePhrases ?? []);
-    setDetails(props.activity?.details ?? "");
-  }, [props.activity]);
 
   const availableLevelsForClipId = (clipId: string) => {
     var toRet = [true, true, true];
@@ -65,38 +59,53 @@ function ActivityEditor(props: {
     return evaluateUnavailableLvls(phrases);
   }, [phrases]);
 
-  const handleSave = (
-    newPhrases?: Phrase[],
-    details?: string,
-    newName?: string
-  ) => {
+  const handleSave = (newPhrases?: Phrase[], newDetails?: string) => {
     console.log("ActivityEditor:HandleSave");
-    props.setActivity(newPhrases, details, newName);
+    props.setActivity(
+      props.activityId,
+      newPhrases ?? phrases,
+      newDetails ?? details
+    );
   };
 
-  const handlePhraseUpdate = useCallback(
-    (id: number, clipId: string, level: LevelsEnum, text: string) => {
-      //check already existing clip and level
-      const sameClipandLevel = phrases.filter(
-        (x, index) => x.clipId === clipId && x.level === level && index !== id
+  const handlePhraseUpdate = (
+    id: number,
+    clipId: string,
+    level: LevelsEnum,
+    text: string
+  ) => {
+    //check already existing clip and level
+    const sameClipandLevel = phrases.filter(
+      (x, index) => x.clipId === clipId && x.level === level && index !== id
+    );
+    if (sameClipandLevel.length > 0) {
+      console.warn(
+        `Same clip ${clipId} and level ${level}: ${sameClipandLevel.length}`
       );
-      if (sameClipandLevel.length > 0) {
-        console.warn(
-          `Same clip ${clipId} and level ${level}: ${sameClipandLevel.length}`
-        );
-        return;
-      }
+      return;
+    }
 
-      const newPhrases = phrases.map((phrase, index) =>
+    setPhrases((oldPhrases) => {
+      const newPhrases = oldPhrases.map((phrase, index) =>
         index !== id ? phrase : new Phrase(clipId, level, text)
       );
-      handleSave(newPhrases, details, name);
-    },
-    []
-  );
+      handleSave(newPhrases);
+      return newPhrases;
+    });
+  };
 
   const handleDetailsUpdate = (newDet: string) => {
-    handleSave(phrases, newDet, name);
+    setDetails(newDet);
+    handleSave(undefined, newDet);
+    // handleSave(undefined, newDet, undefined);
+  };
+
+  const removePhrase = (phraseIndex: number) => {
+    setPhrases((oldPhrases) => {
+      oldPhrases.splice(phraseIndex, 1);
+      handleSave(oldPhrases);
+      return oldPhrases;
+    });
   };
 
   const instantiateActivityPhrase = (
@@ -106,7 +115,7 @@ function ActivityEditor(props: {
   ) => {
     return (
       <ActivityPhrases
-        key={index}
+        key={"ActivityPhrases:" + props.activityId + ":" + index}
         phrase={phrase}
         unavailableLevels={unavailableLvl}
         handlePhraseUpdate={(clipId: string, level: LevelsEnum, text: string) =>
@@ -115,6 +124,7 @@ function ActivityEditor(props: {
         checkValidClipId={(name: string, level: LevelsEnum) =>
           checkClipIdName(name, level, index)
         }
+        removePhrase={() => removePhrase(index)}
       />
     );
   };
@@ -126,7 +136,7 @@ function ActivityEditor(props: {
         new Phrase("Nuovo", LevelsEnum.novice, ""),
       ];
 
-      handleSave(newPhrases, undefined, name);
+      handleSave(newPhrases);
       return newPhrases;
     });
   };

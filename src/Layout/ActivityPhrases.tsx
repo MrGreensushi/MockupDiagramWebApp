@@ -1,37 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { Card, Col, Dropdown, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Card, Dropdown, Form, InputGroup } from "react-bootstrap";
 import React from "react";
 import { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
-import { alignPropType } from "react-bootstrap/esm/types";
 
 function ActivityPhrases(props: {
   phrase: Phrase;
   unavailableLevels: boolean[];
   handlePhraseUpdate: (clipId: string, level: LevelsEnum, text: string) => void;
   checkValidClipId: (name: string, level: LevelsEnum) => boolean;
+  removePhrase: () => void;
 }) {
-  const textWidth = "12%";
   const [clipId, setClipId] = useState(props.phrase.clipId);
   const [level, setLevel] = useState(props.phrase.level);
   const [text, setText] = useState(props.phrase.text);
-
-  useEffect(() => {
-    setClipId(props.phrase.clipId);
-    setLevel(props.phrase.level);
-    setText(props.phrase.text);
-  }, [props.phrase]);
-
-  const [dataChanged, setDataChanged] = useState(false);
-
-  const handleOnBlur = useCallback(() => {
-    if (!dataChanged) return;
-
-    console.log("ActivityPhrases:OnBlur");
-    props.handlePhraseUpdate(clipId, level, text);
-
-    setDataChanged(false);
-  }, [clipId, level, text, dataChanged]);
 
   const handleChangeLevel = useCallback(
     (newLevel: LevelsEnum) => {
@@ -47,19 +29,20 @@ function ActivityPhrases(props: {
     return props.checkValidClipId(newClipId, level);
   };
 
-  const handleChangeClipId = useCallback((value: string) => {
+  const handleChangeClipId = (value: string) => {
+    console.log(value);
     setClipId(value);
-    setDataChanged(true);
-  }, []);
+    props.handlePhraseUpdate(value, level, text);
+  };
 
   return (
-    <Card onBlur={handleOnBlur} className="mt-2 p-0">
+    <Card className="mt-2 p-0">
       <Card.Header>
         <DynamicTextField
           initialValue={clipId}
           onChange={handleChangeClipId}
           isInvalid={handleInvalidClipId}
-          //onSubmit={props.handlePhraseClipIdUpdate}
+          disable={props.phrase.clipId === "Description"}
         />
       </Card.Header>
       <Card.Body>
@@ -67,11 +50,11 @@ function ActivityPhrases(props: {
           <InputGroup>
             <Form.Control
               as="textarea"
-              style={{ maxHeight: "10em" }}
+              style={{ maxHeight: "15em" }}
               value={text}
               onChange={(e) => {
-                setDataChanged(true);
                 setText(e.target.value);
+                props.handlePhraseUpdate(clipId, level, e.target.value);
               }}
             />
           </InputGroup>
@@ -100,6 +83,14 @@ function ActivityPhrases(props: {
           </Dropdown.Menu>
         </Dropdown>
       </Card.Body>
+      <Card.Footer>
+        {" "}
+        {clipId !== "Description" && (
+          <Button variant="danger" onClick={props.removePhrase}>
+            <i className="bi bi-trash3"></i>
+          </Button>
+        )}
+      </Card.Footer>
     </Card>
   );
 }
