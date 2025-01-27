@@ -1,11 +1,10 @@
-import { Handle, Node, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import React, { useState } from "react";
-import { Button, ButtonGroup, Col } from "react-bootstrap";
-import DynamicTextField from "../Layout/DynamicTextField.tsx";
+import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import React from "react";
+import { Col } from "react-bootstrap";
 import NamedHandle from "../Layout/NamedHandle.tsx";
 
 type DecisionNodeProps = {
-  label: string;
+  name: string;
 };
 
 type DecisionNodeObject = {
@@ -18,12 +17,9 @@ type DecisionNodeObject = {
 type DecisionNodeType = Node<DecisionNodeProps, "DecisionNode">;
 
 function DecisionNode(props: NodeProps<DecisionNodeType>) {
-
   return (
     <div className={`decision-node ${props.selected ? "selected" : ""}`}>
-      <Col className="decision-node-content">
-      {props.data.label}
-      </Col>
+      <Col className="decision-node-content">{props.data.name}</Col>
 
       <Handle type="target" position={Position.Top} style={{ left: "0%" }} />
 
@@ -58,8 +54,6 @@ function DecisionNode(props: NodeProps<DecisionNodeType>) {
         text="NO"
         type="source"
       />
-
-      
     </div>
   );
 }

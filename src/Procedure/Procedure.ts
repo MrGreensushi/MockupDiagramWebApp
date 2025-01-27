@@ -1,6 +1,6 @@
 import { ReactFlowJsonObject } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
-import Activity from "./Activity";
+import Activity from "./Activity.ts";
 
 class Procedure {
   id: string;
@@ -45,9 +45,21 @@ class Procedure {
     return JSON.stringify(this);
   }
 
-  static fromJSON(json: string) {
-    const obj = JSON.parse(json);
-    return new Procedure(obj.flow, obj.title, obj.id);
+  static fromParsedJSON(object: any) {
+    const flow = object.flow;
+
+    //each activity node must be instantiate as Activity class
+    const nodes = flow.nodes.map((node) => {
+      const activity = node.data.activity;
+      if (!activity) return node;
+
+      const parsedActivity = Activity.fromJSONObject(activity);
+      return { ...node, data: { activity: parsedActivity } };
+    });
+
+    const newFlow = { ...flow, nodes: nodes };
+
+    return new Procedure(newFlow, object.title, object.id, object.parentId);
   }
 
   isEmpty() {

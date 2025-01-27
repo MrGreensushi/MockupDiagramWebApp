@@ -54,6 +54,8 @@ function ProcedureFlowDiagram(props: {
     flow?: ReactFlowJsonObject,
     title?: string
   ) => void;
+  getJSONFile: () => string;
+  loadJSONFile: (json: string) => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>(
     props.activeProcedure.flow.nodes ?? []
@@ -117,6 +119,16 @@ function ProcedureFlowDiagram(props: {
     props.setActiveProcedure(procedureId);
   };
 
+  const onNodeDoubleClick = useCallback(
+    (_, node: Node) => {
+      const activity = node.data.activity as Activity;
+      if (!activity) return;
+
+      changeActiveProcedure(activity.subProcedureId);
+    },
+    [changeActiveProcedure]
+  );
+
   //#region ActivityNode
 
   const onSelectedActivityEdited = (
@@ -167,7 +179,6 @@ function ProcedureFlowDiagram(props: {
               data: {
                 ...node.data,
                 activity: newActivity,
-                label: newActivity.name,
               },
             };
           } else {
@@ -203,13 +214,11 @@ function ProcedureFlowDiagram(props: {
           y: position?.y ?? 0,
         },
         data: {
-          label: label,
           activity: new Activity(
             label,
             subProcedure.id,
             activityDescription?.languages
           ),
-          onDoubleClickActivity: changeActiveProcedure,
         },
         type: "activityNode",
       };
@@ -291,7 +300,7 @@ function ProcedureFlowDiagram(props: {
         y: position?.y ?? 0,
       },
       data: {
-        label: label,
+        name: label,
       },
       type: "eventNode",
     };
@@ -320,7 +329,7 @@ function ProcedureFlowDiagram(props: {
         y: position?.y ?? 0,
       },
       data: {
-        label: label,
+        name: label,
       },
       type: "decisionNode",
     };
@@ -381,7 +390,8 @@ function ProcedureFlowDiagram(props: {
           procedureTitle={
             props.activeProcedure.title ?? "Procedura senza titolo"
           }
-          setProcedure={props.setProcedure}
+          getJSONFile={props.getJSONFile}
+          loadJSONFile={props.loadJSONFile}
         />
       </Row>
       <Row className="p-2">
@@ -403,6 +413,7 @@ function ProcedureFlowDiagram(props: {
             deleteKeyCode={["Backspace", "Delete"]}
             style={{ border: "1px solid black" }}
             ref={flowRef}
+            onNodeDoubleClick={onNodeDoubleClick}
             fitView
           >
             <Controls />
@@ -421,23 +432,6 @@ function ProcedureFlowDiagram(props: {
           />
         </Col>
       </Row>
-
-      {/* SideTab: opzioni dinamiche */}
-      {/* <SideTab
-        title={OffcanvasTitle}
-        showSideTab={showSideTab}
-        setShowSideTab={setShowSideTab}
-      >
-        {showSideTab && (
-          <ActivityEditor
-            procedure={props.procedure}
-            activity={
-              rfInstance?.getNode(selectedNodeId!)?.data.activity as Activity
-            }
-            setActivity={onActivityEdited}
-          />
-        )}
-      </SideTab> */}
     </Container>
   );
 }

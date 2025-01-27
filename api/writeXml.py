@@ -30,7 +30,7 @@ def language_xml(root,activityLang,lang):
     details=SubElement(ita,'details',level='Novice')
     details.text=activityLang.details
 
-def retrieveAllActivities(data):
+def retrieveAllActivitiesFromProcedure(data):
     activities = []
 
     for node in data.get('flow', {}).get('nodes', []):
@@ -44,17 +44,24 @@ def retrieveAllActivities(data):
         activities.append(slimActivity)
 
         #Retrieve all the activities present in the subProcedure
-        subProcedure=activity.get('subProcedure',None)
-        if not subProcedure:
-            continue
+        # subProcedure=activity.get('subProcedure',None)
+        # if not subProcedure:
+        #     continue
 
-        subProcedureActivities=retrieveAllActivities(subProcedure)
-        if not subProcedureActivities:
-            continue
-        #append each sub-activities
-        for subProcedureActivity in subProcedureActivities:
-            activities.append(subProcedureActivity)
+        # subProcedureActivities=retrieveAllActivities(subProcedure)
+        # if not subProcedureActivities:
+        #     continue
+        # #append each sub-activities
+        # for subProcedureActivity in subProcedureActivities:
+        #     activities.append(subProcedureActivity)
 
+    return activities
+
+def retrieveAllActivities(data):
+    activities=[]
+    for item in data:
+        if "flow" in item and "nodes" in item["flow"]:
+            activities.extend(retrieveAllActivitiesFromProcedure(item))
     return activities
 
 class Activity:
@@ -94,8 +101,9 @@ def zipAllActivitiesXmls(data):
         xmls.append((f"{activity.name}.xml", xml_content))
     # Preparare un archivio ZIP contenente tutti i file XML
     zip_buffer = BytesIO()
+
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        zip_file.writestr(f"{data.get('title','no-title')}.procedure", json.dumps(data, ensure_ascii=False))
+        zip_file.writestr(f"{data[0].get('title','no-title')}.procedure", json.dumps(data, ensure_ascii=False))
         for filename, xml_content  in xmls:
             zip_file.writestr(filename, xml_content )
     zip_buffer.seek(0)

@@ -79,19 +79,14 @@ class Activity extends ActivityDescription {
     );
   }
 
-  static deserialize(obj: any, parent: SubProcedure, callbacksActivity: any) {
-    const subProcedure = SubProcedure.fromJSONObject(
-      obj.subProcedure,
-      parent,
-      callbacksActivity
-    );
-
+  static fromJSONObject(obj: any) {
     const languages = Languages.fromJSONObject(obj.languages);
     return new Activity(
       obj.name,
-      subProcedure,
+      obj.subProcedureId,
       languages,
-      obj.isEngActiveLanguage
+      obj.isEngActiveLanguage,
+      obj.isSubProcedureEmpty
     );
   }
 
@@ -103,18 +98,6 @@ class Activity extends ActivityDescription {
   //     throw new Error("Failed to parse JSON file: " + ex);
   //   }
   // }
-
-  static fromJSONObject(
-    object: any,
-    parent: SubProcedure,
-    callbacksActivity: any
-  ) {
-    try {
-      return this.deserialize(object, parent, callbacksActivity);
-    } catch (ex) {
-      throw new Error("Failed to parse Serialized Activity Object: " + ex);
-    }
-  }
 }
 
 class Phrase {

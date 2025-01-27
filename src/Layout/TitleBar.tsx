@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { Breadcrumb, Button, Navbar, Modal, Form } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import {
+  Breadcrumb,
+  Button,
+  Navbar,
+  Modal,
+  Form,
+  FormControlProps,
+} from "react-bootstrap";
 import Procedure from "../Procedure/Procedure";
 
 function TitleBar(props: {
@@ -73,7 +80,18 @@ function ModifiableTitle(props: {
   const [show, setShow] = useState(false);
   const [title, setTitle] = useState(props.title);
 
+  useEffect(() => {
+    setTitle(props.title);
+  }, [props.title]);
+
   const handleClose = () => setShow(isInvalid(title));
+  const handleCloseNoSave = () => {
+    const invalid = isInvalid(title);
+    if (invalid) return;
+    setTitle(props.title);
+    setShow(false);
+  };
+
   const handleShow = () => setShow(true);
 
   const handleSave = () => {
@@ -90,7 +108,7 @@ function ModifiableTitle(props: {
         {title}
       </Breadcrumb.Item>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal show={show} onHide={handleCloseNoSave}>
         <Modal.Header closeButton>
           <Modal.Title>Title</Modal.Title>
         </Modal.Header>
@@ -103,7 +121,7 @@ function ModifiableTitle(props: {
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button variant="secondary" onClick={handleCloseNoSave}>
             Close
           </Button>
           <Button variant="primary" onClick={handleSave}>

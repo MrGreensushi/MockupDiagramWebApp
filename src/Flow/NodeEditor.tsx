@@ -33,6 +33,17 @@ function NodeEditor(props: {
     else return <>Not an Activity Node</>;
   }, [props.selectedNode]);
 
+  const title = useMemo(() => {
+    if (!props.selectedNode) return undefined;
+    //check if activityNode
+    const activity =
+      (props.selectedNode.data.activity as Activity) ?? undefined;
+
+    if (!activity) return props.selectedNode.data.name as string;
+
+    return activity.name;
+  }, [props.selectedNode]);
+
   const handleNameChange = (value: string) => {
     if (!props.selectedNode) return;
 
@@ -50,10 +61,7 @@ function NodeEditor(props: {
   return (
     <SideBar
       header={
-        <EditableTitle
-          title={props.selectedNode?.data.label as string}
-          handleNameChange={handleNameChange}
-        />
+        <EditableTitle title={title} handleNameChange={handleNameChange} />
       }
       isLeft={false}
     >

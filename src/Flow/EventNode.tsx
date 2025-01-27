@@ -1,13 +1,10 @@
-import { Handle, Node, NodeProps, NodeToolbar, Position } from "@xyflow/react";
-import React, { useState } from "react";
-import { Button, ButtonGroup, Col } from "react-bootstrap";
-import DynamicTextField from "../Layout/DynamicTextField.tsx";
-import Activity from "../Procedure/Activity.ts";
-import SubProcedure from "../Procedure/SubProcedure.ts";
+import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import React from "react";
+import { Col } from "react-bootstrap";
 import NamedHandle from "../Layout/NamedHandle.tsx";
 
 type EventNodeProps = {
-  label: string;
+  name: string;
 };
 
 type EventNodeObject = {
@@ -20,12 +17,9 @@ type EventNodeObject = {
 type EventNodeType = Node<EventNodeProps, "EventNode">;
 
 function EventNode(props: NodeProps<EventNodeType>) {
-
   return (
     <div className={`event-node ${props.selected ? "selected" : ""}`}>
-      <Col>
-      {props.data.label}
-      </Col>
+      <Col>{props.data.name}</Col>
       <NamedHandle
         id="interrupt-handle"
         className="interrupt-handle"

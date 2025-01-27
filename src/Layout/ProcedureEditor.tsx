@@ -79,6 +79,25 @@ function ProcedureEditor() {
     return proc ?? new Procedure();
   }, [activeProcedureId]);
 
+  const getJSONFile = () => {
+    var json = "";
+    json = JSON.stringify(procedures);
+    // procedures.forEach((procedure) => {
+    //   JSON += procedure.toJSONMethod() + "\n";
+    // });
+    return json;
+  };
+
+  const loadJSONFile = (json: string) => {
+    const parsedProcedures: any[] = JSON.parse(json);
+    //must instantiate each parse object as Procedure
+    const asProcedures = parsedProcedures.map((data) =>
+      Procedure.fromParsedJSON(data)
+    );
+
+    setProcedures(asProcedures);
+    setActiveProcedureId(asProcedures[0].id);
+  };
   return (
     <ProcedureFlowDiagram
       activeProcedure={activeProcedure}
@@ -88,6 +107,8 @@ function ProcedureEditor() {
       addProcedure={addProcedure}
       getProcedure={getProcedure}
       updateProcedureById={updateProcedure}
+      getJSONFile={getJSONFile}
+      loadJSONFile={loadJSONFile}
     />
   );
 }

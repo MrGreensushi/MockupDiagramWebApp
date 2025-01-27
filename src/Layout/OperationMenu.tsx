@@ -12,6 +12,7 @@ import {
 } from "react-bootstrap";
 import SaveLoadManager from "../Flow/SaveLoad.tsx";
 import Procedure from "../Procedure/Procedure.ts";
+import saveToDisk from "../Misc/SaveToDisk.ts";
 
 function OperationMenu(props: {
   addNode: () => void;
@@ -20,30 +21,18 @@ function OperationMenu(props: {
   restoreFlow: (flow: ReactFlowJsonObject, title: string) => void;
   rfInstance: ReactFlowInstance;
   procedureTitle: string;
-  setProcedure: React.Dispatch<React.SetStateAction<Procedure>>;
+  getJSONFile: () => string;
+  loadJSONFile: (json: string) => void;
 }) {
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
-  const setProcedure = props.setProcedure;
   const restoreFlow = props.restoreFlow;
 
   const onSave = useCallback(async () => {
-    const newProcedure = new Procedure(
-      {
-        nodes: rfInstance.getNodes(),
-        edges: rfInstance.getEdges(),
-        viewport: rfInstance.getViewport(),
-      },
-      procedureTitle
-    );
-    const jsonString = newProcedure.toJSONMethod();
-    // saveToDisk(
-    //   jsonString,
-    //   `${newProcedure.title}.procedure`,
-    //   "application/json"
-    // );
+    const jsonString = props.getJSONFile();
     downloadXML(jsonString);
-  }, [rfInstance, procedureTitle]);
+    // saveToDisk(jsonString, "TEST", ".procedure");
+  }, [rfInstance, procedureTitle, props.getJSONFile]);
 
   async function downloadXML(jsonProcedure: string) {
     const response = await fetch("/procedure", {
@@ -67,21 +56,16 @@ function OperationMenu(props: {
     }
   }
 
-  const onLoad = useCallback(
-    async (file?: File) => {
-      if (!file) return;
+  const onLoad = useCallback(async (file?: File) => {
+    if (!file) return;
 
-      try {
-        const newStory = Procedure.fromJSON(await file.text());
-        console.log(newStory);
-        setProcedure(newStory);
-        restoreFlow(newStory.flow, newStory.title);
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    [restoreFlow, setProcedure]
-  );
+    try {
+      const promiseText = file.text();
+      promiseText.then((value) => props.loadJSONFile(value));
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
 
   return (
     <ButtonToolbar className="justify-center">
@@ -107,12 +91,6 @@ function OperationMenu(props: {
           Save Procedure
         </Button>
         <LoadModal onLoad={onLoad} />
-
-        {/* <input
-        type="file"
-        accept=".procedure"
-        onChange={(e) => onLoad((e.target as HTMLInputElement).files![0])}
-      /> */}
       </ButtonGroup>
     </ButtonToolbar>
   );
