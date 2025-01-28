@@ -28,18 +28,23 @@ function StoryEditor(props: {
 	}, [props.setStories]);
 	
 	const onUpload = useCallback(async (files?: FileList) => {
-		if (!files) return;
+		if (!files) {
+			setFileUploading(false);
+			return;
+		}
 		try {
-			setFileUploading(true);
 			const newStories: [string, Template][] = [];
 			for (const file of Array.from(files)) {
 				await file.text().then(fileText => newStories.push([uuidv4(), new Template(Story.fromJSON(fileText))]));
 			}
 			props.setStories(stories => new Map([...stories, ...newStories]));
 			setFileUploading(false);
-    } catch(err) {
-      console.error(err);
-    }
+		} catch(err) {
+			console.error(err);
+		} finally {
+			setFileUploading(false);
+		}
+
 	}, [props.setStories])
 
 	const onAdd = useCallback(() => {
@@ -66,7 +71,7 @@ function StoryEditor(props: {
 								<Button variant="primary" className={"ms-auto"} onClick={onAdd}>
 									<i className="bi bi-file-earmark-plus"/>
 								</Button>
-								<Button variant="primary" onClick={() => fileUpload.current?.click()}>							
+								<Button variant="primary" onClick={() => {setFileUploading(true); fileUpload.current?.click()}}>							
 									{fileUploading ?
 										<Spinner size="sm" /> : <i className="bi bi-cloud-upload" />}
 								</Button>
@@ -107,24 +112,24 @@ function StoryEditor(props: {
 						</Card.Body>
 					</Card>
 				</Col>
-					<Col className="h-100">
-						<Card className="h-100">
-							{id && template &&
-								<>
-									<Card.Header>
-										<h5>{template.template.title}</h5>
-									</Card.Header>
-									<Card.Body>
-										<Card style={{height:"40%"}}>
-											<StoryFlowChartViewer story={template.template} storyId={id}/>
-										</Card>
-										<Row style={{height:"60%"}}>
-										<TemplateDetails
-											template={template}
-											setTemplate={setTemplate} />
-										</Row>
-									</Card.Body>
-								</>
+				<Col className="h-100">
+					<Card className="h-100">
+						{id && template &&
+							<>
+								<Card.Header>
+									<h5>{template.template.title}</h5>
+								</Card.Header>
+								<Card.Body>
+									<Card style={{height:"40%"}}>
+										<StoryFlowChartViewer story={template.template} storyId={id}/>
+									</Card>
+									<Row style={{height:"60%"}}>
+									<TemplateDetails
+										template={template}
+										setTemplate={setTemplate} />
+									</Row>
+								</Card.Body>
+							</>
 						}
 					</Card>
 				</Col>

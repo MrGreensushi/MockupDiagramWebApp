@@ -8,7 +8,6 @@ import Story from "../StoryElements/Story.ts";
 function StoryFlowChartViewer (props: {
   story: Story,
   storyId: string,
-  onNodeClick?: (node: Node) => void
 }) {  
   const nodeTypes = useMemo(() => ({sceneNode: SceneNode}), []);
   return (
@@ -19,11 +18,10 @@ function StoryFlowChartViewer (props: {
         nodeTypes={nodeTypes}
         nodesDraggable={false}
         nodesConnectable={false}
-        elementsSelectable={!!props.onNodeClick}
+        elementsSelectable={false}
         panOnDrag={false}
         zoomOnScroll={false}
         zoomOnDoubleClick={false}
-        onNodeClick={(_, node) => props.onNodeClick?.(node)}
         fitView
         fitViewOptions={{minZoom: 0, padding: 0.025}}
         className="gx-0" />

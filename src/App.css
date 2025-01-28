@@ -1,6 +1,13 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 
 .App {
+  --character-color: #b05e00;
+  --character-color-light: #ffecd7;
+  --object-color: #003468;
+  --object-color-light: #e1f7ff;
+  --location-color: #004e03;
+  --location-color-light: #dcffdc;
+
   text-align: center;
   height: 100vh;
   padding: 8px 16px;
@@ -73,38 +80,36 @@
   flex-wrap: nowrap;
 }
 
-.prompt-area {
-  .character-mention {
-    background: #ffecd7;
-    color: #b05e00;
-  }
-  .character-mention.selected {
-    background: #b05e00;
-    color: #ffecd7;
-  }
-  
-  .object-mention {
-    background: #e1f7ff;
-    color: #003468;
-  }
-  .object-mention.selected {
-    background: #003468;
-    color: #e1f7ff;
-  }
-  
-  .location-mention {
-    background: #dcffdc;
-    color: #004e03;
-  }
-  .location-mention.selected {
-    background: #004e03;
-    color: #dcffdc;
-  }
-  
-  .no-mention {
-    background: #eee;
-    color: #000;
-  }
+.character-mention {
+  background: var(--character-color-light);
+  color: var(--character-color);
+}
+.character-mention.selected {
+  background: var(--character-color);
+  color: var(--character-color-light);
+}
+
+.object-mention {
+  background: var(--object-color-light);
+  color: var(--object-color);
+}
+.object-mention.selected {
+  background: var(--object-color);
+  color: var(--object-color-light);
+}
+
+.location-mention {
+  background: var(--location-color-light);
+  color: var(--location-color);
+}
+.location-mention.selected {
+  background: var(--location-color);
+  color: var(--location-color-light);
+}
+
+.no-mention {
+  background: #eee;
+  color: #000;
 }
 
 .scene-node.selected {
@@ -123,8 +128,12 @@
   opacity: 0;
 }
 
-.fill-height {
-  height: calc(100vh - 114px);
+.tab-pane {
+  height: 100%
+}
+
+.tab-content {
+  height: 93%
 }
 
 .utility-tabs {
@@ -132,10 +141,6 @@
     height: 93%;
   }
   
-  .tab-pane {
-    height: 100%
-  }
-
   .nav-link {
     padding: 0;
   }

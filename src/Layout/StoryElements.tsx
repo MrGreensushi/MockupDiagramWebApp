@@ -1,18 +1,16 @@
-import { Tabs, Tab, Button, ListGroup, InputGroup, Badge } from "react-bootstrap";
-import ActionListElement from "./ActionListElement.tsx";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Tabs, Tab, Button, ListGroup, Badge, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
+import { useCallback, useMemo, useState } from "react";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
 import React from "react";
 import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
-const StoryElements = (props: {
+function StoryElements (props: {
   story: Story,
   setStory: React.Dispatch<React.SetStateAction<Story>>,
   editMode: boolean
-}) => {
+}) {
   const [key, setKey] = useState(StoryElementEnum.character);
-  const [elements, setElements] = useState(new Map<string, StoryElementType>());
   const [selectedElement, setSelectedElement] = useState<StoryElementType>();
   const [selectedElementId, setSelectedElementId] = useState<string>();
   
@@ -73,10 +71,42 @@ const StoryElements = (props: {
       initialElement = {selectedElement}
       onSubmit = {modalAction === "add" ? onSubmitNewElement : onEditElement} />
   ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
-  
-  useEffect(() => 
-    setElements(props.story.getTypeMap(key))
-  , [key, props]);
+
+  const elementList = useCallback((type: StoryElementEnum, className?: string) => {
+    return (
+      <ListGroup style={{maxHeight: "90%", overflowY: "auto"}}>
+        {[...props.story.getTypeMap(type)].map(([id, elem]) => (
+          <OverlayTrigger
+            key={id}
+            placement={"right"}
+            trigger="focus"
+            overlay={
+              <Tooltip>
+                <ButtonGroup vertical>
+                  <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elem)}>
+                    <i className="bi bi-pencil" aria-label="edit" /> 
+                  </Button>
+                  <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
+                    <i className="bi bi-trash" aria-label="delete" /> 
+                  </Button>
+                </ButtonGroup>
+              </Tooltip>
+            }>
+            <ListGroup.Item key={id} action
+              className={`d-flex flex-grow-1 ${className}`}
+              style={{textWrap:"pretty", justifyContent:"space-evenly"}}>
+              {elem.name}
+            </ListGroup.Item>
+          </OverlayTrigger>
+        ))}
+      </ListGroup>);
+  }, [props]);
+
+  const tabArray = useMemo(() => [
+    {type: StoryElementEnum.character, className: "character-mention", tabText: "🙋", badgeContent: props.story.characters.size, buttonText: "Personaggi " },
+    {type: StoryElementEnum.object, className: "object-mention", tabText: "⚱️", badgeContent: props.story.objects.size, buttonText: "Oggetti " },
+    {type: StoryElementEnum.location, className: "location-mention", tabText: "🏛️", badgeContent: props.story.locations.size, buttonText: "Luoghi " }
+  ], [props.story])
 
   return (
     <>
@@ -85,48 +115,28 @@ const StoryElements = (props: {
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
         className="mb-2">
-        <Tab eventKey={StoryElementEnum.character} title={<><span style={{fontSize:"2em"}}>🙋</span><Badge pill>{props.story.characters.size}</Badge></>}>
-          {props.editMode &&
-            <Button onClick={onAddButtonClicked}>
-              {"Personaggi "}
+        {tabArray.map(tab =>
+          <Tab
+            eventKey={tab.type}
+            key={tab.type}
+            className={"h-100"}
+            title={
+              <>
+                <span className={tab.className} style={{fontSize:"2em"}}>
+                  {tab.tabText}
+                </span>
+                <Badge className={tab.className + " selected"} bg="" pill>
+                  {tab.badgeContent}
+                </Badge>
+              </>}>
+            {props.editMode && <Button onClick={onAddButtonClicked} variant="outline-primary">
+              {tab.buttonText}
               <i className="bi bi-plus-square"/>
             </Button>}
-        </Tab>
-        <Tab eventKey={StoryElementEnum.object} title={<><span style={{fontSize:"2em"}}>⚱️</span><Badge pill>{props.story.objects.size}</Badge></>}>
-          {props.editMode &&
-            <Button onClick={onAddButtonClicked}>
-              {"Oggetti "}
-              <i className="bi bi-plus-square"/>
-            </Button>}
-        </Tab>
-        <Tab eventKey={StoryElementEnum.location} title={<><span style={{fontSize:"2em"}}>🏛️</span><Badge pill>{props.story.locations.size}</Badge></>}>
-          {props.editMode &&
-            <Button onClick={onAddButtonClicked}>
-              {"Luoghi "}
-              <i className="bi bi-plus-square"/>
-            </Button>}
-        </Tab>
+            {elementList(tab.type, tab.className)}
+          </Tab>
+        )}
       </Tabs>
-      <ListGroup variant="flush">
-        {[...elements.keys()].map((id, idx) => (
-          <ListGroup.Item key={idx}>
-            <ActionListElement
-              leftSide={ props.editMode && 
-                <Button variant="danger" onClick={() => onElementDeleteButtonClicked(id)}>
-                  <i className="bi bi-trash" aria-label="delete" /> 
-                </Button>}
-              rightSide={ props.editMode &&
-                <Button variant="secondary" onClick={() => onElementEditButtonClicked(id, elements.get(id)!)}>
-                  <i className="bi bi-pencil" aria-label="edit" /> 
-                </Button>}>
-                <InputGroup.Text className={`d-flex flex-grow-1 ${elements.get(id)!.isVariable ? "bg-warning-subtle" : ""}`} style={{textWrap:"pretty", overflowWrap:"anywhere", justifyContent:"space-evenly"}}>
-                  {elements.get(id)!.name}
-                </InputGroup.Text>
-            </ActionListElement>
-          </ListGroup.Item>
-          ))
-        }
-      </ListGroup>
     </>
   );
 };

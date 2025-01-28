@@ -98,7 +98,7 @@ function SceneNode(props: NodeProps<SceneNodeType>) {
             <Button variant="secondary" onClick={() => props.data.onClickEdit(scene, setScene)}>
               <i className="bi bi-pencil" aria-label="edit" />
             </Button>
-            <Button variant="secondary" onClick={handleDelete}>
+            <Button variant="danger" onClick={handleDelete}>
               <i className="bi bi-trash3" aria-label="delete" />
             </Button>
           </ButtonGroup>

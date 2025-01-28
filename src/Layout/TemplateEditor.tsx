@@ -70,7 +70,7 @@ function TemplateEditor(props: {
 		setCurrentTab(id);
 	}, [openScenes]);
 
-	// Applies fixed width to StoryElements (allows collapsing father without rearranging children)
+	// Applies fixed width to StoryElements (allows collapsing parent without rearranging children)
 	useEffect(() => {
 		const element = document.getElementById("story-elements-holder")!;
 		const computedStyle = getComputedStyle(element);
@@ -79,7 +79,6 @@ function TemplateEditor(props: {
 
 	return (
 		<Container className="h-100" fluid>
-			<Button onClick={() => {setSideTab(s => !s)}}></Button>
 			<Row style={{alignItems: "center", height: "10%"}}>
 				<Col xs={3}>
 					<ButtonGroup size="lg">
@@ -104,8 +103,8 @@ function TemplateEditor(props: {
 			
 			<Row style={{height: "90%"}}>
 				<Collapse in={sideTab} dimension="width">
-					<Col xs={3} style={{overflow:"hidden"}} id={"story-elements-holder"}>
-						<div style={{width: `${storyElementsWidth}px`}}>
+					<Col xs={2} className="h-100 px-0" style={{overflow:"hidden"}} id={"story-elements-holder"}>
+						<div className="h-100" style={{width: `${storyElementsWidth}px`}}>
 							<StoryElements
 								story={localStory}
 								setStory={story => { setDirty(true); setLocalStory(story) }}
@@ -113,7 +112,13 @@ function TemplateEditor(props: {
 						</div>
 					</Col>
 				</Collapse>
-				<Col className="utility-tabs">
+				<Col className="pe-0 utility-tabs" style={{position:"relative"}}>
+					<Button
+						size="lg"
+						onClick={() => setSideTab(s => !s)}
+						style={{position:"absolute", left:"-1em", top:"5%", zIndex:"10"}}>
+						<i className="bi bi-person-lines-fill" />
+					</Button>
 					<Tabs
 						activeKey={currentTab}
 						onSelect={k => setCurrentTab(k ?? "structure")}

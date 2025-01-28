@@ -203,8 +203,8 @@ function StoryFlowChartEditor (props: {
         ref={flowRef}
         minZoom={0.2}
         fitView >
-        <Panel>
-          <Button variant="primary" onClick={addNewNode} style={{ margin: "0px 5px" }}>
+        <Panel position="top-right">
+          <Button variant="primary" onClick={addNewNode}>
               {"Aggiungi Scena "}
               <i className="bi bi-plus-square"/>
           </Button>

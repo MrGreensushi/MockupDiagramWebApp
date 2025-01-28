@@ -104,7 +104,9 @@ function SceneEditor(props: {
 			<Row className="h-100">
 				<Col xs={6} className="h-100">
 				<Card className="h-100">
-					<Card.Header>Prompt</Card.Header>
+					<Card.Header>
+						<h4>Prompt</h4>
+					</Card.Header>
 					<Card.Body className="h-100">
 						<div className="h-75">
 							<BlocklyCanvas
