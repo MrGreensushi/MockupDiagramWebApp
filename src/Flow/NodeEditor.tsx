@@ -6,6 +6,7 @@ import Activity, { Phrase } from "../Procedure/Activity.ts";
 import Procedure from "../Procedure/Procedure.ts";
 import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import EventDecisionEditor from "../Layout/EventDecisionEditor.tsx";
+import "../CSS/NodeEditor.css";
 
 function NodeEditor(props: {
   selectedNode: Node | undefined;
@@ -14,7 +15,8 @@ function NodeEditor(props: {
     id: string,
     newPhrases?: Phrase[],
     details?: string,
-    newName?: string
+    newName?: string,
+    notes?: string
   ) => void;
   updateEventOrDecision: (name?: string, details?: string) => void;
 }) {
@@ -39,7 +41,7 @@ function NodeEditor(props: {
     return (
       <EventDecisionEditor
         key={"EventDecisionEditor: " + props.selectedNode.id}
-        details={(data.details as string) ?? ""}
+        notes={(data.details as string) ?? ""}
         updateEventDecision={props.updateEventOrDecision}
       />
     );
@@ -75,7 +77,7 @@ function NodeEditor(props: {
       }
       isLeft={false}
     >
-      {editor}
+      <div className="card-container">{editor}</div>
     </SideBar>
   );
 }

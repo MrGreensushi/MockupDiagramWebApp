@@ -1,11 +1,5 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from "react";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import React, { useState } from "react";
+import { Button, Tab, Tabs } from "react-bootstrap";
 import ActivityPhrases from "./ActivityPhrases.tsx";
 
 import Activity, { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
@@ -20,7 +14,8 @@ function ActivityEditor(props: {
     id: string,
     newPhrases?: Phrase[],
     details?: string,
-    newName?: string
+    newName?: string,
+    notes?: string
   ) => void;
 }) {
   const [phrases, setPhrases] = useState<Phrase[]>(
@@ -28,67 +23,53 @@ function ActivityEditor(props: {
   );
 
   const [details, setDetails] = useState(props.activity?.details ?? "");
+  const [notes, setNotes] = useState(props.activity?.notes ?? "");
 
-  const availableLevelsForClipId = (clipId: string) => {
-    var toRet = [true, true, true];
-
-    //use Set per avere il dato aggiornato
-    var filtered = phrases.filter((x) => x.clipId === clipId);
-    toRet = [
-      filtered.some((x) => x.level === LevelsEnum.novice),
-      filtered.some((x) => x.level === LevelsEnum.intermediate),
-      filtered.some((x) => x.level === LevelsEnum.expert),
-    ];
-
-    return toRet;
-  };
-
-  const evaluateUnavailableLvls = (phrases: Phrase[]) => {
-    var clipIds = [...new Set(phrases.map((x) => x.clipId))];
-    var unavailableLevels: { clipId: string; unavailableLevels: boolean[] }[] =
-      [];
-    clipIds.forEach((clipId) => {
-      var lvls = availableLevelsForClipId(clipId);
-      unavailableLevels.push({ clipId: clipId, unavailableLevels: lvls });
-    });
-
-    return unavailableLevels;
-  };
-
-  let unavailableLvls = useMemo(() => {
-    return evaluateUnavailableLvls(phrases);
-  }, [phrases]);
-
-  const handleSave = (newPhrases?: Phrase[], newDetails?: string) => {
+  const handleSave = (
+    newPhrases?: Phrase[],
+    newDetails?: string,
+    newNotes?: string
+  ) => {
     console.log("ActivityEditor:HandleSave");
     props.setActivity(
       props.activityId,
       newPhrases ?? phrases,
-      newDetails ?? details
+      newDetails ?? details,
+      undefined,
+      newNotes ?? notes
     );
   };
 
   const handlePhraseUpdate = (
-    id: number,
     clipId: string,
-    level: LevelsEnum,
-    text: string
+    noviceText: string,
+    intermediateText?: string,
+    advanceText?: string,
+    newClipId?: string
   ) => {
-    //check already existing clip and level
-    const sameClipandLevel = phrases.filter(
-      (x, index) => x.clipId === clipId && x.level === level && index !== id
-    );
-    if (sameClipandLevel.length > 0) {
-      console.warn(
-        `Same clip ${clipId} and level ${level}: ${sameClipandLevel.length}`
-      );
-      return;
-    }
+    const newClip = newClipId ?? clipId;
+    const novicePhrase = noviceText
+      ? new Phrase(newClip, LevelsEnum.novice, noviceText)
+      : undefined;
+    const intermediatePhrase = intermediateText
+      ? new Phrase(newClip, LevelsEnum.intermediate, intermediateText)
+      : undefined;
+    const advancePhrase = advanceText
+      ? new Phrase(newClip, LevelsEnum.expert, advanceText)
+      : undefined;
 
     setPhrases((oldPhrases) => {
-      const newPhrases = oldPhrases.map((phrase, index) =>
-        index !== id ? phrase : new Phrase(clipId, level, text)
-      );
+      const newPhrases = oldPhrases.map((phrase, index) => {
+        if (phrase.clipId !== clipId) return phrase;
+        switch (phrase.level) {
+          case LevelsEnum.novice:
+            return novicePhrase ?? phrase;
+          case LevelsEnum.intermediate:
+            return intermediatePhrase ?? phrase;
+          case LevelsEnum.expert:
+            return advancePhrase ?? phrase;
+        }
+      });
       handleSave(newPhrases);
       return newPhrases;
     });
@@ -100,40 +81,88 @@ function ActivityEditor(props: {
     // handleSave(undefined, newDet, undefined);
   };
 
-  const removePhrase = (phraseIndex: number) => {
+  const handleNotesUpdate = (newNotes: string) => {
+    setNotes(newNotes);
+    handleSave(undefined, undefined, newNotes);
+  };
+
+  const removePhrase = (clipId: string) => {
     setPhrases((oldPhrases) => {
-      oldPhrases.splice(phraseIndex, 1);
-      handleSave(oldPhrases);
-      return oldPhrases;
+      const filtered = oldPhrases.filter((x) => x.clipId !== clipId);
+      handleSave(filtered);
+      return filtered;
     });
   };
 
   const instantiateActivityPhrase = (
-    index: number,
-    phrase: Phrase,
-    unavailableLvl: boolean[]
+    clipId: string,
+    indexOfNovicePhrase: number,
+    noviceText: string,
+    intermediateText?: string,
+    advanceText?: string
   ) => {
     return (
       <ActivityPhrases
-        key={"ActivityPhrases:" + props.activityId + ":" + index}
-        phrase={phrase}
-        unavailableLevels={unavailableLvl}
-        handlePhraseUpdate={(clipId: string, level: LevelsEnum, text: string) =>
-          handlePhraseUpdate(index, clipId, level, text)
+        key={"ActivityPhrases:" + clipId}
+        clipId={clipId}
+        noviceText={noviceText}
+        intermediateText={intermediateText}
+        advanceText={advanceText}
+        handlePhraseUpdate={handlePhraseUpdate}
+        checkValidClipId={(value: string) =>
+          checkClipIdName(value, indexOfNovicePhrase)
         }
-        checkValidClipId={(name: string, level: LevelsEnum) =>
-          checkClipIdName(name, level, index)
-        }
-        removePhrase={() => removePhrase(index)}
+        removePhrase={removePhrase}
       />
     );
+  };
+
+  const instantiateActivityPhrases = () => {
+    //group all the prases based on their clipId (store the index in the array to use for checking the clipId)
+    const groupedByClipId: Record<string, { index: number; phrase: Phrase }[]> =
+      phrases.reduce((grouped, phrase, index) => {
+        if (!grouped[phrase.clipId]) {
+          grouped[phrase.clipId] = [];
+        }
+        grouped[phrase.clipId].push({ index, phrase });
+        return grouped;
+      }, {});
+
+    //for each group instantiate an object containing all the information about each level of that clipId
+    return Object.entries(groupedByClipId).map(([clipId, phrasesArr]) => {
+      var noviceText = "";
+      var intermediateText: string | undefined = undefined;
+      var advanceText: string | undefined = undefined;
+      var indexOfNovicePhrase = 0;
+      Object.values(phrasesArr).forEach(({ index, phrase }) => {
+        switch (phrase.level) {
+          case LevelsEnum.novice:
+            noviceText = phrase.text;
+            indexOfNovicePhrase = index;
+            break;
+          case LevelsEnum.intermediate:
+            intermediateText = phrase.text;
+            break;
+          case LevelsEnum.expert:
+            advanceText = phrase.text;
+            break;
+        }
+      });
+      return instantiateActivityPhrase(
+        clipId,
+        indexOfNovicePhrase,
+        noviceText,
+        intermediateText,
+        advanceText
+      );
+    });
   };
 
   const addNewPhrase = () => {
     setPhrases((prePhrases) => {
       const newPhrases = [
         ...prePhrases,
-        new Phrase("Nuovo", LevelsEnum.novice, ""),
+        new Phrase("New Phrase", LevelsEnum.novice, ""),
       ];
 
       handleSave(newPhrases);
@@ -141,35 +170,44 @@ function ActivityEditor(props: {
     });
   };
 
-  const checkClipIdName = (name: string, level: LevelsEnum, id: number) => {
+  const checkClipIdName = (clip: string, indexOfNovicePhrase: number) => {
     return phrases.some(
-      (x, index) => x.clipId === name && id !== index && x.level === level
+      (x, index) =>
+        x.clipId === clip &&
+        x.level === LevelsEnum.novice &&
+        index !== indexOfNovicePhrase
     );
   };
 
   return (
-    <div style={{ paddingLeft: "0px" }}>
-      <ActivityDetails
-        text={details}
-        handleDetailsUpdate={handleDetailsUpdate}
-      />
-
-      {phrases.map((phrase, index) =>
-        instantiateActivityPhrase(
-          index,
-          phrase,
-          unavailableLvls.find((x) => x.clipId === phrase.clipId)
-            ?.unavailableLevels ?? [true, false, false]
-        )
-      )}
-      <Button
-        className="mt-2"
-        style={{ alignSelf: "center" }}
-        onClick={addNewPhrase}
-      >
-        +
-      </Button>
-    </div>
+    <>
+      <Tabs defaultActiveKey="Phrases">
+        <Tab title="Phrases" eventKey="Phrases">
+          {instantiateActivityPhrases()}
+          <Button
+            className="mt-2"
+            style={{ alignSelf: "center" }}
+            onClick={addNewPhrase}
+          >
+            +
+          </Button>
+        </Tab>
+        <Tab title="Details" eventKey="Details">
+          <ActivityDetails
+            title="Details"
+            text={details}
+            handleValueUpdate={handleDetailsUpdate}
+          />
+        </Tab>
+        <Tab title="Notes" eventKey="Notes">
+          <ActivityDetails
+            title="Notes"
+            text={notes}
+            handleValueUpdate={handleNotesUpdate}
+          />
+        </Tab>
+      </Tabs>
+    </>
   );
 }
 

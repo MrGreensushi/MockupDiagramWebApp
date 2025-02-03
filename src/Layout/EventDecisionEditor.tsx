@@ -2,27 +2,26 @@ import React, { useEffect, useState } from "react";
 import ActivityDetails from "./ActivityDetails.tsx";
 
 function EventDecisionEditor(props: {
-  details: string;
-  updateEventDecision: (newName?: string, details?: string) => void;
+  notes: string;
+  updateEventDecision: (newName?: string, notes?: string) => void;
 }) {
-  const [details, setDetails] = useState(props.details);
+  const [notes, setNotes] = useState(props.notes);
 
   useEffect(() => {
-    setDetails(props.details);
-  }, [props.details]);
+    setNotes(props.notes);
+  }, [props.notes]);
 
-  const handleDetailsUpdate = (newDetails: string) => {
+  const handleNotesUpdate = (newDetails: string) => {
     console.log("EventDecisionEditor:handleDetailsUpdate");
     props.updateEventDecision(undefined, newDetails);
   };
 
   return (
-    <div style={{ paddingLeft: "0px" }}>
-      <ActivityDetails
-        text={details}
-        handleDetailsUpdate={handleDetailsUpdate}
-      />
-    </div>
+    <ActivityDetails
+      title="Notes"
+      text={notes}
+      handleValueUpdate={handleNotesUpdate}
+    />
   );
 }
 

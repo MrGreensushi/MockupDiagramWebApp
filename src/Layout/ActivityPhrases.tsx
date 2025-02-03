@@ -1,92 +1,129 @@
-import { useCallback, useEffect, useState } from "react";
-import { Button, Card, Dropdown, Form, InputGroup } from "react-bootstrap";
+import { useMemo, useState } from "react";
+import {
+  Button,
+  Card,
+  Dropdown,
+  Form,
+  InputGroup,
+  Tab,
+  Tabs,
+} from "react-bootstrap";
 import React from "react";
-import { LevelsEnum, Phrase } from "../Procedure/Activity.ts";
+import { LevelsEnum } from "../Procedure/Activity.ts";
 import DynamicTextField from "./DynamicTextField.tsx";
 
 function ActivityPhrases(props: {
-  phrase: Phrase;
-  unavailableLevels: boolean[];
-  handlePhraseUpdate: (clipId: string, level: LevelsEnum, text: string) => void;
-  checkValidClipId: (name: string, level: LevelsEnum) => boolean;
-  removePhrase: () => void;
+  clipId: string;
+  noviceText: string;
+  intermediateText?: string;
+  advanceText?: string;
+  handlePhraseUpdate: (
+    clipId: string,
+    noviceText: string,
+    intermediateText?: string,
+    advanceText?: string,
+    newClipId?: string
+  ) => void;
+  checkValidClipId: (clipId: string) => boolean;
+  removePhrase: (clipId: string) => void;
 }) {
-  const [clipId, setClipId] = useState(props.phrase.clipId);
-  const [level, setLevel] = useState(props.phrase.level);
-  const [text, setText] = useState(props.phrase.text);
-
-  const handleChangeLevel = useCallback(
-    (newLevel: LevelsEnum) => {
-      if (newLevel === level) return;
-
-      setLevel(newLevel);
-      props.handlePhraseUpdate(clipId, newLevel, text);
-    },
-    [level]
+  const oldClipId = props.clipId;
+  const [clipId, setClipId] = useState(props.clipId);
+  const [noviceText, setNoviceText] = useState(props.noviceText);
+  const [intermediateText, setIntermediateText] = useState(
+    props.intermediateText ?? ""
   );
+  const [advanceText, setAdvanceText] = useState(props.advanceText ?? "");
+  const [selectedLevel, setSelectedLevel] = useState(LevelsEnum.novice);
 
-  const handleInvalidClipId = (newClipId: string) => {
-    return props.checkValidClipId(newClipId, level);
-  };
+  const activeText = useMemo(() => {
+    switch (selectedLevel) {
+      case LevelsEnum.novice:
+        return noviceText;
+      case LevelsEnum.intermediate:
+        return intermediateText;
+      case LevelsEnum.expert:
+        return advanceText;
+    }
+  }, [selectedLevel, noviceText, intermediateText, advanceText]);
 
   const handleChangeClipId = (value: string) => {
     console.log(value);
     setClipId(value);
-    props.handlePhraseUpdate(value, level, text);
+    //update the phrase for all the levels
+    updateAllPhrases(value);
+  };
+
+  const ifEmptyReturnUndefined = (value: string) => {
+    return value === "" ? undefined : value;
+  };
+
+  const updateAllPhrases = (
+    newClipId = clipId,
+    newNovText = noviceText,
+    newIntText = intermediateText,
+    newAdvText = advanceText
+  ) => {
+    props.handlePhraseUpdate(
+      oldClipId,
+      newNovText,
+      ifEmptyReturnUndefined(newIntText),
+      ifEmptyReturnUndefined(newAdvText),
+      oldClipId === newClipId ? undefined : newClipId
+    );
+  };
+  const onTextUpdate = (newText: string) => {
+    switch (selectedLevel) {
+      case LevelsEnum.novice:
+        setNoviceText(newText);
+        updateAllPhrases(undefined, newText);
+        break;
+      case LevelsEnum.intermediate:
+        setIntermediateText(newText);
+        updateAllPhrases(undefined, undefined, newText);
+        break;
+      case LevelsEnum.expert:
+        setAdvanceText(newText);
+        updateAllPhrases(undefined, undefined, undefined, newText);
+        break;
+    }
   };
 
   return (
-    <Card className="mt-2 p-0">
+    <Card>
       <Card.Header>
         <DynamicTextField
           initialValue={clipId}
-          onChange={handleChangeClipId}
-          isInvalid={handleInvalidClipId}
-          disable={props.phrase.clipId === "Description"}
+          onChange={setClipId}
+          isInvalid={(value: string) => props.checkValidClipId(value)}
+          disable={props.clipId === "Description"}
+          onSubmit={handleChangeClipId}
         />
       </Card.Header>
       <Card.Body>
-        <Form>
-          <InputGroup>
-            <Form.Control
-              as="textarea"
-              style={{ maxHeight: "15em" }}
-              value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                props.handlePhraseUpdate(clipId, level, e.target.value);
-              }}
-            />
-          </InputGroup>
-        </Form>
-
-        <Dropdown
-          className="level-selection"
-          onSelect={(eventKey) => handleChangeLevel(eventKey as LevelsEnum)}
+        <Tabs
+          activeKey={selectedLevel}
+          onSelect={(eventKey) => setSelectedLevel(eventKey as LevelsEnum)}
+          fill
         >
-          <Dropdown.Toggle variant="success" id="dropdown-basic">
-            {level}
-          </Dropdown.Toggle>
-
-          <Dropdown.Menu className="level-selection-menu">
-            {Object.values(LevelsEnum).map((element, index) => (
-              <Dropdown.Item
-                className="level-selection-menu-item"
-                key={"dropdown-" + element}
-                eventKey={element}
-                active={element === level}
-                disabled={props.unavailableLevels[index]}
-              >
-                {element}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
+          <Tab title="Novice" eventKey={LevelsEnum.novice} />
+          <Tab title="Intermediate" eventKey={LevelsEnum.intermediate} />
+          <Tab title="Expert" eventKey={LevelsEnum.expert} />
+        </Tabs>
+        <Form>
+          <Form.Control
+            as="textarea"
+            rows={7}
+            value={activeText}
+            onChange={(e) => {
+              onTextUpdate(e.target.value);
+            }}
+          />
+        </Form>
       </Card.Body>
       <Card.Footer>
-        {" "}
         {clipId !== "Description" && (
-          <Button variant="danger" onClick={props.removePhrase}>
+          <Button variant="danger" onClick={() => props.removePhrase(clipId)}>
             <i className="bi bi-trash3"></i>
           </Button>
         )}

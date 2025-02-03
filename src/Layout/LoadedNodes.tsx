@@ -1,16 +1,7 @@
 import axios from "axios";
 import React from "react";
 import { useState, useEffect } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Spinner,
-  Alert,
-  ListGroup,
-  Button,
-  ButtonGroup,
-} from "react-bootstrap";
+import { Spinner, Alert, Button, ButtonGroup } from "react-bootstrap";
 import {
   ActivityDescription,
   ActivityLanguage,

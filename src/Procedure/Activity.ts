@@ -49,6 +49,14 @@ class Activity extends ActivityDescription {
     this.details = value;
   }
 
+  public get notes() {
+    return this.activeLanguage.notes;
+  }
+
+  public set notes(value: string) {
+    this.notes = value;
+  }
+
   public get activeLanguage() {
     return this.isEngActiveLanguage
       ? this.languages.engActivity
@@ -66,9 +74,14 @@ class Activity extends ActivityDescription {
     phrases = this.nodePhrases,
     details = this.details,
     title = this.name,
-    isSubProcedureEmpty = this.isSubProcedureEmpty
+    isSubProcedureEmpty = this.isSubProcedureEmpty,
+    notes = this.notes
   ) {
-    const updatedLanguage = this.activeLanguage.cloneAndSet(phrases, details);
+    const updatedLanguage = this.activeLanguage.cloneAndSet(
+      phrases,
+      details,
+      notes
+    );
     const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
     return new Activity(
       title,
@@ -115,31 +128,24 @@ class Phrase {
 class ActivityLanguage {
   nodePhrases: Phrase[];
   details: string;
+  notes: string;
 
-  constructor(nodePhrases?: Phrase[], details?: string) {
+  constructor(nodePhrases?: Phrase[], details?: string, notes?: string) {
     this.nodePhrases = nodePhrases ?? [
       new Phrase(undefined, LevelsEnum.novice, ""),
       new Phrase(undefined, LevelsEnum.intermediate, ""),
       new Phrase(undefined, LevelsEnum.expert, ""),
     ];
     this.details = details ?? "";
+    this.notes = notes ?? "";
   }
 
-  public cloneAndSet(phrases: Phrase[]): ActivityLanguage;
-  public cloneAndSet(details: string): ActivityLanguage;
-  public cloneAndSet(phrases: Phrase[], details: string);
   public cloneAndSet(
-    param1: Phrase[] | string,
-    param2?: string
+    phrases = this.nodePhrases,
+    details = this.details,
+    notes = this.notes
   ): ActivityLanguage {
-    const phrases = Array.isArray(param1) ? param1 : this.nodePhrases;
-    const details =
-      typeof param1 === "string"
-        ? param1
-        : typeof param2 === "string"
-        ? param2
-        : this.details;
-    return new ActivityLanguage(phrases, details);
+    return new ActivityLanguage(phrases, details, notes);
   }
 }
 
@@ -157,8 +163,8 @@ class Languages {
       const ita = object.itaActivity;
       const eng = object.engActivity;
       return new Languages(
-        new ActivityLanguage(ita.nodePhrases, ita.details),
-        new ActivityLanguage(eng.nodePhrases, eng.details)
+        new ActivityLanguage(ita.nodePhrases, ita.details, ita.notes),
+        new ActivityLanguage(eng.nodePhrases, eng.details, eng.notes)
       );
     } catch (ex) {
       throw new Error("Failed to parse Serialized Languages Object: " + ex);

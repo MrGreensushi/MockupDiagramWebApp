@@ -22,7 +22,7 @@ function SideBar(props: {
 
   return (
     <Col style={style()}>
-      <Row>{props.header}</Row>
+      <Row style={{ backgroundColor: "#EBEBEB" }}>{props.header}</Row>
 
       <Row
         style={{

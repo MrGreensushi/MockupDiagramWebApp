@@ -139,12 +139,24 @@ function ProcedureFlowDiagram(props: {
   };
 
   const updateActivityById = useCallback(
-    (id: string, newPhrases?: Phrase[], details?: string, newName?: string) => {
+    (
+      id: string,
+      newPhrases?: Phrase[],
+      details?: string,
+      newName?: string,
+      newNotes?: string
+    ) => {
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === id) {
             var newActivity = node.data.activity as Activity;
-            newActivity = newActivity.cloneAndSet(newPhrases, details, newName);
+            newActivity = newActivity.cloneAndSet(
+              newPhrases,
+              details,
+              newName,
+              undefined,
+              newNotes
+            );
 
             //update the title of the subProcedure
             props.updateProcedureById(
@@ -326,35 +338,6 @@ function ProcedureFlowDiagram(props: {
     setNodes((prevNodes) => [...prevNodes, newNode]);
   };
   //#endregion
-
-  const restoreFlow = useCallback(
-    (flow: ReactFlowJsonObject, title: string) => {
-      // console.log("Restore Flow");
-      // const activityCallbacks = {
-      //   onClickSubProcedure: onDoubleClickActivity,
-      // };
-      // const newProcedure = props.activeProcedure.cloneAndSetTitle(title);
-      // //try {
-      // const newNodes = instantiateNodeFromJsonObj(
-      //   flow,
-      //   newProcedure,
-      //   activityCallbacks
-      // );
-      // props.setProcedure((procedure) =>
-      //   procedure.cloneAndAddFlow({
-      //     nodes: newNodes,
-      //     edges: flow.edges,
-      //     viewport: flow.viewport,
-      //   })
-      // );
-      /*} catch {
-        console.error(flow);
-        setNodes([]);
-        setEdges([]);
-      }*/
-    },
-    [rfInstance, setNodes, setEdges, changeActiveProcedure]
-  );
 
   return (
     <Container fluid>

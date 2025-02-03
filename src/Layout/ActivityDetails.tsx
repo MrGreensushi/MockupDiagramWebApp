@@ -3,8 +3,9 @@ import { Card, Form } from "react-bootstrap";
 import React from "react";
 
 function ActivityDetails(props: {
+  title: string;
   text: string;
-  handleDetailsUpdate: (details: string) => void;
+  handleValueUpdate: (value: string) => void;
 }) {
   const [text, setText] = useState(props.text);
 
@@ -13,17 +14,17 @@ function ActivityDetails(props: {
   }, [props.text]);
 
   const handleOnBlur = useCallback(() => {
-    props.handleDetailsUpdate(text);
+    props.handleValueUpdate(text);
   }, [text]);
 
   return (
     <Card className="p-0" onBlur={handleOnBlur}>
-      <Card.Header>Details</Card.Header>
+      <Card.Header>{props.title}</Card.Header>
       <Card.Body>
         <Form>
           <Form.Control
             as="textarea"
-            style={{ maxHeight: "10em" }}
+            rows={7}
             value={text}
             onChange={(e) => {
               setText(e.target.value);
