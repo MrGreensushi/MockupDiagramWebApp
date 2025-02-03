@@ -18,7 +18,6 @@ function OperationMenu(props: {
   addNode: () => void;
   addEventNode: () => void;
   addDecisionNode: () => void;
-  restoreFlow: (flow: ReactFlowJsonObject, title: string) => void;
   rfInstance: ReactFlowInstance;
   procedureTitle: string;
   getJSONFile: () => string;
@@ -26,12 +25,11 @@ function OperationMenu(props: {
 }) {
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
-  const restoreFlow = props.restoreFlow;
 
   const onSave = useCallback(async () => {
     const jsonString = props.getJSONFile();
-    downloadXML(jsonString);
-    // saveToDisk(jsonString, "TEST", ".procedure");
+    //downloadXML(jsonString);
+    saveToDisk(jsonString, procedureTitle + ".procedure", "json");
   }, [rfInstance, procedureTitle, props.getJSONFile]);
 
   async function downloadXML(jsonProcedure: string) {
@@ -55,6 +53,11 @@ function OperationMenu(props: {
       console.error("Errore nel download dei file XML");
     }
   }
+
+  const extractXMLs = () => {
+    const jsonString = props.getJSONFile();
+    downloadXML(jsonString);
+  };
 
   const onLoad = useCallback(async (file?: File) => {
     if (!file) return;
@@ -89,6 +92,9 @@ function OperationMenu(props: {
           onClick={onSave}
         >
           Save Procedure
+        </Button>
+        <Button variant="outline-primary" onClick={extractXMLs}>
+          Extract XMLs
         </Button>
         <LoadModal onLoad={onLoad} />
       </ButtonGroup>

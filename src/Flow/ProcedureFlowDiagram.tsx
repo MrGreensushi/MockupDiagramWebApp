@@ -34,7 +34,6 @@ import Activity, {
 import LoadNodes from "../Layout/LoadedNodes.tsx";
 import EventNode, { EventNodeObject } from "./EventNode.tsx";
 import CustomEdge from "./CustomEdge.tsx";
-import { instantiateNodeFromJsonObj } from "../Misc/SaveToDisk.ts";
 import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
 import OperationMenu from "../Layout/OperationMenu.tsx";
@@ -371,12 +370,14 @@ function ProcedureFlowDiagram(props: {
           addNode={addNode}
           addEventNode={addEventNode}
           addDecisionNode={addDecisionNode}
-          restoreFlow={restoreFlow}
           rfInstance={rfInstance!}
           procedureTitle={
-            props.activeProcedure.title ?? "Procedura senza titolo"
+            props.activeProcedure.title ?? "Procedure senza titolo"
           }
-          getJSONFile={props.getJSONFile}
+          getJSONFile={() => {
+            saveActiveProcedure();
+            return props.getJSONFile();
+          }}
           loadJSONFile={props.loadJSONFile}
         />
       </Row>

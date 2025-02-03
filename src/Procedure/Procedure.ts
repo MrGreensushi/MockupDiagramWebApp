@@ -19,7 +19,7 @@ class Procedure {
     parentId?: string
   ) {
     this.flow = flow;
-    this.title = title ?? "Procedura senza titolo";
+    this.title = title ?? "Procedure senza titolo";
     this.id = id ?? uuidv4();
     this.parentId = parentId;
   }

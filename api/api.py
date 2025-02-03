@@ -1,22 +1,28 @@
-import time
+import sys
 import parseXml
 import writeXml
 import os
-from flask import Flask,jsonify,request,send_file
+from flask import Flask,jsonify,request,send_file,render_template
 from io import BytesIO
 
-app = Flask(__name__)
-folder_path = r".\xmls\Educational-Contents\BLSDPro"
+# Determina il percorso base (supporta modalità PyInstaller)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+if getattr(sys, '_MEIPASS', False):  # Se eseguito come exe
+    BASE_DIR = sys._MEIPASS
 
-@app.route('/time')
-def get_current_time():
-    return {'time': time.time()}
+# Percorso assoluto alla cartella XML
+folder_path = os.path.join(BASE_DIR, "xmls", "Educational-Contents", "BLSDPro")
+app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"), template_folder=os.path.join(BASE_DIR, "templates"))
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/nodes', methods=['GET'])
 def get_all_parsed_xml():
     # Walk through the directory and subdirectories to find XML files
     parsed_content=parseXml.parse_all_xmls(folder_path)
-
     return jsonify(parsed_content)
 
 @app.route('/nodes/<node_id>', methods = ['GET', 'POST', 'DELETE'])
@@ -62,3 +68,6 @@ def extract_XML_from_procedure():
            # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+if __name__ == "__main__":
+    app.run()

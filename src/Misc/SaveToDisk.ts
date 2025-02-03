@@ -1,7 +1,3 @@
-import { ReactFlowJsonObject } from "@xyflow/react";
-import Activity from "../Procedure/Activity.ts";
-import SubProcedure from "../Procedure/SubProcedure.ts";
-
 function saveToDisk(object: any, fileName?: string, fileType?: string) {
   if (!object) return;
   const name = fileName ?? "Download";
@@ -15,35 +11,4 @@ function saveToDisk(object: any, fileName?: string, fileType?: string) {
   link.remove();
 }
 
-function instantiateNodeFromJsonObj(
-  flow: ReactFlowJsonObject,
-  parent: SubProcedure,
-  activityCallbacks: any,
-) {
-  return [...flow.nodes].map((node) => {
-    if (node.type === "activityNode")
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          activity: Activity.fromJSONObject(
-            node.data.activity,
-            parent,
-            activityCallbacks
-          ),
-         
-          onClickSubProcedure: activityCallbacks.onClickSubProcedure,
-        },
-      };
-
-    // if (node.type === "eventNode")
-    return {
-      ...node,
-      data: {
-        ...node.data,
-      },
-    };
-  });
-}
 export default saveToDisk;
-export { instantiateNodeFromJsonObj };
