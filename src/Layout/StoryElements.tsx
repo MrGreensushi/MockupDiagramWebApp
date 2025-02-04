@@ -122,7 +122,7 @@ function StoryElements (props: {
             className={"h-100"}
             title={
               <>
-                <span className={tab.className} style={{fontSize:"2em"}}>
+                <span className={tab.className} style={{fontSize:"2em", pointerEvents:"none"}}>
                   {tab.tabText}
                 </span>
                 <Badge className={tab.className + " selected"} bg="" pill>

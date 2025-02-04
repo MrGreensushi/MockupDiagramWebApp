@@ -38,19 +38,7 @@ function TemplateEditor(props: {
 	}, [props.setStory, localStory]);
 
 	const onSceneEdited = useCallback((sceneId: string, newScene: Scene) => {
-		setLocalStory(story => {
-		const newStory = story.clone();
-		newStory.flow.nodes.map(
-			node => {
-				if (node.id === sceneId) {
-					return {...node, data: {...node.data, scene: newScene.copy()}};
-				} else {
-					return node;
-				}
-			}
-		);
-		return newStory;
-		});
+		setLocalStory(story => story.cloneAndSetScene(sceneId, newScene));
 	}, []);
 
 	const onClickTabClose = useCallback((id: string) => {
@@ -75,12 +63,12 @@ function TemplateEditor(props: {
 		const element = document.getElementById("story-elements-holder")!;
 		const computedStyle = getComputedStyle(element);
 		setStoryElementsWidth(element.clientWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight));
-	}, [])
+	}, []);
 
 	return (
 		<Container className="h-100" fluid>
 			<Row style={{alignItems: "center", height: "10%"}}>
-				<Col xs={3}>
+				<Col xs={2}>
 					<ButtonGroup size="lg">
 						<Button variant="tertiary" onClick={() => navigate("/stories")}>
 							<i className="bi bi-house"></i>
@@ -103,7 +91,7 @@ function TemplateEditor(props: {
 			
 			<Row style={{height: "90%"}}>
 				<Collapse in={sideTab} dimension="width">
-					<Col xs={2} className="h-100 px-0" style={{overflow:"hidden"}} id={"story-elements-holder"}>
+					<Col xs={2} className="h-100 px-0 custom-tabs" style={{overflow:"hidden"}} id={"story-elements-holder"}>
 						<div className="h-100" style={{width: `${storyElementsWidth}px`}}>
 							<StoryElements
 								story={localStory}
@@ -112,7 +100,7 @@ function TemplateEditor(props: {
 						</div>
 					</Col>
 				</Collapse>
-				<Col className="pe-0 utility-tabs" style={{position:"relative"}}>
+				<Col className="pe-0 custom-tabs" style={{position:"relative"}}>
 					<Button
 						size="lg"
 						onClick={() => setSideTab(s => !s)}
@@ -122,10 +110,12 @@ function TemplateEditor(props: {
 					<Tabs
 						activeKey={currentTab}
 						onSelect={k => setCurrentTab(k ?? "structure")}
-						unmountOnExit
 						navbarScroll
 						style={{flexWrap:"nowrap"}}>
-						<Tab eventKey="structure" title={<div className="custom-nav-link">Struttura</div>}>
+						<Tab
+							eventKey="structure"
+							title={<div className="custom-nav-link">Struttura</div>}
+							unmountOnExit>
 							<Row className="w-100 h-100 gx-0">
 								<StoryFlowChartEditor
 									story={localStory}
@@ -139,12 +129,13 @@ function TemplateEditor(props: {
 									onDoubleClick={e => {e.preventDefault(); onClickTabClose(id)}}
 									onAuxClick={e => {e.preventDefault(); onClickTabClose(id)}}>
 									{(localStory.flow.nodes.find(node => node.id === id)?.data.label as string)}
-								</div>}>
+								</div>}
+								unmountOnExit>
 								<SceneEditor
 									story={localStory}
 									setStory={setLocalStory}
 									scene={localStory.flow.nodes.find(node => node.id === id)?.data.scene as Scene}
-									setScene={scene => {}}/>
+									setScene={newScene => onSceneEdited(id, newScene)}/>
 							</Tab>
 						)}
 					</Tabs>

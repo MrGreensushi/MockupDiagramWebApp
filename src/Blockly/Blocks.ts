@@ -1,31 +1,68 @@
 import * as Blockly from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
+import { StoryElementEnum } from '../StoryElements/StoryElement.ts';
+
+type BlockData = {
+    id: string,
+    type: "CharacterBlock" | "ObjectBlock" | "LocationBlock" | "TextInput",
+    outputText: string
+}
+
+const storyBlocks = [
+    //StoryElementEnum.character
+    {
+      blockType: "CharacterBlock",
+      customName: "Characters",
+      colour: "#BC6400",
+      button: {
+        kind: "BUTTON",
+        text: "Nuovo Personaggio",
+        callbackKey: "createCharacterInstance"
+      }
+    },
+    //StoryElementEnum.object
+    {
+      blockType: "ObjectBlock",
+      customName: "Objects",
+      colour: "#5B80A5",
+      button: {
+        kind: "BUTTON",
+        text: "Nuovo Oggetto",
+        callbackKey: "createObjectInstance"
+      }
+    },
+    //StoryElementEnum.location
+    {
+      blockType: "LocationBlock",
+      customName: "Locations",
+      colour: "#5CA699",
+      button: {
+        kind: "BUTTON",
+        text: "Nuovo Luogo",
+        callbackKey: "createLocationInstance"
+      },
+    }
+];
 
 function initBlocks() {
-    const SceneCharacterObject = {
+    const CharacterBlock = {
         init: function () {
-            commonInit(this);
-            this.setColour("#BC6400");
+            commonInit(this, StoryElementEnum.character);
         },
-
         getOutputText: commonGetOutputText
     };
 
-    const SceneObjectObject = {
+    const ObjectBlock = {
         init: function () {
-            commonInit(this);
-            this.setColour("#5B80A5");
+            commonInit(this, StoryElementEnum.object);
         },
-
         getOutputText: commonGetOutputText
     };
 
-    const SceneLocationObject = {
+    const LocationBlock = {
         init: function () {
-            commonInit(this);
-            this.setColour("#5CA699");
+            commonInit(this, StoryElementEnum.location);
         },
-
         getOutputText: commonGetOutputText
     };
 
@@ -38,20 +75,18 @@ function initBlocks() {
             this.setNextStatement(true, null);
             this.setColour("#CCCCCC");
         },
-
         getOutputText: (block: Blockly.Block) => {
             return `${block.getFieldValue('TextContent')}`;
         },
-
         setOutputText: (block: Blockly.Block, text: string) => {
             block.setFieldValue(text, 'TextContent');
         }
     };        
 
     const blocks = {
-        SceneCharacterObject: SceneCharacterObject,
-        SceneObjectObject: SceneObjectObject,
-        SceneLocationObject: SceneLocationObject,
+        CharacterBlock: CharacterBlock,
+        ObjectBlock: ObjectBlock,
+        LocationBlock: LocationBlock,
         TextInput: TextInput
     };
 
@@ -63,12 +98,6 @@ function initBlocks() {
     }    
 }
 
-type BlockData = {
-    id: string,
-    type: string,
-    outputText: string
-}
-
 function generateCommonBlockData(block: any): string {
     const data: BlockData = {
         id: block.id,
@@ -78,15 +107,27 @@ function generateCommonBlockData(block: any): string {
     return JSON.stringify(data) + ",";
 }
 
-function commonInit(block: Blockly.Block) {
+function commonInit(block: Blockly.Block, type: StoryElementEnum) {
     block.appendDummyInput('')
           .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
     block.setPreviousStatement(true, null);
     block.setNextStatement(true, null);
+    block.setColour(storyBlocks[type].colour);
 }
 
 function commonGetOutputText(block: Blockly.Block) {
     return `${block.getFieldValue("SceneObjectName")}`;
 }
+  
+export function convertFromEnumToObjectType(type: StoryElementEnum | null): string {
+    if (type !== null) return storyBlocks[type].blockType;
+    return "TextInput";
+  }
+  
+export function convertFromObjectTypeToEnum(type: string ): StoryElementEnum | null {
+    const index = storyBlocks.findIndex(block => block.blockType === type);
+    if (index === -1) return null;
+    return index as StoryElementEnum;
+}
 
-export {initBlocks, BlockData};
+export {initBlocks, BlockData, storyBlocks};

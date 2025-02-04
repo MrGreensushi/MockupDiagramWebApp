@@ -1,14 +1,13 @@
 import * as Blockly from 'blockly/core';
-import { LocationElement } from './StoryElement';
 
 type SceneDetails = {
     title: string;
     summary: string;
-    backgroundId: string;
     time: string;
     weather: string;
     tone: string;
-    value: string
+    value: string;
+    backgroundIds: [string[], string[], string[]];
 }
 
 type SerializedScene = {
@@ -22,67 +21,41 @@ class Scene {
 
     constructor(
         workspace?: Blockly.Workspace | {[key: string]: any},
-        title?: string,
-        summary?: string,
-        backgroundId?: string,
-        time?: string,
-        weather?: string,
-        tone?: string,
-        value?: string,
+        details?: Partial<SceneDetails>
     ) {
         if (workspace instanceof Blockly.Workspace)
             this.workspace = Blockly.serialization.workspaces.save(workspace);
         else
             this.workspace = workspace;
             this.details = {
-                title: title ?? "",
-                summary: summary ?? "",
-                backgroundId: backgroundId ?? "",
-                time: time ?? "",
-                weather: weather ?? "",
-                tone: tone ?? "",
-                value: value ?? ""
+                title: details?.title ?? "",
+                summary: details?.summary ?? "",
+                time: details?.time ?? "",
+                weather: details?.weather ?? "",
+                tone: details?.tone ?? "",
+                value: details?.value ?? "",
+                backgroundIds: details?.backgroundIds ?? [[], [], []],
             }
     }
 
     copy(): Scene {
         return new Scene(
             this.workspace,
-            this.details.title,
-            this.details.summary,
-            this.details.backgroundId,
-            this.details.time,
-            this.details.weather,
-            this.details.tone,
-            this.details.value,
+            this.details
         )
     }
 
     serialize() {
         return {
             workspace: this.workspace,
-            details: {
-                title: this.details.title,
-                summary: this.details.summary,
-                backgroundId: this.details.backgroundId,
-                time: this.details.time,
-                weather: this.details.weather,
-                tone: this.details.tone,
-                value: this.details.value
-            },
+            details: this.details
         }
     }
 
     static deserialize(obj: SerializedScene) {
         return new Scene(
             obj.workspace,
-            obj.details.title,
-            obj.details.summary,
-            obj.details.backgroundId,
-            obj.details.time,
-            obj.details.weather,
-            obj.details.tone,
-            obj.details.value,
+            obj.details
         )
     }
 
@@ -126,4 +99,4 @@ class Scene {
 }
 
 export default Scene;
-export {SceneDetails, type SerializedScene};
+export {type SceneDetails, type SerializedScene};

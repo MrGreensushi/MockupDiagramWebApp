@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Card, Col, Row, Stack } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 import * as Blockly from 'blockly/core';
 import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
-import { baseToolboxCategories, BlocklyCanvas, convertFromEnumToObjectType, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
-import SceneDetails from "./SceneDetails.tsx";
-import ElementModal from "./AddElementModal.tsx";
+import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
+import { BlockData, convertFromEnumToObjectType, convertFromObjectTypeToEnum } from "../Blockly/Blocks.ts";
 import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
-import { PromptElementType } from "./PromptElement.tsx";
-import Scene from "../StoryElements/Scene.ts";
 import Story from "../StoryElements/Story.ts";
+import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
+import ElementModal from "./AddElementModal.tsx";
+import SceneDetails from "./SceneDetails.tsx";
 import PromptArea from "./PromptArea.tsx";
 
 function SceneEditor(props: {
@@ -18,29 +18,27 @@ function SceneEditor(props: {
 	scene: Scene,
 	setScene: (newScene: Scene) => void,
 }) {
-	const [promptElements, setPromptElements] = useState<PromptElementType[]>([]);
 	const [modal, setModal] = useState(false);
 	const [modalType, setModalType] = useState(StoryElementEnum.character);
+	const [timer, setTimer] = useState<NodeJS.Timeout>();
 
 	const blocklyRef = useRef(null);
 
-	const [title, setTitle] = useState(props.scene?.details.title ?? "");
-	const [summary, setSummary] = useState(props.scene?.details.summary ?? "");
-	const [backgroundId, setBackgroundId] = useState(props.scene?.details.backgroundId ?? "");
-	const [time, setTime] = useState(props.scene?.details.time ?? "");
-	const [weather, setWeather] = useState(props.scene?.details.weather ?? "");
-	const [tone, setTone] = useState(props.scene?.details.tone ?? "");
-	const [value, setValue] = useState(props.scene?.details.value ?? "");
+	const [blocks, setBlocks] = useState<[string, StoryElementEnum | null][]>([]);
+	const [localScene, setLocalScene] = useState(
+		new Scene(
+			props.scene.workspace,
+			props.scene.details
+		));
 	
-	const [blocks, setBlocks] = useState<[string, StoryElementEnum][]>([]);
-
 	const handleWorkspaceChange = useCallback((workspace: Blockly.Workspace) => {
 		let workspaceString = javascriptGenerator.workspaceToCode(workspace);
 		if (workspaceString.endsWith(",")) {
 			workspaceString = workspaceString.slice(0, -1);
 		}
-		const workspaceObject: PromptElementType[] = JSON.parse("[" + workspaceString + "]");
-		setPromptElements(workspaceObject);
+		const workspaceObject: BlockData[] = JSON.parse("[" + workspaceString + "]");
+		setBlocks(workspaceObject.map(block => [block.outputText ?? "", convertFromObjectTypeToEnum(block.type)]));
+		setLocalScene(localScene => new Scene(workspace, localScene.details));
 	}, []);
 
 	const { workspace } = useBlocklyWorkspace({
@@ -48,18 +46,24 @@ function SceneEditor(props: {
 		toolboxConfiguration: baseToolboxCategories,
 		workspaceConfiguration: workspaceConfiguration,
 		onWorkspaceChange: handleWorkspaceChange,
-		initialJson: props.scene ? props.scene.workspace : undefined
+		initialJson: localScene.workspace
 	});
 
 	const handleSave = () => {
-		const newScene = new Scene(workspace!, title, summary, backgroundId, time, weather, tone, value);
-		props.setScene(newScene);
-	}
+		console.log(localScene)
+		props.setScene(localScene);
+	};
 
-	const onClickAdd = (type: StoryElementEnum) => {
+	const handleEditDetails = ((newDetails: SceneDetailsType) => {
+		setLocalScene(scene => 
+			new Scene(scene.workspace, newDetails)
+		)
+	});
+
+	const onClickAdd = useCallback((type: StoryElementEnum) => {
 		setModalType(type);
 		setModal(true);
-	}
+	}, []);
 
 	const onSubmitNewElement = (newElement: StoryElementType, type: StoryElementEnum): boolean => {
 		if (!props.story.canAddElement(newElement, type)) return false;
@@ -68,15 +72,9 @@ function SceneEditor(props: {
 		return true;
 	}
 
-	const handleBlur = () => {
-		handleSave();
-	}
-
-	useEffect(() => {
-		if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
-	}, [props.story, workspace]);
-
-	useEffect(() => {
+	const handleBlockChange = useCallback((blocks: [string, StoryElementEnum | null][]) => {
+		setBlocks(blocks);
+		console.log(blocks)
 		if (workspace) {
 			workspace.clear();
 			let stack: Blockly.BlockSvg | undefined;
@@ -91,7 +89,18 @@ function SceneEditor(props: {
 			workspace.render();
 			workspace.scrollCenter()
 		}
-	}, [blocks]);
+	}, [workspace]);
+
+	useEffect(() => {
+		if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
+	}, [props.story, workspace]);
+
+	useEffect(() => {
+		if (timer) {
+			clearTimeout(timer);
+		}
+		setTimer(setTimeout(handleSave, 250));
+	}, [localScene]);
 
 	return (
 		<Col className="h-100">
@@ -103,49 +112,33 @@ function SceneEditor(props: {
 				onSubmit={element => onSubmitNewElement(element, modalType)} />
 			<Row className="h-100">
 				<Col xs={6} className="h-100">
-				<Card className="h-100">
-					<Card.Header>
-						<h4>Prompt</h4>
-					</Card.Header>
-					<Card.Body className="h-100">
-						<div className="h-75">
-							<BlocklyCanvas
-								blocklyRef={blocklyRef}
-								onBlur={handleBlur} />
-						</div>
-						<PromptArea
-							initialText={
-								promptElements.map(e => {
-									if (e.type === "SceneCharacterObject" || e.type === "SceneObjectObject" || e.type === "SceneLocationObject") return `@${e.outputText}`
-									else return e.outputText ?? ""
-								}).join("")
-							}
-							story={props.story}
-							setBlocks={setBlocks}
-							onBlur={handleBlur} />
-					</Card.Body>
-				</Card>
+					<Card className="h-100">
+						<Card.Header>
+							<h4>Prompt</h4>
+						</Card.Header>
+						<Card.Body className="h-100">
+							<div className="h-75">
+								<BlocklyCanvas
+									blocklyRef={blocklyRef} />
+							</div>
+							<PromptArea
+								initialText={
+									blocks.map(block => {
+										if (block[1] === null) return block[0] ?? "";
+										return `@${block[0]}`;
+									}).join("")
+								}
+								story={props.story}
+								setBlocks={handleBlockChange} />
+						</Card.Body>
+					</Card>
 				</Col>
-				<Stack gap={2} style={{width:"50%"}}>
+				<Col>
 					<SceneDetails
 						story={props.story}
-						title={title}
-						setTitle={setTitle}
-						summary={summary}
-						setSummary={setSummary}
-						backgroundId={backgroundId}
-						setBackgroundId={setBackgroundId}
-						time={time}
-						setTime={setTime}
-						weather={weather}
-						setWeather={setWeather}
-						tone={tone}
-						setTone={setTone}
-						value={value}
-						setValue={setValue}
-						onBlur={handleBlur} />
-					
-				</Stack>
+						details={localScene.details}
+						setDetails={handleEditDetails} />
+				</Col>
 			</Row>
 		</Col>
 	);

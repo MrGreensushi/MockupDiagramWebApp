@@ -7,7 +7,7 @@ function SuggestedTextArea(props: {
     setValue: (newValue: string) => void,
     choices: string[],
     onAdd: (newValue: string) => void,
-    onBlur: () => void,
+    onBlur?: () => void,
     labelTextWidth?: string,
     children?: React.ReactNode
 }) {       

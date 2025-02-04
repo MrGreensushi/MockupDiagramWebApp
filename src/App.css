@@ -80,31 +80,48 @@
   flex-wrap: nowrap;
 }
 
+.mention-chip {
+  border-radius: 4px;
+  
+  .character-mention {
+    border-color: var(--character-color);
+  }
+  .object-mention {
+    border-color: var(--object-color);
+  }
+  .location-mention {
+    border-color: var(--location-color);
+  }
+}
+
 .character-mention {
   background: var(--character-color-light);
   color: var(--character-color);
-}
-.character-mention.selected {
-  background: var(--character-color);
-  color: var(--character-color-light);
+
+  &:hover, &:focus, &.selected {
+    background: var(--character-color);
+    color: var(--character-color-light);
+  }
 }
 
 .object-mention {
   background: var(--object-color-light);
   color: var(--object-color);
-}
-.object-mention.selected {
-  background: var(--object-color);
-  color: var(--object-color-light);
+
+  &:hover, &:focus, &.selected {
+    background: var(--object-color);
+    color: var(--object-color-light);
+  }
 }
 
 .location-mention {
   background: var(--location-color-light);
   color: var(--location-color);
-}
-.location-mention.selected {
-  background: var(--location-color);
-  color: var(--location-color-light);
+
+  &:hover, &:focus, &.selected {
+    background: var(--location-color);
+    color: var(--location-color-light);
+  }
 }
 
 .no-mention {
@@ -120,12 +137,12 @@
   opacity: 1;
 }
 
-.handle:show {
-  opacity: 1;
-}
-
 .handle {
   opacity: 0;
+
+  &:show {
+    opacity: 1;
+  }
 }
 
 .tab-pane {
@@ -136,16 +153,16 @@
   height: 93%
 }
 
-.utility-tabs {
+.custom-tabs {
   .tab-content {
     height: 93%;
   }
   
   .nav-link {
-    padding: 0;
-  }
-
-  .nav-link .custom-nav-link {
-    padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+    padding: calc(var(--bs-nav-link-padding-y)/2) calc(var(--bs-nav-link-padding-x)/2);;
+    
+    &.custom-nav-link {
+      padding: var(--bs-nav-link-padding-y) var(--bs-nav-link-padding-x);
+    }
   }
 }

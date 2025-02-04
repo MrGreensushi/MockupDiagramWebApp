@@ -1,35 +1,9 @@
 import { ToolboxDefinition, WorkspaceSvg } from "react-blockly";
 import * as Blockly from "blockly/core";
 import React, { ReactElement, Ref } from "react";
-import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+import { StoryElementEnum, StoryElementEnumString } from "../StoryElements/StoryElement.ts";
 import Story from "../StoryElements/Story.ts";
-
-const customBlockData = {
-  characters: {
-    objectName: "SceneCharacterObject",
-    button: {
-      kind: "BUTTON",
-      text: "Nuovo Personaggio",
-      callbackKey: "createCharacterInstance"
-    }
-  },
-  objects: {
-    objectName: "SceneObjectObject",
-    button: {
-      kind: "BUTTON",
-      text: "Nuovo Oggetto",
-      callbackKey: "createObjectInstance"
-    }
-  },
-  locations: {
-    objectName: "SceneLocationObject",
-    button: {
-      kind: "BUTTON",
-      text: "Nuovo Luogo",
-      callbackKey: "createLocationInstance"
-    }
-  }
-};
+import { storyBlocks } from "./Blocks.ts";
 
 const baseToolboxCategories: ToolboxDefinition = {
   kind: "categoryToolbox",
@@ -65,20 +39,20 @@ const customToolboxCategories: ToolboxDefinition = {
     {
       kind: "category",
       name: "Personaggi",
-      colour: "#BC6400",
-      custom: "Characters",
+      colour: storyBlocks[StoryElementEnum.character].colour,
+      custom: storyBlocks[StoryElementEnum.character].customName,
     },
     {
       kind: "category",
       name: "Oggetti",
-      colour: "#5B80A5",
-      custom: "Objects",
+      colour: storyBlocks[StoryElementEnum.object].colour,
+      custom: storyBlocks[StoryElementEnum.object].customName,
     },
     {
       kind: "category",
       name: "Luoghi",
-      colour: "#5CA699",
-      custom: "Locations",
+      colour: storyBlocks[StoryElementEnum.location].colour,
+      custom: storyBlocks[StoryElementEnum.location].customName,
     },
   ],
 };
@@ -92,43 +66,15 @@ const workspaceConfiguration: Blockly.BlocklyOptions = {
   }
 };
 
-function convertFromEnumToKey(type: StoryElementEnum): string {
-  switch (type) {
-    case StoryElementEnum.character:
-      return "characters";
-    case StoryElementEnum.object:
-      return "objects";
-    case StoryElementEnum.location:
-      return "locations";
-    default:
-      throw new Error(`Enum ${type} was not found among the Custom Keys (${Object.keys(customBlockData)})`);
-  }
-}
-
-function convertFromEnumToObjectType(type: StoryElementEnum | null): string {
-  switch (type) {
-    case StoryElementEnum.character:
-      return customBlockData.characters.objectName;
-    case StoryElementEnum.object:
-      return customBlockData.objects.objectName;
-    case StoryElementEnum.location:
-      return customBlockData.locations.objectName;
-    default:
-      return "TextInput";
-  }
-}
-
 function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.toolbox.FlyoutDefinition {
-  const typeKey = convertFromEnumToKey(type);
-
-  const blockList: Blockly.utils.toolbox.FlyoutItemInfoArray = [customBlockData[typeKey].button];
+  const blockList: Blockly.utils.toolbox.FlyoutItemInfoArray = [storyBlocks[type].button];
 
   [...story.getTypeIterator(type)]
     .sort((e1, e2) => e1.name.localeCompare(e2.name))
-    .forEach((element) => {
+    .forEach(element => {
       blockList.push({
         kind:"block",
-        type: customBlockData[typeKey].objectName,
+        type: storyBlocks[type].blockType,
         fields: {
           SceneObjectName: element.name,
         },
@@ -138,21 +84,19 @@ function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.too
 }
 
 function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCallback: (type: StoryElementEnum) => void) {
-  workspace.registerToolboxCategoryCallback("Characters", () => flyoutCallback(story, StoryElementEnum.character));
-  workspace.registerToolboxCategoryCallback("Objects", () => flyoutCallback(story, StoryElementEnum.object));
-  workspace.registerToolboxCategoryCallback("Locations", () => flyoutCallback(story, StoryElementEnum.location));
-  workspace.registerButtonCallback('createCharacterInstance', () => buttonCallback(StoryElementEnum.character));
-  workspace.registerButtonCallback('createObjectInstance', () => buttonCallback(StoryElementEnum.object));
-  workspace.registerButtonCallback('createLocationInstance', () => buttonCallback(StoryElementEnum.location));
+  StoryElementEnumString.forEach((_, idx) => {
+    workspace.registerToolboxCategoryCallback(storyBlocks[idx].customName, () => flyoutCallback(story, idx));
+    workspace.registerButtonCallback(storyBlocks[idx].button.callbackKey, () => buttonCallback(idx));
+  });
   workspace.updateToolbox(customToolboxCategories);
 }
 
 function BlocklyCanvas(props: { blocklyRef: Ref<HTMLDivElement>, onBlur?: () => void, className?: string}): ReactElement {
   return(
     <div ref={props.blocklyRef}
-      className="h-100"
+      className={"h-100 w-100 "+ props.className}
       onBlur={props.onBlur} />
   );
 }
 
-export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, populateCustomToolbox, convertFromEnumToObjectType};
+export {BlocklyCanvas, workspaceConfiguration, baseToolboxCategories, customToolboxCategories, populateCustomToolbox};

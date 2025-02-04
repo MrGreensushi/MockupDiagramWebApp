@@ -4,7 +4,6 @@ import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import PromptAreaMenu from "./PromptAreaMenu.tsx";
 import Story from "../StoryElements/Story.ts";
 import { StoryElementEnum, StoryElementEnumString } from "../StoryElements/StoryElement.ts";
-import { Card } from "react-bootstrap";
 
 type Position = {
 	top: number;
@@ -19,10 +18,11 @@ const MAX_LIST_LENGTH = 10;
 function PromptArea(props: {
 	initialText?: string,
 	story: Story,
-	setBlocks: any,
-	onBlur: () => void
+	setBlocks: (blocks: [string, StoryElementEnum | null][]) => void,
+	onBlur?: () => void
 }) {
 	const ref = useRef<RichTextareaHandle>(null);
+	const refApp = useRef(document.getElementsByClassName("App").item(0));
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
 	const [index, setIndex] = useState<number>(0);
@@ -178,7 +178,7 @@ function PromptArea(props: {
 				}}>
 				{renderer}
 			</RichTextarea>
-			{pos &&
+			{pos && refApp.current &&
 				createPortal(
 					<PromptAreaMenu
 						top={pos.top}
@@ -188,7 +188,7 @@ function PromptArea(props: {
 						index={index}
 						setIndex={setIndex}
 						complete={complete} />,
-					document.body)
+					refApp.current)
 			}
 		</div>
 	);

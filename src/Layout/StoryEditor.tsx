@@ -27,7 +27,7 @@ function StoryEditor(props: {
 			return newStories})
 	}, [props.setStories]);
 	
-	const onUpload = useCallback(async (files?: FileList) => {
+	const onUpload = useCallback(async (files?: FileList | null) => {
 		if (!files) {
 			setFileUploading(false);
 			return;
@@ -35,10 +35,9 @@ function StoryEditor(props: {
 		try {
 			const newStories: [string, Template][] = [];
 			for (const file of Array.from(files)) {
-				await file.text().then(fileText => newStories.push([uuidv4(), new Template(Story.fromJSON(fileText))]));
+				newStories.push([uuidv4(), new Template(Story.fromJSON(await file.text()))]);
 			}
 			props.setStories(stories => new Map([...stories, ...newStories]));
-			setFileUploading(false);
 		} catch(err) {
 			console.error(err);
 		} finally {
@@ -81,7 +80,7 @@ function StoryEditor(props: {
 									type="file"
 									accept=".story"
 									multiple
-									onChange={e => onUpload((e.target as HTMLInputElement).files!)}
+									onChange={e => onUpload((e.target as HTMLInputElement).files)}
 									style={{display:"none"}}
 								/>
 							</Stack>

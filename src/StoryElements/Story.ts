@@ -1,6 +1,7 @@
 import {v4 as uuidv4} from "uuid";
 import { ReactFlowJsonObject } from "@xyflow/react";
 import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "./StoryElement.ts";
+import Scene from "./Scene.ts";
 
 type SerializedStory = {
     characters: [string, CharacterElement][],
@@ -73,6 +74,11 @@ class Story {
         return this.clone();
     }
 
+    cloneAndSetScene(id: string, scene: Scene) {
+        this.flow.nodes.find(node => node.id === id)!.data.scene = scene;
+        return this.clone();
+    }
+
     cloneAndSetElement(id: string, element: StoryElementType, type: StoryElementEnum): Story {
         this.setElement(id, element, type);
         return this.clone();
@@ -121,6 +127,11 @@ class Story {
     getTypeIterator(type: StoryElementEnum): MapIterator<StoryElementType> {
         return this.getTypeMap(type).values();
     }
+
+    getById(id: string): StoryElementType | undefined {
+        return this.characters.get(id) ?? this.objects.get(id) ?? this.locations.get(id);
+    }
+
 
     search(element: StoryElementType, type?: StoryElementEnum) {
         let iter: Map<string, StoryElementType>;
