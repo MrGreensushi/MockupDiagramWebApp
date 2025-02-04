@@ -1,7 +1,13 @@
 import axios from "axios";
 import React from "react";
 import { useState, useEffect } from "react";
-import { Spinner, Alert, Button, ButtonGroup } from "react-bootstrap";
+import {
+  Spinner,
+  Alert,
+  Button,
+  ButtonGroup,
+  Accordion,
+} from "react-bootstrap";
 import {
   ActivityDescription,
   ActivityLanguage,
@@ -11,6 +17,7 @@ import {
 } from "../Procedure/Activity.ts";
 import SideBar from "./SideBar.tsx";
 import "../CSS/LoadedNodes.css";
+import DynamicTextField from "./DynamicTextField.tsx";
 
 function LoadNodes(props: {
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
@@ -111,7 +118,16 @@ function LoadNodes(props: {
   };
 
   return (
-    <SideBar header={<h2>Nodes List</h2>} isLeft={true}>
+    <SideBar
+      header={
+        <DynamicTextField
+          initialValue="Nodes List"
+          disable={true}
+          baseProps={{ style: { fontSize: "2em" } }}
+        />
+      }
+      isLeft={true}
+    >
       {loading && (
         <div className="text-center">
           <Spinner animation="border" role="status">
@@ -119,21 +135,17 @@ function LoadNodes(props: {
           </Spinner>
         </div>
       )}
-      {error && <Alert variant="danger">{error}</Alert>}
-      {InstantiateAllNodes()}
+      <Accordion className="p-0">
+        <Accordion.Item eventKey="0">
+          <Accordion.Header>BLSD Nodes</Accordion.Header>
+          <Accordion.Body className="p-0">
+            {" "}
+            {error && <Alert variant="danger">{error}</Alert>}
+            {InstantiateAllNodes()}
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
     </SideBar>
-    // <div className="sidebar">
-    //   <h2>Nodes list</h2>
-    //   {loading && (
-    //     <div className="text-center">
-    //       <Spinner animation="border" role="status">
-    //         <span className="visually-hidden">Caricamento...</span>
-    //       </Spinner>
-    //     </div>
-    //   )}
-    //   {error && <Alert variant="danger">{error}</Alert>}
-
-    // </div>
   );
 }
 

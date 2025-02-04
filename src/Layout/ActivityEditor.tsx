@@ -44,7 +44,7 @@ function ActivityEditor(props: {
     clipId: string,
     noviceText: string,
     intermediateText?: string,
-    advanceText?: string,
+    expertText?: string,
     newClipId?: string
   ) => {
     const newClip = newClipId ?? clipId;
@@ -54,25 +54,28 @@ function ActivityEditor(props: {
     const intermediatePhrase = intermediateText
       ? new Phrase(newClip, LevelsEnum.intermediate, intermediateText)
       : undefined;
-    const advancePhrase = advanceText
-      ? new Phrase(newClip, LevelsEnum.expert, advanceText)
+    const expertPhrase = expertText
+      ? new Phrase(newClip, LevelsEnum.expert, expertText)
       : undefined;
 
     setPhrases((oldPhrases) => {
-      const newPhrases = oldPhrases.map((phrase, index) => {
-        if (phrase.clipId !== clipId) return phrase;
-        switch (phrase.level) {
-          case LevelsEnum.novice:
-            return novicePhrase ?? phrase;
-          case LevelsEnum.intermediate:
-            return intermediatePhrase ?? phrase;
-          case LevelsEnum.expert:
-            return advancePhrase ?? phrase;
-        }
-      });
+      oldPhrases = updateOrAdd(oldPhrases, clipId, novicePhrase);
+      oldPhrases = updateOrAdd(oldPhrases, clipId, intermediatePhrase);
+      const newPhrases = updateOrAdd(oldPhrases, clipId, expertPhrase);
       handleSave(newPhrases);
       return newPhrases;
     });
+  };
+
+  const updateOrAdd = (arr: Phrase[], clipId: string, newPhrase?: Phrase) => {
+    if (!newPhrase) return [...arr];
+
+    const index = arr.findIndex(
+      (x) => x.clipId === clipId && x.level === newPhrase.level
+    );
+    if (index < 0) return [...arr, newPhrase];
+    arr[index] = newPhrase;
+    return [...arr];
   };
 
   const handleDetailsUpdate = (newDet: string) => {
@@ -160,9 +163,10 @@ function ActivityEditor(props: {
 
   const addNewPhrase = () => {
     setPhrases((prePhrases) => {
+      const newClipId = "New Phrase" + prePhrases.length;
       const newPhrases = [
         ...prePhrases,
-        new Phrase("New Phrase", LevelsEnum.novice, ""),
+        new Phrase(newClipId, LevelsEnum.novice, ""),
       ];
 
       handleSave(newPhrases);

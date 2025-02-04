@@ -1,5 +1,5 @@
 import React, { ReactNode, useMemo } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Card, CardHeader, Col, Row } from "react-bootstrap";
 
 function SideBar(props: {
   header: string | ReactNode;
@@ -11,6 +11,7 @@ function SideBar(props: {
       height: "80vh",
       width: "100%",
       position: "relative",
+      border: "2px",
     };
 
     if (props.isLeft) {
@@ -22,18 +23,20 @@ function SideBar(props: {
 
   return (
     <Col style={style()}>
-      <Row style={{ backgroundColor: "#EBEBEB" }}>{props.header}</Row>
+      <Card style={{ height: "100%" }}>
+        <Card.Header className="mx-0 mb-1">{props.header}</Card.Header>
 
-      <Row
-        style={{
-          maxHeight: "100%",
-          overflowY: "auto",
-          maxWidth: "100%",
-          margin: "0",
-        }}
-      >
-        {props.children}
-      </Row>
+        <Card.Body
+          style={{
+            maxHeight: "100%",
+            overflowY: "auto",
+            maxWidth: "100%",
+            margin: "0",
+          }}
+        >
+          {props.children}
+        </Card.Body>
+      </Card>
     </Col>
   );
 }

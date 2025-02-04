@@ -1,0 +1,10 @@
+ #expand-contract {
+   border-bottom: 1px solid red;
+   margin-top: -100%;
+   transition: all 1s;
+ }
+ 
+ #expand-contract.expanded {
+    background-color: green;
+    margin-top: 0;
+ }

@@ -86,13 +86,15 @@ function EditableTitle(props: {
   title?: string;
   handleNameChange: (values: string) => void;
 }) {
+  const defaultTitle = "Select a Node";
+
   return (
     <DynamicTextField
-      initialValue={props.title ?? "Selecte a Node"}
-      focusOnDoubleClick={true}
+      initialValue={props.title ?? defaultTitle}
       isInvalid={(value: string) => value === ""}
       onSubmit={props.handleNameChange}
       baseProps={{ style: { fontSize: "2em" } }}
+      disable={props.title ? false : true}
     ></DynamicTextField>
   );
 }

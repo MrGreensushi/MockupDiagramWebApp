@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Form, FormControlProps } from "react-bootstrap";
+import { Col, Form, FormControlProps, Row } from "react-bootstrap";
 
 function DynamicTextField(props: {
   initialValue?: string;
-  focusOnDoubleClick?: boolean;
   onChange?: (value: string) => void;
   onSubmit?: (value: string) => void;
   isInvalid?: (value: string) => boolean;
@@ -34,29 +33,35 @@ function DynamicTextField(props: {
         handleSubmit();
       }}
     >
-      <Form.Control
-        className={"dynamic-text-field"}
-        value={value}
-        plaintext={!focus}
-        readOnly={!focus}
-        isInvalid={props.isInvalid?.(value)}
-        onChange={(e) => {
-          setValue(e.target.value);
-          props.onChange?.(e.target.value);
-        }}
-        onClick={props.focusOnDoubleClick ? undefined : () => setFocus(true)}
-        onDoubleClick={
-          props.focusOnDoubleClick ? () => setFocus(true) : undefined
-        }
-        onBlur={handleSubmit}
-        {...props.baseProps}
-        style={{
-          ...props.baseProps?.style,
-          cursor: focus ? "text" : "inherit",
-          userSelect: focus ? "auto" : "none",
-        }}
-        disabled={props.disable}
-      />
+      <Row className="justify-content-center">
+        {!props.disable && (
+          <Col xs={1} style={{ alignContent: "center" }}>
+            <i className="bi bi-pencil"></i>
+          </Col>
+        )}
+        <Col xs={11}>
+          <Form.Control
+            className={"dynamic-text-field"}
+            value={value}
+            plaintext={!focus}
+            readOnly={!focus}
+            isInvalid={props.isInvalid?.(value)}
+            onChange={(e) => {
+              setValue(e.target.value);
+              props.onChange?.(e.target.value);
+            }}
+            onClick={() => setFocus(true)}
+            onBlur={handleSubmit}
+            {...props.baseProps}
+            style={{
+              ...props.baseProps?.style,
+              cursor: focus ? "text" : "inherit",
+              userSelect: focus ? "auto" : "none",
+            }}
+            disabled={props.disable}
+          />
+        </Col>
+      </Row>
     </Form>
   );
 }

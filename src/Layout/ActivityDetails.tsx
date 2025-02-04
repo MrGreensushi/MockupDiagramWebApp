@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
-import { Card, Form } from "react-bootstrap";
+import {
+  Accordion,
+  AccordionButton,
+  Button,
+  Card,
+  Col,
+  Collapse,
+  Form,
+  Row,
+  useAccordionButton,
+} from "react-bootstrap";
 import React from "react";
+import CollapsableToggle from "./CollapsableToggle.tsx";
+import CollapsibleCard from "./CollapsibleCard.tsx";
 
 function ActivityDetails(props: {
   title: string;
@@ -18,9 +30,9 @@ function ActivityDetails(props: {
   }, [text]);
 
   return (
-    <Card className="p-0" onBlur={handleOnBlur}>
-      <Card.Header>{props.title}</Card.Header>
-      <Card.Body>
+    <CollapsibleCard defaultOpen={true}>
+      <CollapsibleCard.Header>{props.title}</CollapsibleCard.Header>
+      <CollapsibleCard.Body>
         <Form>
           <Form.Control
             as="textarea"
@@ -31,8 +43,8 @@ function ActivityDetails(props: {
             }}
           />
         </Form>
-      </Card.Body>
-    </Card>
+      </CollapsibleCard.Body>
+    </CollapsibleCard>
   );
 }
 
