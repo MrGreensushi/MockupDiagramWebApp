@@ -1,19 +1,17 @@
-import React, { useState } from "react";
-import { Button, Card, Col, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
+import React, { useCallback, useContext, useState } from "react";
+import { Button, ButtonGroup, Card, Col, Dropdown, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
 import SuggestedTextField from "./SuggestedTextField.tsx";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+import { SceneDetailsContext } from "../App.tsx";
+import DropdownTextField from "./DropdownTextField.tsx";
 
 function SceneDetails(props: {
 	story: Story,
 	details: SceneDetailsType,
 	setDetails: (newDetails: SceneDetailsType) => void,
 }) {
-	const [weatherList, setWeatherList] = useState(["Soleggiato", "Velato", "Nuvoloso", "Pioggia", "Temporale"]);
-	const [tonesList, setTonesList] = useState(["Felice", "Triste", "Arrabbiato", "Timoroso"]);
-	const [valuesList, setValuesList] = useState(["Qualcosa", "Qualcos'altro"]);
-
 	const [title, setTitle] = useState(props.details.title);
 	const [summary, setSummary] = useState(props.details.summary);
 	const [time, setTime] = useState(props.details.time);
@@ -26,9 +24,21 @@ function SceneDetails(props: {
 
 	const [backgroundsModal, setBackgroundsModal] = useState(false);
 
-	const textWidth = "20%";
+	const sceneDetailsChoices = useContext(SceneDetailsContext);
 
+	const textWidth = "20%";
 	const noBackgroundText = "Nessun Luogo di Sfondo";
+
+	const handleSave = useCallback(() => {
+		props.setDetails({
+			title: title,
+			summary: summary,
+			time: time,
+			weather: weather,
+			tone: tone,
+			value: value,
+			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), [backgroundLocation]]})
+	}, [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocation]);
 
 	return (
 		<Card>
@@ -103,14 +113,7 @@ function SceneDetails(props: {
 				<h4>Dettagli scena</h4>
 			</Card.Header>
 			<Card.Body>
-				<Form onBlur={() => props.setDetails({
-					title: title,
-					summary: summary,
-					time: time,
-					weather: weather,
-					tone: tone,
-					value: value,
-					backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), [backgroundLocation]]})}>
+				<Form onBlur={handleSave}>
 					<InputGroup>
 						<InputGroup.Text style={{ width: textWidth }}>Titolo:</InputGroup.Text>
 						<Form.Control
@@ -126,39 +129,30 @@ function SceneDetails(props: {
 							onChange={e => setSummary(e.target.value)} />
 					</InputGroup>
 					<hr />
-					<InputGroup>
-						<InputGroup.Text style={{ width: textWidth }}>Orario:</InputGroup.Text>
-						<Form.Control
-							value={time}
-							onChange={e => setTime(e.target.value)} />
-					</InputGroup>
-					<SuggestedTextField
-						label="Meteo:"
+					<DropdownTextField
+						label="Orario"
+						value={time}
+						setValue={setTime}
+						defaultValue="Nessun Orario"
+						choices={sceneDetailsChoices.time} />
+					<DropdownTextField
+						label="Meteo"
 						value={weather}
-						setValue={(weather: string) => setWeather(weather)}
-						choices={weatherList}
-						onAdd={(newWeather: string) => setWeatherList([...weatherList, newWeather])}
-						labelTextWidth={textWidth} >
-						+
-					</SuggestedTextField>
-					<SuggestedTextField
-						label="Tono:"
+						setValue={setWeather}
+						defaultValue="Nessun Meteo"
+						choices={sceneDetailsChoices.weather} />
+					<DropdownTextField
+						label="Tono"
 						value={tone}
-						setValue={(tone: string) => setTone(tone)}
-						choices={tonesList}
-						onAdd={(newTone: string) => setTonesList([...tonesList, newTone])}
-						labelTextWidth={textWidth} >
-						+
-					</SuggestedTextField>
-					<SuggestedTextField
-						label="Valore:"
+						setValue={setTone}
+						defaultValue="Nessun Tono"
+						choices={sceneDetailsChoices.tone} />
+					<DropdownTextField
+						label="Valore"
 						value={value}
-						setValue={(value: string) => setValue(value)}
-						choices={valuesList}
-						onAdd={(newValue: string) => setValuesList([...valuesList, newValue])}
-						labelTextWidth={textWidth} >
-						+
-					</SuggestedTextField>
+						setValue={setValue}
+						defaultValue="Nessun Valore"
+						choices={sceneDetailsChoices.value} />
 					<hr/>
 					<InputGroup>
 						<InputGroup.Text style={{ width: textWidth }}>Sfondo:</InputGroup.Text>

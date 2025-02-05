@@ -1,7 +1,7 @@
 import "./App.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import StoryEditor from "./Layout/StoryEditor.tsx";
 import TemplateEditor from "./Layout/TemplateEditor.tsx";
@@ -10,6 +10,13 @@ import { initBlocks } from "./Blockly/Blocks.ts";
 import Template from "./StoryElements/Template.ts";
 
 const tempMap = new Map<string, Template>();
+
+export const SceneDetailsContext = createContext({
+  time: ["Alba", "Mattina", "Mezzogiorno", "Pomeriggio", "Tramonto", "Sera", "Notte"],
+  weather: ["Soleggiato", "Velato", "Coperto", "Pioggia", "Temporale", "Tempesta"],
+  tone: ["Allegria", "Tristezza", "Tensione", "Indagine"],
+  value: ["Clemenza", "Gentilezza", "Abnegazione", "Scaltrezza"],
+});
 
 function App() {
   const [stories, setStories] = useState(tempMap);
