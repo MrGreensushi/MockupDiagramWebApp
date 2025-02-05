@@ -50,7 +50,6 @@ function SceneEditor(props: {
 	});
 
 	const handleSave = () => {
-		console.log(localScene)
 		props.setScene(localScene);
 	};
 

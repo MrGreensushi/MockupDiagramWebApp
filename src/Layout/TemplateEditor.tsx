@@ -45,8 +45,8 @@ function TemplateEditor(props: {
 		setOpenScenes(
 			sceneIds => sceneIds?.filter(
 				sceneId => sceneId !== id));
-		setCurrentTab(undefined);
-	}, []);
+		if (currentTab === id) setCurrentTab(undefined);
+	}, [currentTab]);
 
 	const onClickEditNode = useCallback((id: string) => {
 		if (!openScenes.includes(id))
@@ -125,10 +125,9 @@ function TemplateEditor(props: {
 						</Tab>
 						{openScenes?.map(id => 
 							<Tab eventKey={id} key={id} title={
-								<div className="custom-nav-link"
-									onDoubleClick={e => {e.preventDefault(); onClickTabClose(id)}}
-									onAuxClick={e => {e.preventDefault(); onClickTabClose(id)}}>
+								<div className="custom-nav-link">
 									{(localStory.flow.nodes.find(node => node.id === id)?.data.label as string)}
+									<i className="bi bi-x-lg close-button" onClick={(e) => {e.preventDefault(); e.stopPropagation(); onClickTabClose(id)}} style={{pointerEvents:"all"}}></i>
 								</div>}
 								unmountOnExit>
 								<SceneEditor
