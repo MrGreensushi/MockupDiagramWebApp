@@ -1,0 +1,119 @@
+:root {
+  --trigger-handle-color: #007bff;
+  --interrupt-handle-color: #ffc107;
+  --yes-handle-color: #28a745;
+  --no-handle-color: #dc3545;
+  --outline-text: 0.2px black;
+  --input-handle-color: rgb(219, 219, 219);
+  --output-handle-color: rgb(136, 136, 136);
+
+  --background-activity: #f2f2f5;
+  --background-decision: #b8b7f7;
+  --background-event: #f7cbb7;
+
+  --border: 1px solid #222;
+  --border-radius: 5px;
+
+  --handle-radius: 10px;
+}
+
+.scene-node {
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  background-color: var(--background-activity);
+  color: #222;
+  border: var(--border); /* corrisponde a theme.nodeBorder */
+}
+
+.scene-node:focus,
+.event-node:focus,
+.decision-node:focus {
+  border-color: #ff0072;
+}
+.scene-node.hasSubProcedure {
+  background-color: #c1cfcb;
+}
+
+.event-node {
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  background-color: var(--background-event);
+  color: #222;
+  border: var(--border);
+}
+
+.decision-node {
+  padding: 0px 0px;
+  border-radius: var(--border-radius);
+  background-color: var(--background-decision);
+  color: #222;
+  border: var(--border);
+  rotate: 45deg;
+  width: 100px;
+  height: 100px;
+  display: flex; /* Aggiunto */
+  justify-content: center; /* Centra orizzontalmente */
+  align-items: center; /* Centra verticalmente */
+}
+
+.decision-node-content {
+  rotate: -45deg;
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* #region Handles */
+
+.react-flow__handle {
+  height: var(--handle-radius) !important;
+  width: var(--handle-radius) !important;
+  border: 1px solid black;
+}
+
+.scene-node:focus-within .react-flow__handle,
+.event-node:focus-within .react-flow__handle,
+.decision-node:focus-within .react-flow__handle {
+  border-color: #ff0072;
+}
+
+.trigger-handle {
+  stroke: var(--trigger-handle-color) !important;
+  color: var(--trigger-handle-color) !important;
+  background-color: var(--trigger-handle-color) !important;
+  -webkit-text-stroke: var(--outline-text); /* Contorno nero */
+}
+
+.interrupt-handle {
+  stroke: var(--interrupt-handle-color) !important;
+  color: var(--interrupt-handle-color) !important;
+  background-color: var(--interrupt-handle-color) !important;
+  -webkit-text-stroke: var(--outline-text);
+}
+
+.yes-handle {
+  stroke: var(--yes-handle-color) !important;
+  color: var(--yes-handle-color) !important;
+  background-color: var(--yes-handle-color) !important;
+  -webkit-text-stroke: var(--outline-text);
+}
+
+.no-handle {
+  stroke: var(--no-handle-color) !important;
+  color: var(--no-handle-color) !important;
+  background-color: var(--no-handle-color) !important;
+  -webkit-text-stroke: var(--outline-text);
+}
+
+.input-handle {
+  background-color: var(--input-handle-color) !important;
+}
+
+.output-handle {
+  background-color: var(--output-handle-color) !important;
+}
+
+/* #endregion */

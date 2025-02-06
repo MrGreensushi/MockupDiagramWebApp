@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, Form, Modal, Tab, Tabs } from "react-bootstrap";
 import React from "react";
 import { LevelsEnum } from "../Procedure/Activity.ts";
@@ -113,16 +113,15 @@ function ActivityPhrases(props: {
             <Button variant="danger" onClick={() => props.removePhrase(clipId)}>
               <i className="bi bi-trash3"></i>
             </Button>{" "}
-            <Button onClick={() => setShowModal(true)}>
-              Changle ClipID
-              <ClipIdModal
-                clipId={clipId}
-                showModal={showModal}
-                closeModal={setShowModal}
-                handleChangeClipId={handleChangeClipId}
-                checkValidClipId={props.checkValidClipId}
-              />
-            </Button>
+            <Button onClick={() => setShowModal(true)}>Changle ClipID</Button>
+            <ClipIdModal
+              key={"ClipIdModal:" + clipId}
+              clipId={clipId}
+              showModal={showModal}
+              closeModal={() => setShowModal(false)}
+              handleChangeClipId={handleChangeClipId}
+              checkValidClipId={props.checkValidClipId}
+            />
           </>
         )}
       </CollapsibleCard.Footer>
@@ -138,23 +137,26 @@ function ClipIdModal(props: {
   checkValidClipId: (value: string) => boolean;
 }) {
   const [clipId, setClipId] = useState(props.clipId);
-  const showModal = props.showModal;
-  const handleClose = () => props.closeModal();
-  const handleConfirm = () => {
-    props.handleChangeClipId(clipId);
-    handleClose(); // Chiude il modal dopo la conferma
+
+  const handleClose = () => {
+    props.closeModal();
   };
+  const handleConfirm = () => {
+    handleClose();
+    props.handleChangeClipId(clipId);
+  };
+
   return (
-    <Modal show={showModal} onHide={handleClose} centered>
+    <Modal show={props.showModal} onHide={handleClose} centered>
       <Modal.Header closeButton>
         <Modal.Title>Update Clip Id</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <DynamicTextField
-          initialValue={clipId}
-          onChange={setClipId}
-          isInvalid={(value: string) => props.checkValidClipId(value)}
-          onSubmit={handleConfirm}
+        <Form.Control
+          type="text"
+          value={clipId}
+          onChange={(e) => setClipId(e.target.value)}
+          isInvalid={props.checkValidClipId(clipId)}
         />
       </Modal.Body>
       <Modal.Footer>

@@ -2,6 +2,7 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 import { Col } from "react-bootstrap";
 import NamedHandle from "../Layout/NamedHandle.tsx";
+import "../CSS/Nodes.css";
 
 type EventNodeProps = {
   name: string;
@@ -18,7 +19,7 @@ type EventNodeType = Node<EventNodeProps, "EventNode">;
 
 function EventNode(props: NodeProps<EventNodeType>) {
   return (
-    <div className={`event-node ${props.selected ? "selected" : ""}`}>
+    <div className={`event-node`} tabIndex={0}>
       <Col>{props.data.name}</Col>
       <NamedHandle
         id="interrupt-handle"
@@ -43,7 +44,7 @@ function EventNode(props: NodeProps<EventNodeType>) {
         handleStyle={{ left: "85%" }}
         positionText={{
           position: "absolute",
-          left: "73%",
+          right: "3%",
           bottom: "2px",
           fontSize: "10px",
           textAlign: "center",
@@ -51,7 +52,12 @@ function EventNode(props: NodeProps<EventNodeType>) {
         text="Triggers"
       />
 
-      <Handle type="target" id="await-handle" position={Position.Top} />
+      <Handle
+        className="input-handle"
+        type="target"
+        id="await-handle"
+        position={Position.Top}
+      />
     </div>
   );
 }

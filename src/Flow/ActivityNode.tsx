@@ -2,6 +2,7 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React, { useMemo } from "react";
 import { Col } from "react-bootstrap";
 import Activity from "../Procedure/Activity.ts";
+import "../CSS/Nodes.css";
 
 type ActivityNodeProps = {
   activity: Activity;
@@ -17,15 +18,35 @@ type ActivityNodeObject = {
 type ActivityNodeType = Node<ActivityNodeProps, "ActivityNode">;
 
 function ActivityNode(props: NodeProps<ActivityNodeType>) {
+  const nodeClassName = `scene-node ${
+    props.data.activity.isSubProcedureEmpty ? "" : "hasSubProcedure"
+  }`;
   return (
-    <div
-      className={`scene-node ${props.selected ? "selected" : ""} ${
-        props.data.activity.isSubProcedureEmpty ? "" : "hasSubProcedure"
-      }`}
-    >
+    <div className={nodeClassName} tabIndex={0}>
       <Col>{props.data.activity.name}</Col>
-      <Handle type="target" position={Position.Top} />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        id="Top"
+        className="input-handle"
+        type="target"
+        position={Position.Top}
+      />
+      <Handle
+        id="Left"
+        className="input-handle"
+        type="target"
+        position={Position.Left}
+      />
+      <Handle
+        id="Rigth"
+        className="input-handle"
+        type="target"
+        position={Position.Right}
+      />
+      <Handle
+        className="output-handle"
+        type="source"
+        position={Position.Bottom}
+      />
     </div>
   );
 }
