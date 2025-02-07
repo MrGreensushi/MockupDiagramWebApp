@@ -81,46 +81,45 @@
 }
 
 .mention-chip {
-  border-radius: 4px;
-  
-  .character-mention {
-    border-color: var(--character-color);
-  }
-  .object-mention {
-    border-color: var(--object-color);
-  }
-  .location-mention {
-    border-color: var(--location-color);
-  }
+  display: inline-block;
+  cursor: default;
+  padding: 0.25em 0.5em;
+  width: auto;
 }
 
 .character-mention {
   background: var(--character-color-light);
   color: var(--character-color);
+  border-color: var(--character-color);
 
-  &:hover, &:focus, &.selected {
+  &:focus, &.selected {
     background: var(--character-color);
     color: var(--character-color-light);
+    border-color: var(--character-color-light);
   }
 }
 
 .object-mention {
   background: var(--object-color-light);
   color: var(--object-color);
+  border-color: var(--object-color);
 
-  &:hover, &:focus, &.selected {
+  &:focus, &.selected {
     background: var(--object-color);
     color: var(--object-color-light);
+    border-color: var(--object-color-light);
   }
 }
 
 .location-mention {
   background: var(--location-color-light);
   color: var(--location-color);
+  border-color: var(--location-color);
 
-  &:hover, &:focus, &.selected {
+  &:focus, &.selected {
     background: var(--location-color);
     color: var(--location-color-light);
+    border-color: var(--location-color-light);
   }
 }
 
@@ -168,18 +167,25 @@
 
   .close-button {
     visibility: hidden;
-    margin-left: 0.5em;
-  
-    &:hover {
-      visibility: visible;
-      background: #eee;
-    }
   }
-  li:hover .close-button {
+
+  li:hover .close-button, .active .close-button{
     visibility: visible;
-    pointer-events: all;
   }
-  .active .close-button {
+}
+
+.close-button {
+  margin-left: 0.5em;
+  pointer-events: all;
+  cursor: pointer;
+
+  &:hover {
     visibility: visible;
+    background: #00000010;
+  }
+
+  &:active {
+    visibility: visible;
+    background: #00000020;
   }
 }

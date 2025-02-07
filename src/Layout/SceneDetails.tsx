@@ -1,11 +1,12 @@
 import React, { useCallback, useContext, useState } from "react";
-import { Button, ButtonGroup, Card, Col, Dropdown, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
-import SuggestedTextField from "./SuggestedTextField.tsx";
+import { Button, Card, Col, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
 import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsContext } from "../App.tsx";
 import DropdownTextField from "./DropdownTextField.tsx";
+import { ChipList, ElementChip } from "./ElementChip.tsx";
+import BackgroundElementsModal from "./BackgroundElementsModal.tsx";
 
 function SceneDetails(props: {
 	story: Story,
@@ -20,14 +21,13 @@ function SceneDetails(props: {
 	const [value, setValue] = useState(props.details.value);
 	const [backgroundCharacters, setBackgroundCharacters] = useState(new Set(props.details.backgroundIds[StoryElementEnum.character]));
 	const [backgroundObjects, setBackgroundObjects] = useState(new Set(props.details.backgroundIds[StoryElementEnum.object]));
-	const [backgroundLocation, setBackgroundLocation] = useState(props.details.backgroundIds[StoryElementEnum.location]?.[0] ?? "");
+	const [backgroundLocations, setBackgroundLocations] = useState(new Set(props.details.backgroundIds[StoryElementEnum.location]));
 
 	const [backgroundsModal, setBackgroundsModal] = useState(false);
 
 	const sceneDetailsChoices = useContext(SceneDetailsContext);
 
 	const textWidth = "20%";
-	const noBackgroundText = "Nessun Luogo di Sfondo";
 
 	const handleSave = useCallback(() => {
 		props.setDetails({
@@ -37,78 +37,22 @@ function SceneDetails(props: {
 			weather: weather,
 			tone: tone,
 			value: value,
-			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), [backgroundLocation]]})
-	}, [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocation]);
+			backgroundIds: [Array.from(backgroundCharacters), Array.from(backgroundObjects), Array.from(backgroundLocations)]})
+	}, [title, summary, time, weather, tone, value, backgroundCharacters, backgroundObjects, backgroundLocations]);
 
 	return (
 		<Card>
-			<Modal
+			<BackgroundElementsModal
 				show={backgroundsModal}
-				centered
-				scrollable
-				size="lg"
-				onHide={() => setBackgroundsModal(false)}
-				style={{height:"100%"}}>
-				<Modal.Header closeButton>
-					<Modal.Title>Elementi di Sfondo</Modal.Title>
-				</Modal.Header>
-				<Modal.Body className="w-100" style={{maxHeight:"100%"}}>
-					<Row>
-						<Col xs={4} style={{maxHeight:"100%", overflowY:"auto"}}>
-							<ListGroup>
-								{Array.from(props.story.characters).map(([id, character]) =>
-									<Form.Check
-									key={id}
-									type="checkbox"
-									label={character.name}
-									id={`checkbox-${id}`}
-									checked={backgroundCharacters.has(id)}
-									onChange={e => setBackgroundCharacters(bg => {
-										if (e.target.checked) {bg.add(id); return new Set(bg)}
-										else {bg.delete(id); return new Set(bg)}
-									})}/>
-								)}
-							</ListGroup>
-						</Col>
-						<Col xs={4} style={{maxHeight:"100%", overflowY:"auto"}}>
-							<Form className="w-100">
-								{Array.from(props.story.objects).map(([id, object]) =>
-									<Form.Check
-										key={id}
-										type="checkbox"
-										label={object.name}
-										id={`checkbox-${id}`}
-										checked={backgroundObjects.has(id)}
-										onChange={e => setBackgroundObjects(bg => {
-											if (e.target.checked) {bg.add(id); return new Set(bg)}
-											else {bg.delete(id); return new Set(bg)}
-										})}/>
-								)}
-							</Form>
-						</Col>
-						<Col xs={4} style={{maxHeight:"100%", overflowY:"auto"}}>
-							<Form className="w-100">
-									<Form.Check
-										key="no-background"
-										type="radio"
-										label={noBackgroundText}
-										id={`radio-no-background`}
-										checked={!(!!backgroundLocation)}
-										onChange={() => setBackgroundLocation("")}/>
-								{Array.from(props.story.locations).map(([id, location]) =>
-									<Form.Check
-										key={id}
-										type="radio"
-										label={location.name}
-										id={`radio-${id}`}
-										checked={backgroundLocation === id}
-										onChange={() => setBackgroundLocation(id)}/>
-								)}
-							</Form>
-						</Col>
-					</Row>
-				</Modal.Body>
-			</Modal>
+				setShow={setBackgroundsModal}
+				story={props.story}
+				selectedCharacters={backgroundCharacters}
+				setSelectedCharacters={setBackgroundCharacters}
+				selectedObjects={backgroundObjects}
+				setSelectedObjects={setBackgroundObjects}
+				selectedLocation={backgroundLocations}
+				setSelectedLocation={setBackgroundLocations}
+				noElementTexts={["Nessun Personaggio", "Nessun Oggetto", "Nessun Luogo"]}/>
 			<Card.Header>
 				<h4>Dettagli scena</h4>
 			</Card.Header>
@@ -156,17 +100,31 @@ function SceneDetails(props: {
 					<hr/>
 					<InputGroup>
 						<InputGroup.Text style={{ width: textWidth }}>Sfondo:</InputGroup.Text>
-						<Form.Control
-							as="textarea"
-							value={`Personaggi: ${Array.from(backgroundCharacters).map(id => props.story.characters.get(id)?.name).join(" ")}\n` +
-									`Oggetti: ${Array.from(backgroundObjects).map(id => props.story.objects.get(id)?.name).join(" ")}\n` +
-									`Luogo: ${props.story.locations.get(backgroundLocation)?.name ?? noBackgroundText}`}
-							readOnly
-							style={{height:"6em"}} />
+						<Col className="px-2">
+							<ChipList 
+								values={backgroundCharacters}
+								setValues={setBackgroundCharacters}
+								allValues={props.story.characters}
+								className="character-mention"
+								noElementsText="Nessun Personaggio" />
+							<ChipList 
+								values={backgroundObjects}
+								setValues={setBackgroundObjects}
+								allValues={props.story.objects}
+								className="object-mention"
+								noElementsText="Nessun Oggetto" />
+							<ChipList 
+								values={backgroundLocations}
+								setValues={setBackgroundLocations}
+								allValues={props.story.locations}
+								className="location-mention"
+								noElementsText="Nessun Luogo" />
+						</Col>
 						<Button onClick={() => setBackgroundsModal(true)}>
 							<i className="bi bi-pencil"></i>
 						</Button>
 					</InputGroup>
+					
 				</Form>
 			</Card.Body>
 		</Card>
