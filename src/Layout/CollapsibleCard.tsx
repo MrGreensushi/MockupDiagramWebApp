@@ -23,8 +23,8 @@ function Header({ children }) {
   return (
     <Card.Header onClick={() => setOpen(!open)} style={{ cursor: "pointer" }}>
       <Row className="align-items-center">
-        <Col xs={11}>{children}</Col>
-        <Col xs={1} className="text-end">
+        <Col xs={10}>{children}</Col>
+        <Col xs={2} className="text-end">
           <i
             className="bi bi-chevron-down"
             style={{
@@ -39,13 +39,13 @@ function Header({ children }) {
   );
 }
 
-function Body({ children }) {
+function Body({ children, className = "" }) {
   const { open } = useContext(CollapsibleContext);
 
   return (
     <Collapse in={open}>
       <div>
-        <Card.Body>{children}</Card.Body>
+        <Card.Body className={className}>{children}</Card.Body>
       </div>
     </Collapse>
   );

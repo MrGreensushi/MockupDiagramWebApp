@@ -77,6 +77,20 @@ class Procedure {
       return activity.subProcedureId === id;
     });
   }
+
+  updateFlowNodeByName(toUpdate: Activity) {
+    const updetedNodes = this.flow.nodes.map((x) => {
+      const activity = x.data.activity as Activity;
+      if (!activity) return x;
+      if (activity.name !== toUpdate.name) return x;
+
+      x.data.activity = toUpdate;
+      return x;
+    });
+
+    this.flow.nodes = updetedNodes;
+    return this.flow;
+  }
 }
 
 export default Procedure;

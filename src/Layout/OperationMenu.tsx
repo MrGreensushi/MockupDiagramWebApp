@@ -22,6 +22,7 @@ function OperationMenu(props: {
   procedureTitle: string;
   getJSONFile: () => string;
   loadJSONFile: (json: string) => void;
+  resetEditor: () => void;
 }) {
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
@@ -95,6 +96,9 @@ function OperationMenu(props: {
         </Button>
         <Button variant="outline-primary" onClick={extractXMLs}>
           Extract XMLs
+        </Button>
+        <Button variant="outline-primary" onClick={() => props.resetEditor()}>
+          Start new Project
         </Button>
         <LoadModal onLoad={onLoad} />
       </ButtonGroup>

@@ -66,6 +66,7 @@ function ActivityPhrases(props: {
       oldClipId === newClipId ? undefined : newClipId
     );
   };
+
   const onTextUpdate = (newText: string) => {
     switch (selectedLevel) {
       case LevelsEnum.novice:

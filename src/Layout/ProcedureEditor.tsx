@@ -13,8 +13,6 @@ function ProcedureEditor() {
     flow?: ReactFlowJsonObject,
     title?: string
   ) => {
-    //Ogni volta che aggiorno una procedura devo aggiornare il parametro isSubProcedureEmpty dell'attività padre della procedura
-
     setProcedures((prevProcedures) =>
       prevProcedures.map((proc) => {
         if (proc.id === id) return proc.cloneAndSet(flow, title);
@@ -38,28 +36,32 @@ function ProcedureEditor() {
 
   const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
     updateProcedure(activeProcedureId, flow, undefined);
+    updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
+  };
 
-    //se la procedura era figlia di un attività, bisogna aggiornare il valore di empty dell'attività madre.
-
-    //1. trovare nella procedura padre l'attività
-    if (!activeProcedure.parentId) return;
-    const parentProcedure = getProcedure(activeProcedure.parentId);
+  const updateSubProcedureIsEmptyInParentActivity = (
+    childProcedure: Procedure,
+    childFlow: ReactFlowJsonObject
+  ) => {
+    //se la procedura era figlia di un attività, bisogna aggiornare il valore di hasSubProcedure dell'attività parente.
+    //1. Recuperare la procedura padre dal parentId
+    const parentProcedureId = childProcedure.parentId;
+    if (!parentProcedureId) return;
+    const parentProcedure = getProcedure(parentProcedureId);
     if (!parentProcedure) return;
 
-    //l'attività avra come subProcedureID l'id della procedura che stiamo aggiornando
-    const activityParent =
-      parentProcedure.getNodeByItsSubProcedureId(activeProcedureId);
-    if (!activityParent) return;
-
-    //evaluate the new nodes
+    //2. aggiornare il valore di isSubProcedureEmpty dell'attività padre
     const newNodes = parentProcedure.flow.nodes.map((node) => {
+      //Se non è un nodo attività non fare nulla
       if (!node.data.activity) return node;
       const activity = node.data.activity as Activity;
-      if (activity.subProcedureId !== activeProcedureId) return node;
-      activity.isSubProcedureEmpty = flow.nodes.length <= 0;
+      //Assicurati che l'attività abbia come subProcedureId quella del figlio in esame
+      if (activity.subProcedureId !== childProcedure.id) return node;
+      activity.isSubProcedureEmpty = childFlow.nodes.length <= 0;
       return { ...node, data: { ...node.data, activity: activity } };
     });
 
+    //3. aggiornare la procedura padre
     const newFlow = { ...parentProcedure.flow, nodes: newNodes };
     updateProcedure(parentProcedure.id, newFlow, undefined);
   };
@@ -77,7 +79,7 @@ function ProcedureEditor() {
   const activeProcedure: Procedure = useMemo(() => {
     const proc = getProcedure(activeProcedureId);
     return proc ?? new Procedure();
-  }, [activeProcedureId]);
+  }, [activeProcedureId, procedures]);
 
   const getJSONFile = () => {
     var json = "";
@@ -98,6 +100,63 @@ function ProcedureEditor() {
     setProcedures(asProcedures);
     setActiveProcedureId(asProcedures[0].id);
   };
+
+  const getAllActivitiesFromProcedure = (procedure: Procedure) => {
+    const activityNodes = procedure.flow.nodes.filter(
+      (node) => node.data.activity
+    );
+    const activities = activityNodes.map(
+      (node) => node.data.activity as Activity
+    );
+    return activities;
+  };
+
+  const getAllActivitiesDescriptions = useMemo(() => {
+    var activities: Activity[] = [];
+    procedures.forEach((procedure) => {
+      activities = activities.concat(getAllActivitiesFromProcedure(procedure));
+    });
+
+    const uniqueActivitites = activities.filter((activity, index) => {
+      const ind = activities.findIndex((x) => x.name === activity.name);
+      return ind === index;
+    });
+    return uniqueActivitites.map((activity) =>
+      activity.getActivityDescription()
+    );
+  }, [procedures]);
+
+  const getActivitiesWithSameName = useCallback(
+    (activityName: string) => {
+      var activities: Activity[] = [];
+      procedures.forEach((procedure) => {
+        activities = activities.concat(
+          getAllActivitiesFromProcedure(procedure)
+        );
+      });
+
+      return activities.filter((x) => x.name === activityName);
+    },
+    [procedures]
+  );
+
+  const updateActivitiesWithSameName = useCallback(
+    (toCopy: Activity) => {
+      setProcedures((oldProcedures) =>
+        oldProcedures.map((oldProcedure) =>
+          oldProcedure.cloneAndSet(oldProcedure.updateFlowNodeByName(toCopy))
+        )
+      );
+    },
+    [procedures]
+  );
+
+  const resetEditor = useCallback(() => {
+    const proc = new Procedure();
+    setProcedures([proc]);
+    setActiveProcedureId(proc.id);
+  }, []);
+
   return (
     <ProcedureFlowDiagram
       activeProcedure={activeProcedure}
@@ -109,6 +168,9 @@ function ProcedureEditor() {
       updateProcedureById={updateProcedure}
       getJSONFile={getJSONFile}
       loadJSONFile={loadJSONFile}
+      activityDescriptions={getAllActivitiesDescriptions}
+      updateActivitiesWithSameName={updateActivitiesWithSameName}
+      resetEditor={resetEditor}
     />
   );
 }

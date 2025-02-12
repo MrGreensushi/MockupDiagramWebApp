@@ -103,14 +103,9 @@ class Activity extends ActivityDescription {
     );
   }
 
-  // static fromJSON(json: string) {
-  //   try {
-  //     const obj = JSON.parse(json);
-  //     return this.deserialize(obj);
-  //   } catch (ex) {
-  //     throw new Error("Failed to parse JSON file: " + ex);
-  //   }
-  // }
+  getActivityDescription() {
+    return new ActivityDescription(this.name, this.languages);
+  }
 }
 
 class Phrase {

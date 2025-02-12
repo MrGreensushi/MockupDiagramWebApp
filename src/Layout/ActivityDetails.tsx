@@ -1,17 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  Accordion,
-  AccordionButton,
-  Button,
-  Card,
-  Col,
-  Collapse,
-  Form,
-  Row,
-  useAccordionButton,
-} from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import React from "react";
-import CollapsableToggle from "./CollapsableToggle.tsx";
 import CollapsibleCard from "./CollapsibleCard.tsx";
 
 function ActivityDetails(props: {
@@ -39,7 +28,7 @@ function ActivityDetails(props: {
             rows={7}
             value={text}
             onChange={(e) => {
-              setText(e.target.value);
+              props.handleValueUpdate(e.target.value);
             }}
           />
         </Form>

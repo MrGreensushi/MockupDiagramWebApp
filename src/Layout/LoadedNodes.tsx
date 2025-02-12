@@ -7,6 +7,8 @@ import {
   Button,
   ButtonGroup,
   Accordion,
+  Form,
+  InputGroup,
 } from "react-bootstrap";
 import {
   ActivityDescription,
@@ -18,13 +20,16 @@ import {
 import SideBar from "./SideBar.tsx";
 import "../CSS/LoadedNodes.css";
 import DynamicTextField from "./DynamicTextField.tsx";
+import CollapsibleCard from "./CollapsibleCard.tsx";
 
 function LoadNodes(props: {
+  activityDescriptions: ActivityDescription[];
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
 }) {
   const [nodes, setNodes] = useState<ActivityDescription[] | undefined>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState<string>("");
 
   useEffect(() => {
     // Funzione per recuperare i dati dal backend
@@ -102,8 +107,33 @@ function LoadNodes(props: {
   const InstantiateAllNodes = () => {
     if (!loading && !error && nodes)
       return (
-        <ButtonGroup vertical style={{ paddingLeft: "0px" }}>
-          {nodes.map((node, index) => (
+        <ButtonGroup vertical style={{ paddingLeft: "0px", width: "100%" }}>
+          {nodes
+            .filter((node) =>
+              node.name.toLowerCase().includes(search.toLowerCase())
+            )
+            .map((node, index) => (
+              <Button
+                className="list-nodes-item"
+                key={index}
+                onClick={() => props.instantiateActvity(node)}
+              >
+                {node.name}
+              </Button>
+            ))}
+        </ButtonGroup>
+      );
+    else return <></>;
+  };
+
+  const InstantiateActivieyDescriptions = () => {
+    return (
+      <ButtonGroup vertical style={{ paddingLeft: "0px", width: "100%" }}>
+        {props.activityDescriptions
+          .filter((node) =>
+            node.name.toLowerCase().includes(search.toLowerCase())
+          )
+          .map((node, index) => (
             <Button
               className="list-nodes-item"
               key={index}
@@ -112,9 +142,8 @@ function LoadNodes(props: {
               {node.name}
             </Button>
           ))}
-        </ButtonGroup>
-      );
-    else return <></>;
+      </ButtonGroup>
+    );
   };
 
   return (
@@ -135,16 +164,33 @@ function LoadNodes(props: {
           </Spinner>
         </div>
       )}
-      <Accordion className="p-0">
-        <Accordion.Item eventKey="0">
-          <Accordion.Header>BLSD Nodes</Accordion.Header>
-          <Accordion.Body className="p-0">
-            {" "}
-            {error && <Alert variant="danger">{error}</Alert>}
-            {InstantiateAllNodes()}
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
+
+      <InputGroup>
+        <InputGroup.Text id="Filter-addon">
+          <i className="bi bi-search" />
+        </InputGroup.Text>
+        <Form.Control
+          placeholder="Search by name"
+          aria-label="Filter"
+          aria-describedby="Filter-addon"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </InputGroup>
+
+      <CollapsibleCard>
+        <CollapsibleCard.Header>BLSD Nodes</CollapsibleCard.Header>
+        <CollapsibleCard.Body className="px-0 py-1">
+          {error && <Alert variant="danger">{error}</Alert>}
+          {InstantiateAllNodes()}
+        </CollapsibleCard.Body>
+      </CollapsibleCard>
+      <CollapsibleCard>
+        <CollapsibleCard.Header>Procedure Nodes</CollapsibleCard.Header>
+        <CollapsibleCard.Body className="px-0 py-1">
+          {error && <Alert variant="danger">{error}</Alert>}
+          {InstantiateActivieyDescriptions()}
+        </CollapsibleCard.Body>
+      </CollapsibleCard>
     </SideBar>
   );
 }

@@ -22,10 +22,10 @@ import {
   applyEdgeChanges,
   ReactFlowJsonObject,
   MarkerType,
+  Viewport,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import ActivityNode, { ActivityNodeObject } from "./ActivityNode.tsx";
-import DynamicTextField from "../Layout/DynamicTextField.tsx";
 import Procedure from "../Procedure/Procedure.ts";
 import Activity, {
   ActivityDescription,
@@ -55,6 +55,9 @@ function ProcedureFlowDiagram(props: {
   ) => void;
   getJSONFile: () => string;
   loadJSONFile: (json: string) => void;
+  activityDescriptions: ActivityDescription[];
+  updateActivitiesWithSameName: (toCopy: Activity) => void;
+  resetEditor: () => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>(
     props.activeProcedure.flow.nodes ?? []
@@ -78,6 +81,17 @@ function ProcedureFlowDiagram(props: {
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nodes) => applyNodeChanges(changes, nodes));
   }, []);
+
+  const onNodesDelete = useCallback(
+    (nodesToRemove: Node[]) => {
+      var filtered = nodes.filter(
+        (node) =>
+          !nodesToRemove.find((nodeToRemove) => node.id === nodeToRemove.id)
+      );
+      saveNewNodes(filtered);
+    },
+    [nodes]
+  );
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((edges) => applyEdgeChanges(changes, edges));
@@ -109,6 +123,18 @@ function ProcedureFlowDiagram(props: {
 
   const saveActiveProcedure = () => {
     props.handleActiveProcedureUpdate(rfInstance!.toObject());
+  };
+
+  const saveNewNodes = (newNodes: Node[]) => {
+    const viewport: Viewport = rfInstance
+      ? rfInstance.getViewport()
+      : { x: 0, y: 0, zoom: 1 };
+    const reactJSONObject: ReactFlowJsonObject = {
+      nodes: newNodes,
+      edges: edges,
+      viewport: viewport,
+    };
+    props.handleActiveProcedureUpdate(reactJSONObject);
   };
 
   const changeActiveProcedure = (procedureId: string) => {
@@ -146,39 +172,63 @@ function ProcedureFlowDiagram(props: {
       newName?: string,
       newNotes?: string
     ) => {
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === id) {
-            var newActivity = node.data.activity as Activity;
-            newActivity = newActivity.cloneAndSet(
-              newPhrases,
-              details,
-              newName,
-              undefined,
-              newNotes
-            );
+      // setNodes((nodes) => {
+      //   const newNodes = nodes.map((node) => {
+      //     console.log(node.id);
+      //     if (node.id === id) {
+      //       var newActivity = node.data.activity as Activity;
+      //       newActivity = newActivity.cloneAndSet(
+      //         newPhrases,
+      //         details,
+      //         newName,
+      //         undefined,
+      //         newNotes
+      //       );
+      //       //update the title of the subProcedure
+      //       props.updateProcedureById(
+      //         newActivity.subProcedureId,
+      //         undefined,
+      //         newName
+      //       );
+      //       return {
+      //         ...node,
+      //         data: {
+      //           ...node.data,
+      //           activity: newActivity,
+      //         },
+      //       };
+      //     } else {
+      //       return node;
+      //     }
+      //   });
+      //   saveNewNodes(newNodes);
+      //   return newNodes;
+      // });
 
-            //update the title of the subProcedure
-            props.updateProcedureById(
-              newActivity.subProcedureId,
-              undefined,
-              newName
-            );
-
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                activity: newActivity,
-              },
-            };
-          } else {
-            return node;
-          }
-        })
+      const index = nodes.findIndex((x) => x.id === id);
+      if (index < 0) {
+        console.error("No activity with ID: " + id);
+        return;
+      }
+      const activityToUpdate = nodes[index].data.activity as Activity;
+      if (!activityToUpdate) {
+        console.error("Node" + id + " is not an activity");
+        return;
+      }
+      const updatedActivity = activityToUpdate.cloneAndSet(
+        newPhrases,
+        details,
+        newName,
+        undefined,
+        newNotes
       );
+      nodes[index].data.activity = updatedActivity;
+
+      if (newName) saveNewNodes([...nodes]);
+
+      props.updateActivitiesWithSameName(updatedActivity);
     },
-    [setNodes]
+    [props.updateActivitiesWithSameName, nodes]
   );
 
   const createNewActivityNode = useCallback(
@@ -220,12 +270,22 @@ function ProcedureFlowDiagram(props: {
 
   const addNode = useCallback(() => {
     const newNode = createNewActivityNode();
-    setNodes((nodes) => [...nodes, newNode]);
-  }, [createNewActivityNode]);
+    saveNewNodes([...nodes, newNode]);
+    // setNodes((nodes) => {
+    //   const newNodes = [...nodes, newNode];
+    //   saveNewNodes(newNodes);
+    //   return newNodes;
+    // });
+  }, [createNewActivityNode, nodes, saveNewNodes]);
 
   const instantiateActivity = (activityDescription: ActivityDescription) => {
     const newNode = createNewActivityNode(activityDescription);
-    setNodes((nodes) => [...nodes, newNode]);
+    saveNewNodes([...nodes, newNode]);
+    // setNodes((nodes) => {
+    //   const newNodes = [...nodes, newNode];
+    //   saveNewNodes(newNodes);
+    //   return newNodes;
+    // });
   };
 
   //#endregion
@@ -307,7 +367,7 @@ function ProcedureFlowDiagram(props: {
 
   const addEventNode = () => {
     const newNode = createNewEventNode();
-    setNodes((prevNodes) => [...prevNodes, newNode]);
+    saveNewNodes([...nodes, newNode]);
   };
 
   const createNewDecisionNode = useCallback(() => {
@@ -335,7 +395,7 @@ function ProcedureFlowDiagram(props: {
 
   const addDecisionNode = () => {
     const newNode = createNewDecisionNode();
-    setNodes((prevNodes) => [...prevNodes, newNode]);
+    saveNewNodes([...nodes, newNode]);
   };
   //#endregion
 
@@ -362,11 +422,15 @@ function ProcedureFlowDiagram(props: {
             return props.getJSONFile();
           }}
           loadJSONFile={props.loadJSONFile}
+          resetEditor={props.resetEditor}
         />
       </Row>
       <Row className="p-2">
         <Col xs={2}>
-          <LoadNodes instantiateActvity={instantiateActivity} />
+          <LoadNodes
+            instantiateActvity={instantiateActivity}
+            activityDescriptions={props.activityDescriptions}
+          />
         </Col>
         <Col>
           <ReactFlow
@@ -384,6 +448,7 @@ function ProcedureFlowDiagram(props: {
             style={{ border: "1px solid black" }}
             ref={flowRef}
             onNodeDoubleClick={onNodeDoubleClick}
+            onNodesDelete={onNodesDelete}
             fitView
           >
             <Controls />
