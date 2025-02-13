@@ -10,9 +10,16 @@ import {
   Nav,
   Navbar,
 } from "react-bootstrap";
-import SaveLoadManager from "../Flow/SaveLoad.tsx";
-import Procedure from "../Procedure/Procedure.ts";
-import saveToDisk from "../Misc/SaveToDisk.ts";
+
+import {
+  getActivitiesDescriptionFromJSON,
+  getProceduresFromJSON,
+  saveToDisk,
+} from "../Misc/SaveToDisk.ts";
+import {
+  CategorizedDescriptions,
+  createCategorizedDescriptions,
+} from "../Misc/CategorizedDescription.ts";
 
 function OperationMenu(props: {
   addNode: () => void;
@@ -23,6 +30,7 @@ function OperationMenu(props: {
   getJSONFile: () => string;
   loadJSONFile: (json: string) => void;
   resetEditor: () => void;
+  updateCategorizedDescriptions: (toAdd: CategorizedDescriptions) => void;
 }) {
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
@@ -71,6 +79,22 @@ function OperationMenu(props: {
     }
   }, []);
 
+  const importNodesFromXML = async (file?: File) => {
+    if (!file) return;
+    try {
+      const promiseText = file.text();
+      promiseText.then((value) => {
+        const descriptions = getActivitiesDescriptionFromJSON(value);
+        const categorized = createCategorizedDescriptions(
+          file.name.slice(0, file.name.length - ".procedure".length),
+          descriptions
+        );
+
+        props.updateCategorizedDescriptions(categorized);
+      });
+    } catch (error) {}
+  };
+
   return (
     <ButtonToolbar className="justify-center">
       <ButtonGroup>
@@ -97,16 +121,20 @@ function OperationMenu(props: {
         <Button variant="outline-primary" onClick={extractXMLs}>
           Extract XMLs
         </Button>
+        <LoadModal onLoad={importNodesFromXML}>Import Nodes</LoadModal>
         <Button variant="outline-primary" onClick={() => props.resetEditor()}>
           Start new Project
         </Button>
-        <LoadModal onLoad={onLoad} />
+        <LoadModal onLoad={onLoad}>Load Procedure</LoadModal>
       </ButtonGroup>
     </ButtonToolbar>
   );
 }
 
-function LoadModal(props: { onLoad: (file?: File) => Promise<void> }) {
+function LoadModal(props: {
+  onLoad: (file?: File) => Promise<void>;
+  children: any;
+}) {
   const [showModal, setShowModal] = useState(false);
 
   const handleClose = () => setShowModal(false);
@@ -119,7 +147,7 @@ function LoadModal(props: { onLoad: (file?: File) => Promise<void> }) {
   return (
     <>
       <Button variant="outline-primary" onClick={handleShow}>
-        Load Procedure
+        {props.children}
       </Button>
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>

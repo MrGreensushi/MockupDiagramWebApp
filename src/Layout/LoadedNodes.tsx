@@ -1,12 +1,11 @@
 import axios from "axios";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useState, useEffect } from "react";
 import {
   Spinner,
   Alert,
   Button,
   ButtonGroup,
-  Accordion,
   Form,
   InputGroup,
 } from "react-bootstrap";
@@ -21,9 +20,10 @@ import SideBar from "./SideBar.tsx";
 import "../CSS/LoadedNodes.css";
 import DynamicTextField from "./DynamicTextField.tsx";
 import CollapsibleCard from "./CollapsibleCard.tsx";
+import { CategorizedDescriptions } from "../Misc/CategorizedDescription.ts";
 
 function LoadNodes(props: {
-  activityDescriptions: ActivityDescription[];
+  categorizedDescriptions: CategorizedDescriptions[];
   instantiateActvity: (activityDescriptio: ActivityDescription) => void;
 }) {
   const [nodes, setNodes] = useState<ActivityDescription[] | undefined>([]);
@@ -104,45 +104,10 @@ function LoadNodes(props: {
     return new ActivityLanguage(allPhrases, details);
   };
 
-  const InstantiateAllNodes = () => {
-    if (!loading && !error && nodes)
-      return (
-        <ButtonGroup vertical style={{ paddingLeft: "0px", width: "100%" }}>
-          {nodes
-            .filter((node) =>
-              node.name.toLowerCase().includes(search.toLowerCase())
-            )
-            .map((node, index) => (
-              <Button
-                className="list-nodes-item"
-                key={index}
-                onClick={() => props.instantiateActvity(node)}
-              >
-                {node.name}
-              </Button>
-            ))}
-        </ButtonGroup>
-      );
-    else return <></>;
-  };
-
-  const InstantiateActivieyDescriptions = () => {
-    return (
-      <ButtonGroup vertical style={{ paddingLeft: "0px", width: "100%" }}>
-        {props.activityDescriptions
-          .filter((node) =>
-            node.name.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((node, index) => (
-            <Button
-              className="list-nodes-item"
-              key={index}
-              onClick={() => props.instantiateActvity(node)}
-            >
-              {node.name}
-            </Button>
-          ))}
-      </ButtonGroup>
+  const filterArray = (array: ActivityDescription[] | undefined) => {
+    if (!array) return [];
+    return array.filter((node) =>
+      node.name.toLowerCase().includes(search.toLowerCase())
     );
   };
 
@@ -157,14 +122,6 @@ function LoadNodes(props: {
       }
       isLeft={true}
     >
-      {loading && (
-        <div className="text-center">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Caricamento </span>
-          </Spinner>
-        </div>
-      )}
-
       <InputGroup>
         <InputGroup.Text id="Filter-addon">
           <i className="bi bi-search" />
@@ -177,21 +134,72 @@ function LoadNodes(props: {
         />
       </InputGroup>
 
-      <CollapsibleCard>
-        <CollapsibleCard.Header>BLSD Nodes</CollapsibleCard.Header>
-        <CollapsibleCard.Body className="px-0 py-1">
-          {error && <Alert variant="danger">{error}</Alert>}
-          {InstantiateAllNodes()}
-        </CollapsibleCard.Body>
-      </CollapsibleCard>
-      <CollapsibleCard>
-        <CollapsibleCard.Header>Procedure Nodes</CollapsibleCard.Header>
-        <CollapsibleCard.Body className="px-0 py-1">
-          {error && <Alert variant="danger">{error}</Alert>}
-          {InstantiateActivieyDescriptions()}
-        </CollapsibleCard.Body>
-      </CollapsibleCard>
+      <CollapsibleNodeList
+        instantiateActvity={props.instantiateActvity}
+        activityDescriptions={filterArray(nodes)}
+      >
+        BLSD Nodes
+      </CollapsibleNodeList>
+
+      {props.categorizedDescriptions
+        .sort((a, b) => {
+          const nameA = a.category.toUpperCase(); // ignore upper and lowercase
+          const nameB = b.category.toUpperCase(); // ignore upper and lowercase
+          if (nameA < nameB) {
+            return -1;
+          }
+          if (nameA > nameB) {
+            return 1;
+          }
+
+          // names must be equal
+          return 0;
+        })
+        .map((categorizedDescription) => (
+          <CollapsibleNodeList
+            instantiateActvity={props.instantiateActvity}
+            activityDescriptions={filterArray(
+              categorizedDescription.activityDescriptions
+            )}
+          >
+            {categorizedDescription.category}
+          </CollapsibleNodeList>
+        ))}
     </SideBar>
+  );
+}
+
+function CollapsibleNodeList(props: {
+  activityDescriptions: ActivityDescription[];
+  instantiateActvity: (activityDescription: ActivityDescription) => void;
+  children: any;
+}) {
+  const spinner = useMemo(() => {
+    return (
+      <div className="text-center p-1" style={{ width: "100%" }}>
+        <Spinner animation="border" role="status" />
+      </div>
+    );
+  }, []);
+
+  return (
+    <CollapsibleCard>
+      <CollapsibleCard.Header>{props.children}</CollapsibleCard.Header>
+      <CollapsibleCard.Body className="px-0 py-1">
+        <ButtonGroup vertical style={{ paddingLeft: "0px", width: "100%" }}>
+          {props.activityDescriptions.length === 0 && spinner}
+          {props.activityDescriptions.map((node, index) => (
+            <Button
+              className="list-nodes-item"
+              key={index}
+              onClick={() => props.instantiateActvity(node)}
+            >
+              {node.name}
+            </Button>
+          ))}
+        </ButtonGroup>
+      </CollapsibleCard.Body>
+    </CollapsibleCard>
   );
 }
 

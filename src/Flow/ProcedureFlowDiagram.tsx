@@ -38,6 +38,10 @@ import DecisionNode, { DecisionNodeObject } from "./DecisionNode.tsx";
 import TitleBar from "../Layout/TitleBar.tsx";
 import OperationMenu from "../Layout/OperationMenu.tsx";
 import NodeEditor from "./NodeEditor.tsx";
+import {
+  CategorizedDescriptions,
+  createCategorizedDescriptions,
+} from "../Misc/CategorizedDescription.ts";
 
 function ProcedureFlowDiagram(props: {
   activeProcedure: Procedure;
@@ -69,6 +73,15 @@ function ProcedureFlowDiagram(props: {
 
   const [selectedNodeId, setSelectedNodeId] = useState<string>();
 
+  const [categorizedDescriptions, setCategorizedDescriptions] = useState<
+    CategorizedDescriptions[]
+  >([
+    createCategorizedDescriptions(
+      "Current Procedure",
+      props.activityDescriptions
+    ),
+  ]);
+
   const flowRef = useRef(null);
 
   const propsFlow = props.activeProcedure.flow;
@@ -77,6 +90,19 @@ function ProcedureFlowDiagram(props: {
     setNodes(propsFlow.nodes);
     setEdges(propsFlow.edges);
   }, [propsFlow]);
+
+  useEffect(() => {
+    setCategorizedDescriptions((old) =>
+      old
+        .filter((x) => x.category !== "Current Procedure")
+        .concat(
+          createCategorizedDescriptions(
+            "Current Procedure",
+            props.activityDescriptions
+          )
+        )
+    );
+  }, [props.activityDescriptions]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nodes) => applyNodeChanges(changes, nodes));
@@ -399,6 +425,9 @@ function ProcedureFlowDiagram(props: {
   };
   //#endregion
 
+  const updateCategorizedDescriptions = (toAdd: CategorizedDescriptions) => {
+    setCategorizedDescriptions((previous) => [...previous, toAdd]);
+  };
   return (
     <Container fluid>
       <Row>
@@ -423,13 +452,14 @@ function ProcedureFlowDiagram(props: {
           }}
           loadJSONFile={props.loadJSONFile}
           resetEditor={props.resetEditor}
+          updateCategorizedDescriptions={updateCategorizedDescriptions}
         />
       </Row>
       <Row className="p-2">
         <Col xs={2}>
           <LoadNodes
             instantiateActvity={instantiateActivity}
-            activityDescriptions={props.activityDescriptions}
+            categorizedDescriptions={categorizedDescriptions}
           />
         </Col>
         <Col>

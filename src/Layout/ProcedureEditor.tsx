@@ -3,6 +3,10 @@ import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
 import Activity from "../Procedure/Activity.ts";
+import {
+  getAllActivitiesDescriptionsFromProcedures,
+  getProceduresFromJSON,
+} from "../Misc/SaveToDisk.ts";
 
 function ProcedureEditor() {
   const [procedures, setProcedures] = useState<Procedure[]>([new Procedure()]);
@@ -84,61 +88,19 @@ function ProcedureEditor() {
   const getJSONFile = () => {
     var json = "";
     json = JSON.stringify(procedures);
-    // procedures.forEach((procedure) => {
-    //   JSON += procedure.toJSONMethod() + "\n";
-    // });
     return json;
   };
 
   const loadJSONFile = (json: string) => {
-    const parsedProcedures: any[] = JSON.parse(json);
-    //must instantiate each parse object as Procedure
-    const asProcedures = parsedProcedures.map((data) =>
-      Procedure.fromParsedJSON(data)
-    );
+    const asProcedures = getProceduresFromJSON(json);
 
     setProcedures(asProcedures);
     setActiveProcedureId(asProcedures[0].id);
   };
 
-  const getAllActivitiesFromProcedure = (procedure: Procedure) => {
-    const activityNodes = procedure.flow.nodes.filter(
-      (node) => node.data.activity
-    );
-    const activities = activityNodes.map(
-      (node) => node.data.activity as Activity
-    );
-    return activities;
-  };
-
   const getAllActivitiesDescriptions = useMemo(() => {
-    var activities: Activity[] = [];
-    procedures.forEach((procedure) => {
-      activities = activities.concat(getAllActivitiesFromProcedure(procedure));
-    });
-
-    const uniqueActivitites = activities.filter((activity, index) => {
-      const ind = activities.findIndex((x) => x.name === activity.name);
-      return ind === index;
-    });
-    return uniqueActivitites.map((activity) =>
-      activity.getActivityDescription()
-    );
+    return getAllActivitiesDescriptionsFromProcedures(procedures);
   }, [procedures]);
-
-  const getActivitiesWithSameName = useCallback(
-    (activityName: string) => {
-      var activities: Activity[] = [];
-      procedures.forEach((procedure) => {
-        activities = activities.concat(
-          getAllActivitiesFromProcedure(procedure)
-        );
-      });
-
-      return activities.filter((x) => x.name === activityName);
-    },
-    [procedures]
-  );
 
   const updateActivitiesWithSameName = useCallback(
     (toCopy: Activity) => {
