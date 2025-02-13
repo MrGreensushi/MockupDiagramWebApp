@@ -43,7 +43,7 @@ function ProcedureEditor() {
 
   const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
     updateProcedure(activeProcedureId, flow, undefined);
-    // updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
+    updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
   };
 
   const updateSubProcedureIsEmptyInParentActivity = (
