@@ -87,6 +87,7 @@ function ProcedureFlowDiagram(props: {
   const propsFlow = props.activeProcedure.flow;
 
   useEffect(() => {
+    console.log("updated flow from editor");
     setNodes(propsFlow.nodes);
     setEdges(propsFlow.edges);
   }, [propsFlow]);
@@ -148,10 +149,12 @@ function ProcedureFlowDiagram(props: {
   }, []);
 
   const saveActiveProcedure = () => {
+    console.log("SaveActiveProcedure");
     props.handleActiveProcedureUpdate(rfInstance!.toObject());
   };
 
   const saveNewNodes = (newNodes: Node[]) => {
+    console.log("saveNewNodes");
     const viewport: Viewport = rfInstance
       ? rfInstance.getViewport()
       : { x: 0, y: 0, zoom: 1 };
@@ -190,72 +193,47 @@ function ProcedureFlowDiagram(props: {
     return procedure;
   };
 
-  const updateActivityById = useCallback(
-    (
-      id: string,
-      newPhrases?: Phrase[],
-      details?: string,
-      newName?: string,
-      newNotes?: string
-    ) => {
-      // setNodes((nodes) => {
-      //   const newNodes = nodes.map((node) => {
-      //     console.log(node.id);
-      //     if (node.id === id) {
-      //       var newActivity = node.data.activity as Activity;
-      //       newActivity = newActivity.cloneAndSet(
-      //         newPhrases,
-      //         details,
-      //         newName,
-      //         undefined,
-      //         newNotes
-      //       );
-      //       //update the title of the subProcedure
-      //       props.updateProcedureById(
-      //         newActivity.subProcedureId,
-      //         undefined,
-      //         newName
-      //       );
-      //       return {
-      //         ...node,
-      //         data: {
-      //           ...node.data,
-      //           activity: newActivity,
-      //         },
-      //       };
-      //     } else {
-      //       return node;
-      //     }
-      //   });
-      //   saveNewNodes(newNodes);
-      //   return newNodes;
-      // });
+  const updateActivityById = (
+    id: string,
+    newPhrases?: Phrase[],
+    details?: string,
+    newName?: string,
+    newNotes?: string
+  ) => {
+    const cloneNodes = nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        activity: node.data.activity,
+      },
+    }));
+    const index = cloneNodes.findIndex((x) => x.id === id);
+    if (index < 0) {
+      console.error("No activity with ID: " + id);
+      return;
+    }
+    const activityToUpdate = cloneNodes[index].data.activity as Activity;
+    if (!activityToUpdate) {
+      console.error("Node" + id + " is not an activity");
+      return;
+    }
 
-      const index = nodes.findIndex((x) => x.id === id);
-      if (index < 0) {
-        console.error("No activity with ID: " + id);
-        return;
-      }
-      const activityToUpdate = nodes[index].data.activity as Activity;
-      if (!activityToUpdate) {
-        console.error("Node" + id + " is not an activity");
-        return;
-      }
-      const updatedActivity = activityToUpdate.cloneAndSet(
-        newPhrases,
-        details,
-        newName,
-        undefined,
-        newNotes
-      );
-      nodes[index].data.activity = updatedActivity;
+    const updatedActivity = activityToUpdate.cloneAndSet(
+      newPhrases,
+      details,
+      newName,
+      undefined,
+      newNotes
+    );
 
-      if (newName) saveNewNodes([...nodes]);
+    cloneNodes[index].data.activity = updatedActivity;
 
-      props.updateActivitiesWithSameName(updatedActivity);
-    },
-    [props.updateActivitiesWithSameName, nodes]
-  );
+    if (newName) {
+      saveNewNodes([...cloneNodes]);
+    }
+
+    props.updateActivitiesWithSameName(updatedActivity);
+  };
 
   const createNewActivityNode = useCallback(
     (activityDescription?: ActivityDescription) => {

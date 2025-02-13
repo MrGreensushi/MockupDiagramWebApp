@@ -3,7 +3,6 @@ import { Button, Form, Modal, Tab, Tabs } from "react-bootstrap";
 import React from "react";
 import { LevelsEnum } from "../Procedure/Activity.ts";
 import CollapsibleCard from "./CollapsibleCard.tsx";
-import DynamicTextField from "./DynamicTextField.tsx";
 
 function ActivityPhrases(props: {
   clipId: string;
@@ -97,7 +96,7 @@ function ActivityPhrases(props: {
           <Tab title="Intermediate" eventKey={LevelsEnum.intermediate} />
           <Tab title="Expert" eventKey={LevelsEnum.expert} />
         </Tabs>
-        <Form>
+        <Form id={clipId + ":" + selectedLevel}>
           <Form.Control
             as="textarea"
             rows={7}

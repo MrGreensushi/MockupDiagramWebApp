@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
@@ -19,7 +19,10 @@ function ProcedureEditor() {
   ) => {
     setProcedures((prevProcedures) =>
       prevProcedures.map((proc) => {
-        if (proc.id === id) return proc.cloneAndSet(flow, title);
+        if (proc.id === id) {
+          const newPorc = proc.cloneAndSet(flow, title);
+          return newPorc;
+        }
         return proc;
       })
     );
@@ -40,7 +43,7 @@ function ProcedureEditor() {
 
   const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
     updateProcedure(activeProcedureId, flow, undefined);
-    updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
+    // updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
   };
 
   const updateSubProcedureIsEmptyInParentActivity = (
@@ -83,7 +86,7 @@ function ProcedureEditor() {
   const activeProcedure: Procedure = useMemo(() => {
     const proc = getProcedure(activeProcedureId);
     return proc ?? new Procedure();
-  }, [activeProcedureId, procedures]);
+  }, [activeProcedureId, procedures, getProcedure]);
 
   const getJSONFile = () => {
     var json = "";
@@ -110,7 +113,7 @@ function ProcedureEditor() {
         )
       );
     },
-    [procedures]
+    [procedures, setProcedures]
   );
 
   const resetEditor = useCallback(() => {

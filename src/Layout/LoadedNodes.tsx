@@ -122,7 +122,7 @@ function LoadNodes(props: {
       }
       isLeft={true}
     >
-      <InputGroup>
+      <InputGroup id="SearchBar">
         <InputGroup.Text id="Filter-addon">
           <i className="bi bi-search" />
         </InputGroup.Text>
@@ -157,6 +157,7 @@ function LoadNodes(props: {
         })
         .map((categorizedDescription) => (
           <CollapsibleNodeList
+            key={"CollapsibleNodeList:" + categorizedDescription.category}
             instantiateActvity={props.instantiateActvity}
             activityDescriptions={filterArray(
               categorizedDescription.activityDescriptions
@@ -191,7 +192,7 @@ function CollapsibleNodeList(props: {
           {props.activityDescriptions.map((node, index) => (
             <Button
               className="list-nodes-item"
-              key={index}
+              key={"ActivityDescriptionButton:" + index + ":" + node.name}
               onClick={() => props.instantiateActvity(node)}
             >
               {node.name}

@@ -1,10 +1,10 @@
 import { ReactFlowJsonObject } from "@xyflow/react";
 import { v4 as uuidv4 } from "uuid";
-import Activity from "./Activity.ts";
+import Activity, { LevelsEnum } from "./Activity.ts";
 
 class Procedure {
   id: string;
-  flow: ReactFlowJsonObject;
+  private _flow: ReactFlowJsonObject;
   title: string;
   parentId?: string;
 
@@ -18,10 +18,24 @@ class Procedure {
     id?: string,
     parentId?: string
   ) {
-    this.flow = flow;
+    this._flow = flow;
     this.title = title ?? "Procedure senza titolo";
     this.id = id ?? uuidv4();
     this.parentId = parentId;
+  }
+
+  // Getter per ottenere il flow
+  get flow(): ReactFlowJsonObject {
+    return this._flow;
+  }
+
+  // Setter per intercettare ogni modifica al flow
+  set flow(newFlow: ReactFlowJsonObject) {
+    if (newFlow.nodes.length <= 0) return;
+    var toPrint = this.printNodes(`- Vecchio valore:`, this._flow);
+    toPrint += "\n" + this.printNodes(`- Nuovo valore:`, newFlow);
+    console.trace(toPrint);
+    this._flow = newFlow;
   }
 
   clone(): Procedure {
@@ -48,7 +62,6 @@ class Procedure {
   static fromParsedJSON(object: any) {
     const flow = object.flow;
 
-    //each activity node must be instantiate as Activity class
     const nodes = flow.nodes.map((node) => {
       const activity = node.data.activity;
       if (!activity) return node;
@@ -62,6 +75,21 @@ class Procedure {
     return new Procedure(newFlow, object.title, object.id, object.parentId);
   }
 
+  printNodes(title = "", flow = this.flow) {
+    if (flow.nodes.length <= 0) return;
+    var toPrint = title + "-" + this.title + "\n";
+    flow.nodes.forEach((node, index) => {
+      const activity = node.data.activity as Activity;
+      if (!activity) return;
+      const name = activity.name;
+      const novice = activity.activeLanguage.nodePhrases.find(
+        (x) => x.clipId === "Description" && x.level === LevelsEnum.novice
+      );
+      toPrint += index + "-" + name + ": " + novice?.text + "\n";
+    });
+    return toPrint;
+  }
+
   isEmpty() {
     return this.flow.nodes.length <= 0;
   }
@@ -69,27 +97,25 @@ class Procedure {
   getNodeById(id: string) {
     return this.flow.nodes.find((x) => x.id === id);
   }
+
   getNodeByItsSubProcedureId(id: string) {
     return this.flow.nodes.find((x) => {
       const activity = x.data?.activity as Activity;
       if (!activity) return false;
-
       return activity.subProcedureId === id;
     });
   }
 
   updateFlowNodeByName(toUpdate: Activity) {
-    const updetedNodes = this.flow.nodes.map((x) => {
+    const updatedNodes = this.flow.nodes.map((x) => {
       const activity = x.data.activity as Activity;
       if (!activity) return x;
       if (activity.name !== toUpdate.name) return x;
-
       x.data.activity = toUpdate;
       return x;
     });
 
-    this.flow.nodes = updetedNodes;
-    return this.flow;
+    return { ...this.flow, nodes: updatedNodes };
   }
 }
 

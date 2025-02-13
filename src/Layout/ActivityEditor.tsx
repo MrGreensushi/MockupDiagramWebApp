@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Tab, Tabs } from "react-bootstrap";
 import ActivityPhrases from "./ActivityPhrases.tsx";
 
@@ -48,20 +48,23 @@ function ActivityEditor(props: {
     newClipId?: string
   ) => {
     const newClip = newClipId ?? clipId;
-    const novicePhrase = noviceText
-      ? new Phrase(newClip, LevelsEnum.novice, noviceText)
-      : undefined;
-    const intermediatePhrase = intermediateText
-      ? new Phrase(newClip, LevelsEnum.intermediate, intermediateText)
-      : undefined;
-    const expertPhrase = expertText
-      ? new Phrase(newClip, LevelsEnum.expert, expertText)
-      : undefined;
+    const novicePhrase =
+      noviceText !== undefined
+        ? new Phrase(newClip, LevelsEnum.novice, noviceText)
+        : undefined;
+    const intermediatePhrase =
+      intermediateText !== undefined
+        ? new Phrase(newClip, LevelsEnum.intermediate, intermediateText)
+        : undefined;
+    const expertPhrase =
+      expertText !== undefined
+        ? new Phrase(newClip, LevelsEnum.expert, expertText)
+        : undefined;
 
     setPhrases((oldPhrases) => {
-      oldPhrases = updateOrAdd(oldPhrases, clipId, novicePhrase);
-      oldPhrases = updateOrAdd(oldPhrases, clipId, intermediatePhrase);
-      const newPhrases = updateOrAdd(oldPhrases, clipId, expertPhrase);
+      var newPhrases = updateOrAdd(oldPhrases, clipId, novicePhrase);
+      newPhrases = updateOrAdd(newPhrases, clipId, intermediatePhrase);
+      newPhrases = updateOrAdd(newPhrases, clipId, expertPhrase);
       handleSave(newPhrases);
       return newPhrases;
     });
@@ -74,8 +77,9 @@ function ActivityEditor(props: {
       (x) => x.clipId === clipId && x.level === newPhrase.level
     );
     if (index < 0) return [...arr, newPhrase];
-    arr[index] = newPhrase;
-    return [...arr];
+    var copy = [...arr];
+    copy[index] = newPhrase;
+    return [...copy];
   };
 
   const handleDetailsUpdate = (newDet: string) => {
