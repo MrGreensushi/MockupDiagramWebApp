@@ -200,13 +200,18 @@ function ProcedureFlowDiagram(props: {
     newName?: string,
     newNotes?: string
   ) => {
-    const cloneNodes = nodes.map((node) => ({
-      ...node,
-      data: {
-        ...node.data,
-        activity: node.data.activity,
-      },
-    }));
+    var cloneNodes: Node[] = [];
+    setNodes((updatedNodes) => {
+      cloneNodes = updatedNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          activity: node.data.activity,
+        },
+      }));
+      return updatedNodes;
+    });
+
     const index = cloneNodes.findIndex((x) => x.id === id);
     if (index < 0) {
       console.error("No activity with ID: " + id);
@@ -227,11 +232,7 @@ function ProcedureFlowDiagram(props: {
     );
 
     cloneNodes[index].data.activity = updatedActivity;
-
-    if (newName) {
-      saveNewNodes([...cloneNodes]);
-    }
-
+    saveNewNodes([...cloneNodes]);
     props.updateActivitiesWithSameName(updatedActivity);
   };
 

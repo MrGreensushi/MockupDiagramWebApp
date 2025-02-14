@@ -4,7 +4,7 @@ import Activity, { LevelsEnum } from "./Activity.ts";
 
 class Procedure {
   id: string;
-  private _flow: ReactFlowJsonObject;
+  flow: ReactFlowJsonObject;
   title: string;
   parentId?: string;
 
@@ -18,24 +18,10 @@ class Procedure {
     id?: string,
     parentId?: string
   ) {
-    this._flow = flow;
+    this.flow = flow;
     this.title = title ?? "Procedure senza titolo";
     this.id = id ?? uuidv4();
     this.parentId = parentId;
-  }
-
-  // Getter per ottenere il flow
-  get flow(): ReactFlowJsonObject {
-    return this._flow;
-  }
-
-  // Setter per intercettare ogni modifica al flow
-  set flow(newFlow: ReactFlowJsonObject) {
-    if (newFlow.nodes.length <= 0) return;
-    var toPrint = this.printNodes(`- Vecchio valore:`, this._flow);
-    toPrint += "\n" + this.printNodes(`- Nuovo valore:`, newFlow);
-    console.trace(toPrint);
-    this._flow = newFlow;
   }
 
   clone(): Procedure {
