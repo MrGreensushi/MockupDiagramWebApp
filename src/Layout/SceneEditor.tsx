@@ -49,15 +49,13 @@ function SceneEditor(props: {
 		initialJson: localScene.workspace
 	});
 
-	const handleSave = () => {
-		props.setScene(localScene);
-	};
+	const handleSave = useCallback((scene: Scene) => {
+		props.setScene(scene);
+	}, [props.setScene]);
 
-	const handleEditDetails = ((newDetails: SceneDetailsType) => {
-		setLocalScene(scene => 
-			new Scene(scene.workspace, newDetails)
-		)
-	});
+	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
+		setLocalScene(scene => new Scene(scene.workspace, newDetails));
+	}, []);
 
 	const onClickAdd = useCallback((type: StoryElementEnum) => {
 		setModalType(type);
@@ -73,7 +71,6 @@ function SceneEditor(props: {
 
 	const handleBlockChange = useCallback((blocks: [string, StoryElementEnum | null][]) => {
 		setBlocks(blocks);
-		console.log(blocks)
 		if (workspace) {
 			workspace.clear();
 			let stack: Blockly.BlockSvg | undefined;
@@ -92,14 +89,14 @@ function SceneEditor(props: {
 
 	useEffect(() => {
 		if (workspace) populateCustomToolbox(props.story, workspace, onClickAdd);
-	}, [props.story, workspace]);
+	}, [props.story, workspace, onClickAdd]);
 
 	useEffect(() => {
 		if (timer) {
 			clearTimeout(timer);
 		}
-		setTimer(setTimeout(handleSave, 250));
-	}, [localScene]);
+		setTimer(setTimeout(() => handleSave(localScene), 250));
+	}, [localScene, handleSave]);
 
 	return (
 		<Col className="h-100">

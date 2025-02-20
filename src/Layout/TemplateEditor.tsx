@@ -9,6 +9,8 @@ import saveToDisk from "../Misc/SaveToDisk.ts";
 import Template from "../StoryElements/Template.ts";
 import Scene from "../StoryElements/Scene.ts";
 import SceneEditor from "./SceneEditor.tsx";
+import { ChoiceDetails, NodeType } from "../Flow/StoryNode.tsx";
+import ChoiceEditor from "./ChoiceEditor.tsx";
 
 function TemplateEditor(props: {
 	stories: Map<string, Template>,
@@ -17,7 +19,7 @@ function TemplateEditor(props: {
 	const { id } = useParams();
 
 	const [localStory, setLocalStory] = useState(props.stories.get(id!)?.template.clone() ?? new Story());
-	const [openScenes, setOpenScenes] = useState<string[]>([]);
+	const [openNodes, setOpenNodes] = useState<string[]>([]);
 	const [currentTab, setCurrentTab] = useState<string>();
 
 	const [sideTab, setSideTab] = useState(true);
@@ -37,26 +39,29 @@ function TemplateEditor(props: {
 		setDirty(false);
 	}, [props.setStory, localStory]);
 
-	const onSceneEdited = useCallback((sceneId: string, newScene: Scene) => {
-		setLocalStory(story => story.cloneAndSetScene(sceneId, newScene));
+	const onSceneEdited = useCallback((id: string, newScene: Scene) => {
+		setLocalStory(story => story.cloneAndSetScene(id, newScene));
+	}, []);
+
+	const onChoiceEdited = useCallback((id: string, newChoice: ChoiceDetails[]) => {
+		setLocalStory(story => story.cloneAndSetChoice(id, newChoice));
 	}, []);
 
 	const onClickTabClose = useCallback((id: string) => {
-		setOpenScenes(
-			sceneIds => sceneIds?.filter(
-				sceneId => sceneId !== id));
+		setOpenNodes(openNodes => openNodes?.filter(nodeId => nodeId !== id));
 		if (currentTab === id) setCurrentTab(undefined);
 	}, [currentTab]);
 
 	const onClickEditNode = useCallback((id: string) => {
-		if (!openScenes.includes(id))
-			setOpenScenes(scenes => {
-				const newScenes = Array.from(scenes);
-				newScenes.push(id);
-				return newScenes.sort();
-			});
+		if (!openNodes.some(nodeId => nodeId === id))
+			setOpenNodes(ids => 
+				[...ids, id].sort(
+					(a, b) => (
+						localStory.getNodeById(a)?.data.label as string)?.localeCompare(
+						localStory.getNodeById(b)?.data.label as string))
+			);
 		setCurrentTab(id);
-	}, [openScenes]);
+	}, [openNodes, localStory]);
 
 	// Applies fixed width to StoryElements (allows collapsing parent without rearranging children)
 	useEffect(() => {
@@ -96,11 +101,11 @@ function TemplateEditor(props: {
 							<StoryElements
 								story={localStory}
 								setStory={story => { setDirty(true); setLocalStory(story) }}
-								editMode={true} />
+								readOnly={false} />
 						</div>
 					</Col>
 				</Collapse>
-				<Col className="pe-0 custom-tabs" style={{position:"relative"}}>
+				<Col className="pe-0 custom-tabs d-flex flex-column h-100" style={{position:"relative"}}>
 					<Button
 						size="lg"
 						onClick={() => setSideTab(s => !s)}
@@ -111,6 +116,7 @@ function TemplateEditor(props: {
 						activeKey={currentTab}
 						onSelect={k => setCurrentTab(k ?? "structure")}
 						navbarScroll
+						variant="underline"
 						style={{flexWrap:"nowrap"}}>
 						<Tab
 							eventKey="structure"
@@ -123,19 +129,38 @@ function TemplateEditor(props: {
 									onClickEditNode={onClickEditNode}/>
 							</Row>
 						</Tab>
-						{openScenes?.map(id => 
-							<Tab eventKey={id} key={id} title={
+						{openNodes?.map(nodeId => {
+							const node = localStory.getNodeById(nodeId)!;
+							let className: string;
+							switch (node.type) {
+								case (NodeType.scene):
+								default:
+									className = "scene";
+								break;
+								case (NodeType.choice):
+									className = "choice";
+								break;
+							} 
+							return (
+							<Tab eventKey={nodeId} key={nodeId} title={
 								<div className="custom-nav-link">
-									{(localStory.flow.nodes.find(node => node.id === id)?.data.label as string)}
-									<i className="bi bi-x-lg close-button" onClick={(e) => {e.preventDefault(); e.stopPropagation(); onClickTabClose(id)}} style={{pointerEvents:"all"}}></i>
+									{node.data.label as string}
+									<i className="bi bi-x-lg close-button" onClick={(e) => {e.preventDefault(); e.stopPropagation(); onClickTabClose(nodeId)}} style={{pointerEvents:"all"}}></i>
 								</div>}
+								tabClassName={className}
 								unmountOnExit>
-								<SceneEditor
-									story={localStory}
-									setStory={setLocalStory}
-									scene={localStory.flow.nodes.find(node => node.id === id)?.data.scene as Scene}
-									setScene={newScene => onSceneEdited(id, newScene)}/>
+								{node.type === NodeType.scene &&
+									<SceneEditor
+										story={localStory}
+										setStory={setLocalStory}
+										scene={node.data.scene as Scene}
+										setScene={newScene => onSceneEdited(nodeId, newScene)}/>}
+								{node.type === NodeType.choice &&
+									<ChoiceEditor 
+										choices={node.data.choices as ChoiceDetails[]}
+										setChoices={newChoice => onChoiceEdited(nodeId, newChoice)} />}
 							</Tab>
+							)}
 						)}
 					</Tabs>
 				</Col>

@@ -27,7 +27,8 @@ function DynamicTextField(props: {
 	return (
 		<Form onSubmit={e => { e.preventDefault(); handleSubmit() }}>
 			<Form.Control
-				className={"dynamic-text-field"}
+				{...props.baseProps}
+				className={`dynamic-text-field ${props.baseProps?.className ?? ""} ${focus ? "nodrag" : ""}`}
 				value={value}
 				plaintext={!focus}
 				readOnly={!focus}
@@ -38,7 +39,6 @@ function DynamicTextField(props: {
 				onDoubleClick={props.focusOnDoubleClick ? () => setFocus(true) : undefined}
 				onBlur={handleSubmit}
 
-				{...props.baseProps}
 				style={{
 					cursor: focus ? "text" : "inherit",
 					userSelect: focus ? "auto" : "none",

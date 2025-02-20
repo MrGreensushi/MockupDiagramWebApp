@@ -121,12 +121,11 @@ function PromptArea(props: {
 	}, [textSplitter, mentionMatcher]);
 
 	return (
-		<div className="prompt-area">
+		<div className="prompt-area w-100 h-25">
 			<RichTextarea
 				ref={ref}
 				value={text}
-				style={{ width:"100%", left:"0px"}}
-				autoHeight
+				style={{width:"100%", height:"100%", left:"0px"}}
 				onBlur={props.onBlur}
 				onChange={e => {
 					setText(e.target.value);

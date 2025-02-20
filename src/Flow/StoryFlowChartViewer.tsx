@@ -1,15 +1,16 @@
 import "@xyflow/react/dist/style.css";
 import React, { useMemo } from "react";
 import { Row } from "react-bootstrap";
-import { Node, ReactFlow } from "@xyflow/react";
-import SceneNode from "./SceneNode.tsx";
+import { ReactFlow } from "@xyflow/react";
 import Story from "../StoryElements/Story.ts";
+import { storyNodeTypes } from "./StoryNode.tsx";
 
 function StoryFlowChartViewer (props: {
   story: Story,
   storyId: string,
 }) {  
-  const nodeTypes = useMemo(() => ({sceneNode: SceneNode}), []);
+  const nodeTypes = useMemo(() => storyNodeTypes, []);
+
   return (
     <Row className="gx-0 h-100">
       <ReactFlow key={props.storyId}

@@ -7,8 +7,8 @@ import Story from "../StoryElements/Story.ts";
 
 function StoryElements (props: {
   story: Story,
-  setStory: React.Dispatch<React.SetStateAction<Story>>,
-  editMode: boolean
+  setStory?: React.Dispatch<React.SetStateAction<Story>>,
+  readOnly?: boolean
 }) {
   const [key, setKey] = useState(StoryElementEnum.character);
   const [selectedElement, setSelectedElement] = useState<StoryElementType>();
@@ -16,6 +16,8 @@ function StoryElements (props: {
   
   const [modal, setModal] = useState(false);
   const [modalAction, setModalAction] = useState<"add" | "edit">("add");
+
+  const readOnly = props.readOnly ?? false;
 
   const onSelectElement = (id: string, element: StoryElementType) => {
     setSelectedElementId(id);
@@ -41,20 +43,20 @@ function StoryElements (props: {
   }
 
   const onElementDeleteButtonClicked = (id: string) => {
-    props.setStory(story => story.cloneAndDeleteElement(id));
+    props.setStory?.(story => story.cloneAndDeleteElement(id));
     onDeselectElement();
   }
 
   const onSubmitNewElement = useCallback((newElement: StoryElementType) => {
     if (!props.story.canAddElement(newElement, key)) return false;
-    props.setStory(story => story.cloneAndAddElement(newElement, key));
+    props.setStory?.(story => story.cloneAndAddElement(newElement, key));
     onDeselectElement();
     return true;
   }, [key, props.story, props.setStory]);
 
   const onEditElement = useCallback((editedElement: StoryElementType) => {
     if (selectedElementId) {
-      props.setStory(story => story.cloneAndSetElement(selectedElementId, editedElement, key));
+      props.setStory?.(story => story.cloneAndSetElement(selectedElementId, editedElement, key));
       onDeselectElement();
       return true;
     }
@@ -72,7 +74,7 @@ function StoryElements (props: {
       onSubmit = {modalAction === "add" ? onSubmitNewElement : onEditElement} />
   ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
 
-  const elementList = useCallback((type: StoryElementEnum, className?: string) => {
+  const elementList = useCallback((type: StoryElementEnum, readOnly: boolean, className?: string) => {
     return (
       <ListGroup style={{maxHeight: "90%", overflowY: "auto"}}>
         {[...props.story.getTypeMap(type)].map(([id, elem]) => (
@@ -90,9 +92,8 @@ function StoryElements (props: {
                     <i className="bi bi-trash" aria-label="delete" /> 
                   </Button>
                 </ButtonGroup>
-              </Tooltip>
-            }>
-            <ListGroup.Item key={id} action
+              </Tooltip>}>
+            <ListGroup.Item key={id} action={!readOnly}
               className={`d-flex flex-grow-1 ${className}`}
               style={{textWrap:"pretty", justifyContent:"space-evenly"}}>
               {elem.name}
@@ -114,26 +115,28 @@ function StoryElements (props: {
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
-        className="mb-2">
+        className="mb-2 story-elements">
         {tabArray.map(tab =>
           <Tab
             eventKey={tab.type}
             key={tab.type}
             className={"h-100"}
+            tabClassName={tab.className}
             title={
               <>
-                <span className={tab.className} style={{fontSize:"2em", pointerEvents:"none"}}>
+                <span style={{fontSize:"2em", pointerEvents:"none"}}>
                   {tab.tabText}
                 </span>
                 <Badge className={tab.className + " selected"} bg="" pill>
                   {tab.badgeContent}
                 </Badge>
               </>}>
-            {props.editMode && <Button onClick={onAddButtonClicked} variant="outline-primary">
-              {tab.buttonText}
-              <i className="bi bi-plus-square"/>
-            </Button>}
-            {elementList(tab.type, tab.className)}
+            {!readOnly && 
+              <Button onClick={onAddButtonClicked} variant="outline-primary">
+                {tab.buttonText}
+                <i className="bi bi-plus-square"/>
+              </Button>}
+            {elementList(tab.type, readOnly, tab.className)}
           </Tab>
         )}
       </Tabs>

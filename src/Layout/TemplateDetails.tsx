@@ -26,8 +26,7 @@ function TemplateDetails(props: {
         <Card.Body style={{maxHeight:"100%", overflow:"auto"}}>
           <StoryElements
             story={props.template.template}
-            setStory={() => {}}
-            editMode={false} />
+            readOnly={true} />
         </Card.Body>
       </Card>
       <Card style={{width:"50%", height:"100%"}}>
