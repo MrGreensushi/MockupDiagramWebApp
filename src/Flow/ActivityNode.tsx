@@ -1,8 +1,9 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import React, { useMemo } from "react";
+import React, { useContext, useMemo } from "react";
 import { Col } from "react-bootstrap";
 import Activity from "../Procedure/Activity.ts";
 import "../CSS/Nodes.css";
+import { Procedures } from "../Layout/ProcedureEditor.tsx";
 
 type ActivityNodeProps = {
   activity: Activity;
@@ -18,8 +19,12 @@ type ActivityNodeObject = {
 type ActivityNodeType = Node<ActivityNodeProps, "ActivityNode">;
 
 function ActivityNode(props: NodeProps<ActivityNodeType>) {
+  const procedures = useContext(Procedures);
+  const isSubprocedureEmpty = procedures
+    .find((x) => x.id === props.data.activity.subProcedureId)
+    ?.isEmpty();
   const nodeClassName = `scene-node ${
-    props.data.activity.isSubProcedureEmpty ? "" : "hasSubProcedure"
+    isSubprocedureEmpty ? "" : "hasSubProcedure"
   }`;
   return (
     <div className={nodeClassName} tabIndex={0}>

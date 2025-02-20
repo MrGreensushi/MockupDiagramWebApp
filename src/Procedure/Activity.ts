@@ -1,4 +1,3 @@
-import Procedure from "./Procedure.ts";
 enum LevelsEnum {
   novice = "Novice",
   intermediate = "Intermediate",
@@ -7,34 +6,24 @@ enum LevelsEnum {
 
 class ActivityDescription {
   name: string;
-  languages: Languages;
+  content: ActivityContent;
 
-  constructor(name: string, languages?: Languages) {
+  constructor(name: string, content?: ActivityContent) {
     this.name = name;
-    this.languages = languages ?? new Languages();
+    this.content = content ?? new ActivityContent();
   }
 }
 
 class Activity extends ActivityDescription {
   subProcedureId: string;
-  isEngActiveLanguage: boolean;
-  isSubProcedureEmpty: boolean;
 
-  constructor(
-    name: string,
-    subProcedureId: string,
-    languages?: Languages,
-    isEngActiveLanguage?: boolean,
-    isSubProcedureEmpty = true
-  ) {
-    super(name, languages);
+  constructor(name: string, subProcedureId: string, content?: ActivityContent) {
+    super(name, content);
     this.subProcedureId = subProcedureId;
-    this.isEngActiveLanguage = isEngActiveLanguage ?? true;
-    this.isSubProcedureEmpty = isSubProcedureEmpty;
   }
 
   public get nodePhrases() {
-    return this.activeLanguage.nodePhrases;
+    return this.content.nodePhrases;
   }
 
   public set nodePhrases(value: Phrase[]) {
@@ -42,7 +31,7 @@ class Activity extends ActivityDescription {
   }
 
   public get details() {
-    return this.activeLanguage.details;
+    return this.content.details;
   }
 
   public set details(value: string) {
@@ -50,61 +39,35 @@ class Activity extends ActivityDescription {
   }
 
   public get notes() {
-    return this.activeLanguage.notes;
+    return this.content.notes;
   }
 
   public set notes(value: string) {
     this.notes = value;
   }
 
-  public get activeLanguage() {
-    return this.isEngActiveLanguage
-      ? this.languages.engActivity
-      : this.languages.itaActivity;
-  }
-
-  private updateActiveLanguage(lang: ActivityLanguage) {
-    const newIta = this.isEngActiveLanguage ? this.languages.itaActivity : lang;
-    const newEng = this.isEngActiveLanguage ? lang : this.languages.engActivity;
-
-    return new Languages(newIta, newEng);
-  }
-
   public cloneAndSet(
     phrases = this.nodePhrases,
     details = this.details,
     title = this.name,
-    isSubProcedureEmpty = this.isSubProcedureEmpty,
     notes = this.notes
   ) {
-    const updatedLanguage = this.activeLanguage.cloneAndSet(
-      phrases,
-      details,
-      notes
-    );
-    const updatedLanguages = this.updateActiveLanguage(updatedLanguage);
-    return new Activity(
-      title,
-      this.subProcedureId,
-      updatedLanguages,
-      this.isEngActiveLanguage,
-      isSubProcedureEmpty
-    );
+    const updatedContent = this.content.cloneAndSet(phrases, details, notes);
+    return new Activity(title, this.subProcedureId, updatedContent);
   }
 
   static fromJSONObject(obj: any) {
-    const languages = Languages.fromJSONObject(obj.languages);
-    return new Activity(
-      obj.name,
-      obj.subProcedureId,
-      languages,
-      obj.isEngActiveLanguage,
-      obj.isSubProcedureEmpty
+    const contentOBJ = obj.content;
+    const content = new ActivityContent(
+      contentOBJ.nodePhrases,
+      contentOBJ.details,
+      contentOBJ.notes
     );
+    return new Activity(obj.name, obj.subProcedureId, content);
   }
 
   getActivityDescription() {
-    return new ActivityDescription(this.name, this.languages);
+    return new ActivityDescription(this.name, this.content);
   }
 }
 
@@ -120,7 +83,7 @@ class Phrase {
   }
 }
 
-class ActivityLanguage {
+class ActivityContent {
   nodePhrases: Phrase[];
   details: string;
   notes: string;
@@ -139,33 +102,10 @@ class ActivityLanguage {
     phrases = this.nodePhrases,
     details = this.details,
     notes = this.notes
-  ): ActivityLanguage {
-    return new ActivityLanguage(phrases, details, notes);
-  }
-}
-
-class Languages {
-  itaActivity: ActivityLanguage;
-  engActivity: ActivityLanguage;
-
-  constructor(itaActivity?: ActivityLanguage, engActivity?: ActivityLanguage) {
-    this.engActivity = engActivity ?? new ActivityLanguage();
-    this.itaActivity = itaActivity ?? new ActivityLanguage();
-  }
-
-  static fromJSONObject(object: any) {
-    try {
-      const ita = object.itaActivity;
-      const eng = object.engActivity;
-      return new Languages(
-        new ActivityLanguage(ita.nodePhrases, ita.details, ita.notes),
-        new ActivityLanguage(eng.nodePhrases, eng.details, eng.notes)
-      );
-    } catch (ex) {
-      throw new Error("Failed to parse Serialized Languages Object: " + ex);
-    }
+  ): ActivityContent {
+    return new ActivityContent(phrases, details, notes);
   }
 }
 
 export default Activity;
-export { LevelsEnum, Phrase, ActivityDescription, ActivityLanguage, Languages };
+export { LevelsEnum, Phrase, ActivityDescription, ActivityContent };

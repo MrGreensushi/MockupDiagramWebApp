@@ -1,25 +1,29 @@
-import { ReactFlowInstance, ReactFlowJsonObject } from "@xyflow/react";
-import React, { useCallback, useState } from "react";
+import { ReactFlowInstance } from "@xyflow/react";
+import React, { useCallback, useMemo, useState, useContext } from "react";
 import {
   Button,
   ButtonGroup,
   ButtonToolbar,
-  Container,
-  InputGroup,
+  Card,
+  Dropdown,
+  Form,
+  ListGroup,
   Modal,
-  Nav,
-  Navbar,
+  ModalBody,
+  Spinner,
 } from "react-bootstrap";
 
 import {
   getActivitiesDescriptionFromJSON,
-  getProceduresFromJSON,
   saveToDisk,
 } from "../Misc/SaveToDisk.ts";
 import {
   CategorizedDescriptions,
   createCategorizedDescriptions,
 } from "../Misc/CategorizedDescription.ts";
+import { ActiveLanguage, ChangeActiveLanguage } from "../App.tsx";
+import { LANGUAGES } from "../Procedure/Languages.ts";
+import axios from "axios";
 
 function OperationMenu(props: {
   addNode: () => void;
@@ -122,12 +126,53 @@ function OperationMenu(props: {
           Extract XMLs
         </Button>
         <LoadModal onLoad={importNodesFromXML}>Import Nodes</LoadModal>
-        <Button variant="outline-primary" onClick={() => props.resetEditor()}>
+        <ConfirmModal onClick={() => props.resetEditor()}>
           Start new Project
-        </Button>
+        </ConfirmModal>
         <LoadModal onLoad={onLoad}>Load Procedure</LoadModal>
+        <LanguageSelectionDropdown
+          getJSONFile={props.getJSONFile}
+          loadJSONFile={props.loadJSONFile}
+        />
       </ButtonGroup>
     </ButtonToolbar>
+  );
+}
+
+function ConfirmModal(props: { children: any; onClick: () => void }) {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
+  return (
+    <>
+      <Button variant="outline-primary" onClick={handleShow}>
+        {props.children}
+      </Button>
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Start new Project?</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Warning! Current project will be discarded, all unsaved modifications
+          will be lost.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="danger"
+            onClick={() => {
+              handleClose();
+              props.onClick();
+            }}
+          >
+            Yes, start new Project
+          </Button>
+          <Button variant="outline-secondary" onClick={handleClose}>
+            No, keep current Project
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 
@@ -160,4 +205,120 @@ function LoadModal(props: {
     </>
   );
 }
+
+function LanguageSelectionDropdown(props: {
+  getJSONFile: () => string;
+  loadJSONFile: (json: string) => void;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false); // Stato per il loading
+
+  const onLanguageSelected = async (langCode: string) => {
+    setLoading(true); // Mostra il loading
+    try {
+      const jsonString = props.getJSONFile();
+      const response = await axios.post(
+        "/translateProject/" + langCode,
+        jsonString,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      props.loadJSONFile(JSON.stringify(response.data));
+    } catch (error) {
+      alert(error);
+    } finally {
+      setLoading(false); // Nasconde il loading alla fine della richiesta
+    }
+  };
+
+  return (
+    <>
+      <Button onClick={() => setShowModal(true)}>Translate Content</Button>
+      <Modal show={loading} centered>
+        <Modal.Header>Loading translation...</Modal.Header>
+        <Modal.Body style={{ alignSelf: "center" }}>
+          <Spinner as="span" animation="border" />
+        </Modal.Body>
+      </Modal>
+      <LanguageSelectModal
+        show={showModal}
+        handleClose={() => setShowModal(false)}
+        onSave={onLanguageSelected}
+      />
+    </>
+  );
+}
+
+const LanguageSelectModal = (props: {
+  show: boolean;
+  handleClose: () => void;
+  onSave: (langkey: string) => void;
+}) => {
+  const [targetLang, setTargetLang] = useState("");
+  const [filterTarget, setFilterTarget] = useState("");
+
+  const handleSave = () => {
+    if (targetLang) {
+      props.onSave(targetLang);
+      props.handleClose();
+    }
+  };
+
+  return (
+    <Modal show={props.show} onHide={props.handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Translate Content</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <div className="mb-3">
+          <label className="form-label">
+            Select the language to translate into
+          </label>
+          <Dropdown>
+            <Dropdown.Toggle variant="success" className="w-100">
+              {targetLang
+                ? LANGUAGES[targetLang].charAt(0).toUpperCase() +
+                  LANGUAGES[targetLang].slice(1)
+                : "Select a language..."}
+            </Dropdown.Toggle>
+            <Dropdown.Menu
+              className="w-100"
+              style={{
+                maxHeight: "300px",
+                overflowY: "auto",
+                overflowX: "clip",
+              }}
+            >
+              <Form.Control
+                type="text"
+                placeholder="Search..."
+                value={filterTarget}
+                onChange={(e) => setFilterTarget(e.target.value.toLowerCase())}
+                className="m-2"
+              />
+              <Dropdown.Divider />
+              {Object.entries(LANGUAGES)
+                .filter((lang) => lang[1].toLowerCase().includes(filterTarget))
+                .map((lang) => (
+                  <Dropdown.Item
+                    key={lang[0]}
+                    onClick={() => setTargetLang(lang[0])}
+                  >
+                    {lang[1].charAt(0).toUpperCase() + lang[1].slice(1)}
+                  </Dropdown.Item>
+                ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={props.handleClose}>
+          Close
+        </Button>
+        <Button variant="primary" onClick={handleSave}>
+          Confirm
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
 export default OperationMenu;

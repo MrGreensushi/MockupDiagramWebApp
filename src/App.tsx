@@ -2,11 +2,19 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-
+import React, { useEffect, useState, createContext } from "react";
 import ProcedureEditor from "./Layout/ProcedureEditor.tsx";
-import React, { useEffect } from "react";
+
+export const ActiveLanguage = createContext("ENG");
+export const ChangeActiveLanguage = createContext((key: string) => {});
 
 function App() {
+  const [activeLanguage, setActiveLanguage] = useState("ENG");
+  const changeActiveLanguage = (value: string) => {
+    console.log("Active Language changed:" + value);
+    setActiveLanguage(value);
+  };
+
   useEffect(() => {
     // Prompt confirmation when reload page is triggered
     window.onbeforeunload = () => {
@@ -21,7 +29,11 @@ function App() {
 
   return (
     <div className="App">
-      <ProcedureEditor />
+      <ActiveLanguage.Provider value={activeLanguage}>
+        <ChangeActiveLanguage.Provider value={changeActiveLanguage}>
+          <ProcedureEditor />
+        </ChangeActiveLanguage.Provider>
+      </ActiveLanguage.Provider>
     </div>
   );
 }

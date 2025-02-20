@@ -68,7 +68,7 @@ class Procedure {
       const activity = node.data.activity as Activity;
       if (!activity) return;
       const name = activity.name;
-      const novice = activity.activeLanguage.nodePhrases.find(
+      const novice = activity.nodePhrases.find(
         (x) => x.clipId === "Description" && x.level === LevelsEnum.novice
       );
       toPrint += index + "-" + name + ": " + novice?.text + "\n";

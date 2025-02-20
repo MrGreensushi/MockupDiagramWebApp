@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useMemo, useState } from "react";
 import Procedure from "../Procedure/Procedure.ts";
 import ProcedureFlowDiagram from "../Flow/ProcedureFlowDiagram.tsx";
 import { ReactFlowJsonObject } from "@xyflow/react";
@@ -7,6 +7,8 @@ import {
   getAllActivitiesDescriptionsFromProcedures,
   getProceduresFromJSON,
 } from "../Misc/SaveToDisk.ts";
+
+export const Procedures = createContext([new Procedure()]);
 
 function ProcedureEditor() {
   const [procedures, setProcedures] = useState<Procedure[]>([new Procedure()]);
@@ -43,34 +45,6 @@ function ProcedureEditor() {
 
   const handleUpdateActiveFlow = (flow: ReactFlowJsonObject) => {
     updateProcedure(activeProcedureId, flow, undefined);
-    updateSubProcedureIsEmptyInParentActivity(activeProcedure, flow);
-  };
-
-  const updateSubProcedureIsEmptyInParentActivity = (
-    childProcedure: Procedure,
-    childFlow: ReactFlowJsonObject
-  ) => {
-    //se la procedura era figlia di un attività, bisogna aggiornare il valore di hasSubProcedure dell'attività parente.
-    //1. Recuperare la procedura padre dal parentId
-    const parentProcedureId = childProcedure.parentId;
-    if (!parentProcedureId) return;
-    const parentProcedure = getProcedure(parentProcedureId);
-    if (!parentProcedure) return;
-
-    //2. aggiornare il valore di isSubProcedureEmpty dell'attività padre
-    const newNodes = parentProcedure.flow.nodes.map((node) => {
-      //Se non è un nodo attività non fare nulla
-      if (!node.data.activity) return node;
-      const activity = node.data.activity as Activity;
-      //Assicurati che l'attività abbia come subProcedureId quella del figlio in esame
-      if (activity.subProcedureId !== childProcedure.id) return node;
-      activity.isSubProcedureEmpty = childFlow.nodes.length <= 0;
-      return { ...node, data: { ...node.data, activity: activity } };
-    });
-
-    //3. aggiornare la procedura padre
-    const newFlow = { ...parentProcedure.flow, nodes: newNodes };
-    updateProcedure(parentProcedure.id, newFlow, undefined);
   };
 
   const setActiveProcedure = (newProcedureId: string) => {
@@ -86,7 +60,7 @@ function ProcedureEditor() {
   const activeProcedure: Procedure = useMemo(() => {
     const proc = getProcedure(activeProcedureId);
     return proc ?? new Procedure();
-  }, [activeProcedureId, procedures, getProcedure]);
+  }, [activeProcedureId, getProcedure]);
 
   const getJSONFile = () => {
     var json = "";
@@ -113,7 +87,7 @@ function ProcedureEditor() {
         )
       );
     },
-    [procedures, setProcedures]
+    [setProcedures]
   );
 
   const resetEditor = useCallback(() => {
@@ -123,20 +97,22 @@ function ProcedureEditor() {
   }, []);
 
   return (
-    <ProcedureFlowDiagram
-      activeProcedure={activeProcedure}
-      setActiveProcedure={setActiveProcedure}
-      handleActiveProcedureUpdate={handleUpdateActiveFlow}
-      handleSubmitTitle={handleSubmitActiveTitle}
-      addProcedure={addProcedure}
-      getProcedure={getProcedure}
-      updateProcedureById={updateProcedure}
-      getJSONFile={getJSONFile}
-      loadJSONFile={loadJSONFile}
-      activityDescriptions={getAllActivitiesDescriptions}
-      updateActivitiesWithSameName={updateActivitiesWithSameName}
-      resetEditor={resetEditor}
-    />
+    <Procedures.Provider value={procedures}>
+      <ProcedureFlowDiagram
+        activeProcedure={activeProcedure}
+        setActiveProcedure={setActiveProcedure}
+        handleActiveProcedureUpdate={handleUpdateActiveFlow}
+        handleSubmitTitle={handleSubmitActiveTitle}
+        addProcedure={addProcedure}
+        getProcedure={getProcedure}
+        updateProcedureById={updateProcedure}
+        getJSONFile={getJSONFile}
+        loadJSONFile={loadJSONFile}
+        activityDescriptions={getAllActivitiesDescriptions}
+        updateActivitiesWithSameName={updateActivitiesWithSameName}
+        resetEditor={resetEditor}
+      />
+    </Procedures.Provider>
   );
 }
 

@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useEffect,
   useRef,
+  useContext,
 } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import {
@@ -42,6 +43,7 @@ import {
   CategorizedDescriptions,
   createCategorizedDescriptions,
 } from "../Misc/CategorizedDescription.ts";
+import { ActiveLanguage } from "../App.tsx";
 
 function ProcedureFlowDiagram(props: {
   activeProcedure: Procedure;
@@ -85,6 +87,8 @@ function ProcedureFlowDiagram(props: {
   const flowRef = useRef(null);
 
   const propsFlow = props.activeProcedure.flow;
+
+  const activeLanguage = useContext(ActiveLanguage);
 
   useEffect(() => {
     console.log("updated flow from editor");
@@ -227,7 +231,6 @@ function ProcedureFlowDiagram(props: {
       newPhrases,
       details,
       newName,
-      undefined,
       newNotes
     );
 
@@ -263,7 +266,7 @@ function ProcedureFlowDiagram(props: {
           activity: new Activity(
             label,
             subProcedure.id,
-            activityDescription?.languages
+            activityDescription?.content
           ),
         },
         type: "activityNode",
@@ -467,6 +470,7 @@ function ProcedureFlowDiagram(props: {
 
         <Col xs={3}>
           <NodeEditor
+            key={"NodeEditor:" + selectedNodeId + ":" + activeLanguage}
             procedure={props.activeProcedure}
             selectedNode={
               selectedNodeId ? rfInstance?.getNode(selectedNodeId) : undefined

@@ -1,4 +1,5 @@
 import sys
+from translateProcedure import translate_procedure
 import parseXml
 import writeXml
 import os
@@ -68,6 +69,21 @@ def extract_XML_from_procedure():
            # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/translateProject/<language_code>',methods=['POST'])
+def translate_project(language_code):
+    try:
+        if request.method == 'POST':
+            data = request.json 
+            if not data:
+                return jsonify({"error": "No data provided"}), 400
+
+            translation=translate_procedure(data,dest_lang=language_code)
+            return translation
+           # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 if __name__ == "__main__":
     app.run()
