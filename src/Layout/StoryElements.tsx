@@ -1,6 +1,6 @@
 import { Tabs, Tab, Button, ListGroup, Badge, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
 import { useCallback, useMemo, useState } from "react";
-import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import React from "react";
 import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
@@ -10,8 +10,8 @@ function StoryElements (props: {
   setStory?: React.Dispatch<React.SetStateAction<Story>>,
   readOnly?: boolean
 }) {
-  const [key, setKey] = useState(StoryElementEnum.character);
-  const [selectedElement, setSelectedElement] = useState<StoryElementType>();
+  const [key, setKey] = useState(StoryElementType.character);
+  const [selectedElement, setSelectedElement] = useState<StoryElement>();
   const [selectedElementId, setSelectedElementId] = useState<string>();
   
   const [modal, setModal] = useState(false);
@@ -19,7 +19,7 @@ function StoryElements (props: {
 
   const readOnly = props.readOnly ?? false;
 
-  const onSelectElement = (id: string, element: StoryElementType) => {
+  const onSelectElement = (id: string, element: StoryElement) => {
     setSelectedElementId(id);
     setSelectedElement(element);
   }
@@ -36,7 +36,7 @@ function StoryElements (props: {
     setSelectedElement(undefined);
   }
 
-  const onElementEditButtonClicked = (id: string, element: StoryElementType) => {
+  const onElementEditButtonClicked = (id: string, element: StoryElement) => {
     onSelectElement(id, element)
     setModalAction("edit");
     setModal(true);
@@ -47,14 +47,14 @@ function StoryElements (props: {
     onDeselectElement();
   }
 
-  const onSubmitNewElement = useCallback((newElement: StoryElementType) => {
+  const onSubmitNewElement = useCallback((newElement: StoryElement) => {
     if (!props.story.canAddElement(newElement, key)) return false;
     props.setStory?.(story => story.cloneAndAddElement(newElement, key));
     onDeselectElement();
     return true;
   }, [key, props.story, props.setStory]);
 
-  const onEditElement = useCallback((editedElement: StoryElementType) => {
+  const onEditElement = useCallback((editedElement: StoryElement) => {
     if (selectedElementId) {
       props.setStory?.(story => story.cloneAndSetElement(selectedElementId, editedElement, key));
       onDeselectElement();
@@ -74,7 +74,7 @@ function StoryElements (props: {
       onSubmit = {modalAction === "add" ? onSubmitNewElement : onEditElement} />
   ), [key, modalAction, modal, selectedElement, onEditElement, onSubmitNewElement]);
 
-  const elementList = useCallback((type: StoryElementEnum, readOnly: boolean, className?: string) => {
+  const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
     return (
       <ListGroup style={{maxHeight: "90%", overflowY: "auto"}}>
         {[...props.story.getTypeMap(type)].map(([id, elem]) => (
@@ -104,9 +104,9 @@ function StoryElements (props: {
   }, [props]);
 
   const tabArray = useMemo(() => [
-    {type: StoryElementEnum.character, className: "character-mention", tabText: "🙋", badgeContent: props.story.characters.size, buttonText: "Personaggi " },
-    {type: StoryElementEnum.object, className: "object-mention", tabText: "⚱️", badgeContent: props.story.objects.size, buttonText: "Oggetti " },
-    {type: StoryElementEnum.location, className: "location-mention", tabText: "🏛️", badgeContent: props.story.locations.size, buttonText: "Luoghi " }
+    {type: StoryElementType.character, className: "character-mention", tabText: "🙋", badgeContent: props.story.characters.size, buttonText: "Personaggi " },
+    {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", badgeContent: props.story.objects.size, buttonText: "Oggetti " },
+    {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", badgeContent: props.story.locations.size, buttonText: "Luoghi " }
   ], [props.story])
 
   return (

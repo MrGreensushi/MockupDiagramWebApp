@@ -1,10 +1,10 @@
 import React from "react";
 import { Modal, Row, Col, ListGroup, Form } from "react-bootstrap";
-import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import Story from "../StoryElements/Story.ts";
 
 function ElementList (props: {
-        allElements: Map<string, StoryElementType>,
+        allElements: Map<string, StoryElement>,
         selected: Set<string>,
         setSelected: React.Dispatch<React.SetStateAction<Set<string>>>,
         checkboxType: "checkbox" | "radio",
@@ -76,7 +76,7 @@ function BackgroundElementsModal(props: {
                             selected={props.selectedCharacters}
                             setSelected={props.setSelectedCharacters}
                             checkboxType="checkbox"
-                            noElementsText={props.noElementTexts[StoryElementEnum.character]}/>
+                            noElementsText={props.noElementTexts[StoryElementType.character]}/>
                     </Col>
                     <Col style={{maxHeight:"75vh", overflowY:"auto"}}>
                         <ElementList
@@ -84,7 +84,7 @@ function BackgroundElementsModal(props: {
                             selected={props.selectedObjects}
                             setSelected={props.setSelectedObjects}
                             checkboxType="checkbox"
-                            noElementsText={props.noElementTexts[StoryElementEnum.object]}/>
+                            noElementsText={props.noElementTexts[StoryElementType.object]}/>
                     </Col>
                     <Col style={{maxHeight:"75vh", overflowY:"auto"}}>
                         <ElementList
@@ -92,7 +92,7 @@ function BackgroundElementsModal(props: {
                             selected={props.selectedLocation}
                             setSelected={props.setSelectedLocation}
                             checkboxType="radio"
-                            noElementsText={props.noElementTexts[StoryElementEnum.location]}/>
+                            noElementsText={props.noElementTexts[StoryElementType.location]}/>
                     </Col>
                 </Row>
             </Modal.Body>

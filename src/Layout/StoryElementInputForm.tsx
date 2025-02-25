@@ -1,10 +1,10 @@
 import { Form, InputGroup } from "react-bootstrap";
-import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import React from "react";
 
 function StoryElementInputForm(props: {
-    type: StoryElementEnum,
-    element: StoryElementType,
+    type: StoryElementType,
+    element: StoryElement,
     setElement: (e: any) => void
 }) {
     const commonFields = (
@@ -32,7 +32,7 @@ function StoryElementInputForm(props: {
         </InputGroup>
     );
     switch (props.type) {
-        case StoryElementEnum.character:
+        case StoryElementType.character:
             return(
                 <>
                     {commonFields}
@@ -53,7 +53,7 @@ function StoryElementInputForm(props: {
                     {commonNotes}
                 </>
             );
-        case StoryElementEnum.object:
+        case StoryElementType.object:
             return(
                 <>
                     {commonFields}
@@ -68,7 +68,7 @@ function StoryElementInputForm(props: {
                     {commonNotes}
                 </>
             );
-        case StoryElementEnum.location:
+        case StoryElementType.location:
             return(
                 <>
                     {commonFields}

@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly/core';
 import { javascriptGenerator } from 'blockly/javascript';
-import { StoryElementEnum } from '../StoryElements/StoryElement.ts';
+import { StoryElementType } from '../StoryElements/StoryElement.ts';
 
 type BlockData = {
     id: string,
@@ -9,7 +9,7 @@ type BlockData = {
 }
 
 const storyBlocks = [
-    //StoryElementEnum.character
+    //StoryElementType.character
     {
       blockType: "CharacterBlock",
       customName: "Characters",
@@ -20,7 +20,7 @@ const storyBlocks = [
         callbackKey: "createCharacterInstance"
       }
     },
-    //StoryElementEnum.object
+    //StoryElementType.object
     {
       blockType: "ObjectBlock",
       customName: "Objects",
@@ -31,7 +31,7 @@ const storyBlocks = [
         callbackKey: "createObjectInstance"
       }
     },
-    //StoryElementEnum.location
+    //StoryElementType.location
     {
       blockType: "LocationBlock",
       customName: "Locations",
@@ -47,21 +47,21 @@ const storyBlocks = [
 function initBlocks() {
     const CharacterBlock = {
         init: function () {
-            commonInit(this, StoryElementEnum.character);
+            commonInit(this, StoryElementType.character);
         },
         getOutputText: commonGetOutputText
     };
 
     const ObjectBlock = {
         init: function () {
-            commonInit(this, StoryElementEnum.object);
+            commonInit(this, StoryElementType.object);
         },
         getOutputText: commonGetOutputText
     };
 
     const LocationBlock = {
         init: function () {
-            commonInit(this, StoryElementEnum.location);
+            commonInit(this, StoryElementType.location);
         },
         getOutputText: commonGetOutputText
     };
@@ -107,7 +107,7 @@ function generateCommonBlockData(block: any): string {
     return JSON.stringify(data) + ",";
 }
 
-function commonInit(block: Blockly.Block, type: StoryElementEnum) {
+function commonInit(block: Blockly.Block, type: StoryElementType) {
     block.appendDummyInput('')
           .appendField(new Blockly.FieldLabelSerializable(''), 'SceneObjectName')
     block.setPreviousStatement(true, null);
@@ -119,15 +119,15 @@ function commonGetOutputText(block: Blockly.Block) {
     return `${block.getFieldValue("SceneObjectName")}`;
 }
   
-export function convertFromEnumToObjectType(type: StoryElementEnum | null): string {
+export function convertFromEnumToObjectType(type: StoryElementType | null): string {
     if (type !== null) return storyBlocks[type].blockType;
     return "TextInput";
   }
   
-export function convertFromObjectTypeToEnum(type: string ): StoryElementEnum | null {
+export function convertFromObjectTypeToEnum(type: string ): StoryElementType | null {
     const index = storyBlocks.findIndex(block => block.blockType === type);
     if (index === -1) return null;
-    return index as StoryElementEnum;
+    return index as StoryElementType;
 }
 
 export {initBlocks, BlockData, storyBlocks};

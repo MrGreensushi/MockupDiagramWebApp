@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { StoryElementEnum, StoryElementEnumString, StoryElement } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElementTypeString, StoryElement } from "../StoryElements/StoryElement.ts";
 import { ListGroup, Tab, Tabs } from "react-bootstrap";
 
 const maxElementsShown = 8;
 
 function PromptAreaMenu(props: {
-  elements: [StoryElement, StoryElementEnum][];
+  elements: [StoryElement, StoryElementType][];
   noElements: boolean;
   index: number;
   top: number;
@@ -28,18 +28,18 @@ function PromptAreaMenu(props: {
       return props.elements.map((element, idx) =>
         <PromptAreaMenuElement
           value={element[0].name}
-          className={`${StoryElementEnumString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
+          className={`${StoryElementTypeString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
           onEnter={() => props.setIndex(idx)}
           onClick={() => props.complete(idx)}
           key={idx} />);
     }
-    return <Tabs defaultActiveKey={StoryElementEnum.character}>
-      {[StoryElementEnum.character, StoryElementEnum.object, StoryElementEnum.location].map(type => 
+    return <Tabs defaultActiveKey={StoryElementType.character}>
+      {[StoryElementType.character, StoryElementType.object, StoryElementType.location].map(type => 
         <Tab eventKey={type} title={type} key={type}>
           {props.elements.filter(element => element[1] === type).map((element, idx) => 
             <PromptAreaMenuElement
               value={element[0].name}
-              className={`${StoryElementEnumString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
+              className={`${StoryElementTypeString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
               onEnter={() => props.setIndex(idx)}
               onClick={() => props.complete(idx)}
               key={idx} />)}

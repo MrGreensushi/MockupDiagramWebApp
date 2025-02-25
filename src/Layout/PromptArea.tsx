@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
 import PromptAreaMenu from "./PromptAreaMenu.tsx";
 import Story from "../StoryElements/Story.ts";
-import { StoryElementEnum, StoryElementEnumString } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElementTypeString } from "../StoryElements/StoryElement.ts";
 
 type Position = {
 	top: number;
@@ -16,7 +16,7 @@ const MENTION_REGEX = /\B@([\-+\w]*)$/;
 function PromptArea(props: {
 	initialText?: string,
 	story: Story,
-	setBlocks?: (blocks: [string, StoryElementEnum | null][]) => void,
+	setBlocks?: (blocks: [string, StoryElementType | null][]) => void,
 	setText?: (text: string) => void,
 	onBlur?: (text: string) => void
 }) {
@@ -52,17 +52,17 @@ function PromptArea(props: {
 	}, [elements]);
 	
 	const highlight_characters = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementEnum.character)
+		`(^${elements.filter(element => element[1] === StoryElementType.character)
 			.map(element => `@${element[0].name}`)
 			.join("|")}$)`
 	), [elements])
 	const highlight_objects = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementEnum.object)
+		`(^${elements.filter(element => element[1] === StoryElementType.object)
 			.map(element => `@${element[0].name}`)
 			.join("|")}$)`
 	), [elements])
 	const highlight_locations = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementEnum.location)
+		`(^${elements.filter(element => element[1] === StoryElementType.location)
 			.map(element => `@${element[0].name}`)
 			.join("|")}$)`
 	), [elements])
@@ -98,9 +98,9 @@ function PromptArea(props: {
 	}, [elements, highlight_all]);
 
 	const mentionMatcher = useCallback((mention: string) => {
-		if (mention.match(highlight_characters)) return StoryElementEnum.character;
-		if (mention.match(highlight_objects)) return StoryElementEnum.object;
-		if (mention.match(highlight_locations)) return StoryElementEnum.location;
+		if (mention.match(highlight_characters)) return StoryElementType.character;
+		if (mention.match(highlight_objects)) return StoryElementType.object;
+		if (mention.match(highlight_locations)) return StoryElementType.location;
 		return null;
 	}, [highlight_characters, highlight_objects, highlight_locations]);
 
@@ -109,7 +109,7 @@ function PromptArea(props: {
 			.map((word, idx) => {
 				if (word.startsWith("@")) {
 					const mentionType = mentionMatcher(word);
-					const mentionClass = `${mentionType === null ? "no" : StoryElementEnumString[mentionType]}-mention`
+					const mentionClass = `${mentionType === null ? "no" : StoryElementTypeString[mentionType]}-mention`
 					return <span key={idx} className={mentionClass} style={{borderRadius: "3px" }}>{word}</span>
 				}
 				return word;

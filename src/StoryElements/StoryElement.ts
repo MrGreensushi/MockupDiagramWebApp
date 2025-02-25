@@ -1,15 +1,10 @@
-enum StoryElementEnum {
+enum StoryElementType {
     character = 0,
     object = 1,
     location = 2
 }
 
-const StoryElementEnumString = ["character", "object", "location"];
-
-type StoryElementType = 
-    | CharacterElement
-    | ObjectElement
-    | LocationElement; 
+const StoryElementTypeString = ["character", "object", "location"];
 
 class StoryElement {
     name: string;
@@ -67,4 +62,4 @@ class LocationElement extends StoryElement{
     }
 }
 
-export {StoryElement, CharacterElement, ObjectElement, LocationElement, StoryElementEnum, StoryElementEnumString, StoryElementType};
+export {StoryElement, CharacterElement, ObjectElement, LocationElement, StoryElementType, StoryElementTypeString};

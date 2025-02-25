@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Form, Modal } from "react-bootstrap";
-import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import React from "react";
 import StoryElementInputForm from "./StoryElementInputForm.tsx";
 
@@ -8,25 +8,25 @@ function ElementModal(props: {
     modal: boolean,
     setModal: React.Dispatch<React.SetStateAction<boolean>>,
     modalAction: "add" | "edit",
-    elementType: StoryElementEnum,
-    initialElement?: StoryElementType,
-    onSubmit: (element: StoryElementType) => boolean
+    elementType: StoryElementType,
+    initialElement?: StoryElement,
+    onSubmit: (element: StoryElement) => boolean
 }) {
-    let blankElement: StoryElementType;
+    let blankElement: StoryElement;
     let typeString: string;
     let actionString: string;
     let buttonString: string;
 
     switch (props.elementType) {
-        case StoryElementEnum.character:
+        case StoryElementType.character:
             blankElement = new CharacterElement(false, "Nuovo Personaggio");
             typeString = "personaggio";
         break;
-        case StoryElementEnum.object:
+        case StoryElementType.object:
             blankElement = new ObjectElement(false, "Nuovo Oggetto");
             typeString = "oggetto";
         break;
-        case StoryElementEnum.location:
+        case StoryElementType.location:
             blankElement = new LocationElement(false, "Nuovo Luogo");
             typeString = "luogo";
         break;
@@ -77,7 +77,7 @@ function ElementModal(props: {
         setAlert(true);
     }
 
-    const checkElementInvalid = (element: StoryElementType) => {
+    const checkElementInvalid = (element: StoryElement) => {
         if (!element) throw new Error("Element is undefined");
         if (!element.name || element.name === "") return "Il nome non può essere vuoto";
         return;

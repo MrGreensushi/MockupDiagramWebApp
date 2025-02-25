@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useState } from "react";
 import { Button, Card, Col, Form, InputGroup, ListGroup, Modal, Row } from "react-bootstrap";
 import Story from "../StoryElements/Story.ts";
 import { SceneDetails as SceneDetailsType} from "../StoryElements/Scene.ts";
-import { StoryElementEnum } from "../StoryElements/StoryElement.ts";
+import { StoryElementType } from "../StoryElements/StoryElement.ts";
 import { SceneDetailsContext } from "../App.tsx";
 import DropdownTextField from "./DropdownTextField.tsx";
 import { ChipList, ElementChip } from "./ElementChip.tsx";
@@ -19,9 +19,9 @@ function SceneDetails(props: {
 	const [weather, setWeather] = useState(props.details.weather);
 	const [tone, setTone] = useState(props.details.tone);
 	const [value, setValue] = useState(props.details.value);
-	const [backgroundCharacters, setBackgroundCharacters] = useState(new Set(props.details.backgroundIds[StoryElementEnum.character]));
-	const [backgroundObjects, setBackgroundObjects] = useState(new Set(props.details.backgroundIds[StoryElementEnum.object]));
-	const [backgroundLocations, setBackgroundLocations] = useState(new Set(props.details.backgroundIds[StoryElementEnum.location]));
+	const [backgroundCharacters, setBackgroundCharacters] = useState(new Set(props.details.backgroundIds[StoryElementType.character]));
+	const [backgroundObjects, setBackgroundObjects] = useState(new Set(props.details.backgroundIds[StoryElementType.object]));
+	const [backgroundLocations, setBackgroundLocations] = useState(new Set(props.details.backgroundIds[StoryElementType.location]));
 
 	const [backgroundsModal, setBackgroundsModal] = useState(false);
 

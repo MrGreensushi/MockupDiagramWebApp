@@ -1,7 +1,7 @@
 import { ToolboxDefinition, WorkspaceSvg } from "react-blockly";
 import * as Blockly from "blockly/core";
 import React, { ReactElement, Ref } from "react";
-import { StoryElementEnum, StoryElementEnumString } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElementTypeString } from "../StoryElements/StoryElement.ts";
 import Story from "../StoryElements/Story.ts";
 import { storyBlocks } from "./Blocks.ts";
 
@@ -39,20 +39,20 @@ const customToolboxCategories: ToolboxDefinition = {
     {
       kind: "category",
       name: "Personaggi",
-      colour: storyBlocks[StoryElementEnum.character].colour,
-      custom: storyBlocks[StoryElementEnum.character].customName,
+      colour: storyBlocks[StoryElementType.character].colour,
+      custom: storyBlocks[StoryElementType.character].customName,
     },
     {
       kind: "category",
       name: "Oggetti",
-      colour: storyBlocks[StoryElementEnum.object].colour,
-      custom: storyBlocks[StoryElementEnum.object].customName,
+      colour: storyBlocks[StoryElementType.object].colour,
+      custom: storyBlocks[StoryElementType.object].customName,
     },
     {
       kind: "category",
       name: "Luoghi",
-      colour: storyBlocks[StoryElementEnum.location].colour,
-      custom: storyBlocks[StoryElementEnum.location].customName,
+      colour: storyBlocks[StoryElementType.location].colour,
+      custom: storyBlocks[StoryElementType.location].customName,
     },
   ],
 };
@@ -66,7 +66,7 @@ const workspaceConfiguration: Blockly.BlocklyOptions = {
   }
 };
 
-function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.toolbox.FlyoutDefinition {
+function flyoutCallback(story: Story, type: StoryElementType): Blockly.utils.toolbox.FlyoutDefinition {
   const blockList: Blockly.utils.toolbox.FlyoutItemInfoArray = [storyBlocks[type].button];
 
   [...story.getTypeIterator(type)]
@@ -83,8 +83,8 @@ function flyoutCallback(story: Story, type: StoryElementEnum): Blockly.utils.too
   return blockList;
 }
 
-function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCallback: (type: StoryElementEnum) => void) {
-  StoryElementEnumString.forEach((_, idx) => {
+function populateCustomToolbox(story: Story, workspace: WorkspaceSvg, buttonCallback: (type: StoryElementType) => void) {
+  StoryElementTypeString.forEach((_, idx) => {
     workspace.registerToolboxCategoryCallback(storyBlocks[idx].customName, () => flyoutCallback(story, idx));
     workspace.registerButtonCallback(storyBlocks[idx].button.callbackKey, () => buttonCallback(idx));
   });

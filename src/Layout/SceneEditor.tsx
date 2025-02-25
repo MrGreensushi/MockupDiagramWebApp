@@ -5,7 +5,7 @@ import { useBlocklyWorkspace } from "react-blockly";
 import { javascriptGenerator } from 'blockly/javascript';
 import { baseToolboxCategories, BlocklyCanvas, populateCustomToolbox, workspaceConfiguration } from "../Blockly/BlocklyConfiguration.tsx";
 import { BlockData, convertFromEnumToObjectType, convertFromObjectTypeToEnum } from "../Blockly/Blocks.ts";
-import { StoryElementEnum, StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElementType, StoryElement } from "../StoryElements/StoryElement.ts";
 import Story from "../StoryElements/Story.ts";
 import Scene, { SceneDetails as SceneDetailsType } from "../StoryElements/Scene.ts";
 import ElementModal from "./AddElementModal.tsx";
@@ -19,12 +19,12 @@ function SceneEditor(props: {
 	setScene: (newScene: Scene) => void,
 }) {
 	const [modal, setModal] = useState(false);
-	const [modalType, setModalType] = useState(StoryElementEnum.character);
+	const [modalType, setModalType] = useState(StoryElementType.character);
 	const [timer, setTimer] = useState<NodeJS.Timeout>();
 
 	const blocklyRef = useRef(null);
 
-	const [blocks, setBlocks] = useState<[string, StoryElementEnum | null][]>([]);
+	const [blocks, setBlocks] = useState<[string, StoryElementType | null][]>([]);
 	const [localScene, setLocalScene] = useState(
 		new Scene(
 			props.scene.workspace,
@@ -57,19 +57,19 @@ function SceneEditor(props: {
 		setLocalScene(scene => new Scene(scene.workspace, newDetails));
 	}, []);
 
-	const onClickAdd = useCallback((type: StoryElementEnum) => {
+	const onClickAdd = useCallback((type: StoryElementType) => {
 		setModalType(type);
 		setModal(true);
 	}, []);
 
-	const onSubmitNewElement = (newElement: StoryElementType, type: StoryElementEnum): boolean => {
+	const onSubmitNewElement = (newElement: StoryElement, type: StoryElementType): boolean => {
 		if (!props.story.canAddElement(newElement, type)) return false;
 		props.setStory(story => story.cloneAndAddElement(newElement, type))
 		workspace?.refreshToolboxSelection();
 		return true;
 	}
 
-	const handleBlockChange = useCallback((blocks: [string, StoryElementEnum | null][]) => {
+	const handleBlockChange = useCallback((blocks: [string, StoryElementType | null][]) => {
 		setBlocks(blocks);
 		if (workspace) {
 			workspace.clear();

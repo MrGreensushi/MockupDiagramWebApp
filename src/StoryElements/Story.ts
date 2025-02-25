@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from "uuid";
 import { Node, ReactFlowJsonObject } from "@xyflow/react";
-import { CharacterElement, LocationElement, ObjectElement, StoryElementEnum, StoryElementType } from "./StoryElement.ts";
+import { CharacterElement, LocationElement, ObjectElement, StoryElementType, StoryElement } from "./StoryElement.ts";
 import Scene from "./Scene.ts";
 import { ChoiceDetails } from "../Flow/StoryNode.tsx";
 
@@ -40,24 +40,24 @@ class Story {
         return new Story([...this.characters.entries()], [...this.objects.entries()], [...this.locations.entries()], this.flow, this.title); 
     }
 
-    canAddElement(element: StoryElementType, type: StoryElementEnum): boolean {
+    canAddElement(element: StoryElement, type: StoryElementType): boolean {
         const map = this.getTypeMap(type);
         return ![...map.values()].some(el => el.name === element.name);
     }
 
-    addElement(element: StoryElementType, type: StoryElementEnum) {
+    addElement(element: StoryElement, type: StoryElementType) {
         if (!this.canAddElement(element, type)) return false;
         const map = this.getTypeMap(type);
         switch (type) {
-            case StoryElementEnum.character:
+            case StoryElementType.character:
                 const char = element as CharacterElement;
                 map.set(uuidv4(), new CharacterElement(char.isVariable, char.name, char.bio, char.objective, char.notes));
             break;
-            case StoryElementEnum.object:
+            case StoryElementType.object:
                 const obj = element as ObjectElement;
                 map.set(uuidv4(), new ObjectElement(obj.isVariable, obj.name, obj.use, obj.notes));
             break;
-            case StoryElementEnum.location:
+            case StoryElementType.location:
                 const loc = element as LocationElement;
                 map.set(uuidv4(), new LocationElement(loc.isVariable, loc.name, loc.purpose, loc.notes));
             break;
@@ -65,7 +65,7 @@ class Story {
         return true;
     }
 
-    cloneAndAddElement(element: StoryElementType, type: StoryElementEnum): Story {
+    cloneAndAddElement(element: StoryElement, type: StoryElementType): Story {
         this.addElement(element, type);
         return this.clone();
     }
@@ -85,7 +85,7 @@ class Story {
         return this.clone();
     }
 
-    cloneAndSetElement(id: string, element: StoryElementType, type: StoryElementEnum): Story {
+    cloneAndSetElement(id: string, element: StoryElement, type: StoryElementType): Story {
         this.setElement(id, element, type);
         return this.clone();
     }
@@ -100,7 +100,7 @@ class Story {
         return this.clone();
     }
 
-    setElement(id: string, element: StoryElementType, type: StoryElementEnum) {
+    setElement(id: string, element: StoryElement, type: StoryElementType) {
         const iter = this.getTypeMap(type);
         iter.set(id, element);
     }
@@ -111,30 +111,30 @@ class Story {
         if (this.locations.delete(id)) return;
     }
 
-    getAll(): [StoryElementType, StoryElementEnum][] {
-        const entries = new Array<[StoryElementType, StoryElementEnum]>().concat(
-            [...this.characters.values()].map(v => [v, StoryElementEnum.character]),
-            [...this.objects.values()].map(v => [v, StoryElementEnum.object]),
-            [...this.locations.values()].map(v => [v, StoryElementEnum.location]));
+    getAll(): [StoryElement, StoryElementType][] {
+        const entries = new Array<[StoryElement, StoryElementType]>().concat(
+            [...this.characters.values()].map(v => [v, StoryElementType.character]),
+            [...this.objects.values()].map(v => [v, StoryElementType.object]),
+            [...this.locations.values()].map(v => [v, StoryElementType.location]));
         return entries;
     }
   
-    getTypeMap(type: StoryElementEnum): Map<string, StoryElementType> {
+    getTypeMap(type: StoryElementType): Map<string, StoryElement> {
         switch (type) {
-            case StoryElementEnum.character:
+            case StoryElementType.character:
                 return this.characters;
-            case StoryElementEnum.object:
+            case StoryElementType.object:
                 return this.objects;
-            case StoryElementEnum.location:
+            case StoryElementType.location:
                 return this.locations;
         }
     }
 
-    getTypeIterator(type: StoryElementEnum): MapIterator<StoryElementType> {
+    getTypeIterator(type: StoryElementType): MapIterator<StoryElement> {
         return this.getTypeMap(type).values();
     }
 
-    getElementById(id: string): StoryElementType | undefined {
+    getElementById(id: string): StoryElement | undefined {
         return this.characters.get(id) ?? this.objects.get(id) ?? this.locations.get(id);
     }
 
@@ -142,9 +142,9 @@ class Story {
         return this.flow.nodes.find(node => node.id === id);
     }
 
-    search(element: StoryElementType, type?: StoryElementEnum) {
-        let iter: Map<string, StoryElementType>;
-        const ltype = type ? [type] : [StoryElementEnum.character, StoryElementEnum.object, StoryElementEnum.location];
+    search(element: StoryElement, type?: StoryElementType) {
+        let iter: Map<string, StoryElement>;
+        const ltype = type ? [type] : [StoryElementType.character, StoryElementType.object, StoryElementType.location];
         for (const type of ltype) {
             iter = this.getTypeMap(type);
             for (const [key, value] of iter.entries()) {

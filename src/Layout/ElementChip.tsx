@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, Row } from "react-bootstrap";
-import { StoryElementType } from "../StoryElements/StoryElement.ts";
+import { StoryElement } from "../StoryElements/StoryElement.ts";
 
 function ElementChip(props: {
     name: string,
@@ -22,7 +22,7 @@ function ElementChip(props: {
 function ChipList(props: {
     values: Set<string>,
     setValues: React.Dispatch<React.SetStateAction<Set<string>>>,
-    allValues: Map<string, StoryElementType>,
+    allValues: Map<string, StoryElement>,
     className: string,
     noElementsText: string
 }) {
