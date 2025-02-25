@@ -5,7 +5,7 @@ import { ListGroup, Tab, Tabs } from "react-bootstrap";
 const maxElementsShown = 8;
 
 function PromptAreaMenu(props: {
-  elements: [StoryElement, StoryElementType][];
+  elements: StoryElement[];
   noElements: boolean;
   index: number;
   top: number;
@@ -27,8 +27,8 @@ function PromptAreaMenu(props: {
     if (props.elements.length <= maxElementsShown) {
       return props.elements.map((element, idx) =>
         <PromptAreaMenuElement
-          value={element[0].name}
-          className={`${StoryElementTypeString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
+          value={element.name}
+          className={`${StoryElementTypeString[element.type]}-mention ${props.index === idx ? "selected" : ""}`}
           onEnter={() => props.setIndex(idx)}
           onClick={() => props.complete(idx)}
           key={idx} />);
@@ -36,10 +36,10 @@ function PromptAreaMenu(props: {
     return <Tabs defaultActiveKey={StoryElementType.character}>
       {[StoryElementType.character, StoryElementType.object, StoryElementType.location].map(type => 
         <Tab eventKey={type} title={type} key={type}>
-          {props.elements.filter(element => element[1] === type).map((element, idx) => 
+          {props.elements.filter(element => element.type === type).map((element, idx) => 
             <PromptAreaMenuElement
-              value={element[0].name}
-              className={`${StoryElementTypeString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
+              value={element.name}
+              className={`${StoryElementTypeString[element.type]}-mention ${props.index === idx ? "selected" : ""}`}
               onEnter={() => props.setIndex(idx)}
               onClick={() => props.complete(idx)}
               key={idx} />)}

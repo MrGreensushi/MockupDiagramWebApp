@@ -62,9 +62,9 @@ function SceneEditor(props: {
 		setModal(true);
 	}, []);
 
-	const onSubmitNewElement = (newElement: StoryElement, type: StoryElementType): boolean => {
-		if (!props.story.canAddElement(newElement, type)) return false;
-		props.setStory(story => story.cloneAndAddElement(newElement, type))
+	const onSubmitNewElement = (newElement: StoryElement): boolean => {
+		if (!props.story.canAddElement(newElement)) return false;
+		props.setStory(story => story.cloneAndAddElement(newElement))
 		workspace?.refreshToolboxSelection();
 		return true;
 	}
@@ -105,7 +105,7 @@ function SceneEditor(props: {
 				setModal={setModal}
 				modalAction="add"
 				elementType={modalType}
-				onSubmit={element => onSubmitNewElement(element, modalType)} />
+				onSubmit={element => onSubmitNewElement(element)} />
 			<Row className="h-100">
 				<Col xs={6} className="h-100">
 					<Card className="h-100">

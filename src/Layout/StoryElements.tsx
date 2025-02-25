@@ -48,15 +48,15 @@ function StoryElements (props: {
   }
 
   const onSubmitNewElement = useCallback((newElement: StoryElement) => {
-    if (!props.story.canAddElement(newElement, key)) return false;
-    props.setStory?.(story => story.cloneAndAddElement(newElement, key));
+    if (!props.story.canAddElement(newElement)) return false;
+    props.setStory?.(story => story.cloneAndAddElement(newElement));
     onDeselectElement();
     return true;
   }, [key, props.story, props.setStory]);
 
   const onEditElement = useCallback((editedElement: StoryElement) => {
     if (selectedElementId) {
-      props.setStory?.(story => story.cloneAndSetElement(selectedElementId, editedElement, key));
+      props.setStory?.(story => story.cloneAndSetElement(selectedElementId, editedElement));
       onDeselectElement();
       return true;
     }

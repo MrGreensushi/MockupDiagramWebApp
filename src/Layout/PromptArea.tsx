@@ -35,35 +35,35 @@ function PromptArea(props: {
 	const filtered = useMemo(() =>
 		elements
 			.filter(element =>
-				element[0].name.toLowerCase()
+				element.name.toLowerCase()
 					.startsWith(name.toLowerCase()))
-			.map(element => element[0].name)
+			.map(element => element.name)
 		, [elements, name]);
 	const filteredMap = useMemo(() =>
 		elements
 			.filter(element =>
-				element[0].name.toLowerCase()
+				element.name.toLowerCase()
 					.startsWith(name.toLowerCase()))
 		, [elements, name]);
 	
 	const highlight_all = useMemo(() => {
 		if (elements.length === 0) return /^$/;
-		else return new RegExp("(" + elements.map(element => `@${element[0].name}`).join("|") + ")", "g")
+		else return new RegExp("(" + elements.map(element => `@${element.name}`).join("|") + ")", "g")
 	}, [elements]);
 	
 	const highlight_characters = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementType.character)
-			.map(element => `@${element[0].name}`)
+		`(^${elements.filter(element => element.type === StoryElementType.character)
+			.map(element => `@${element.name}`)
 			.join("|")}$)`
 	), [elements])
 	const highlight_objects = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementType.object)
-			.map(element => `@${element[0].name}`)
+		`(^${elements.filter(element => element.type === StoryElementType.object)
+			.map(element => `@${element.name}`)
 			.join("|")}$)`
 	), [elements])
 	const highlight_locations = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element[1] === StoryElementType.location)
-			.map(element => `@${element[0].name}`)
+		`(^${elements.filter(element => element.type === StoryElementType.location)
+			.map(element => `@${element.name}`)
 			.join("|")}$)`
 	), [elements])
 

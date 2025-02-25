@@ -6,10 +6,11 @@ enum StoryElementType {
 
 const StoryElementTypeString = ["character", "object", "location"];
 
-class StoryElement {
+abstract class StoryElement {
     name: string;
     notes: string;
     isVariable: boolean;
+    type: StoryElementType;
 
     constructor(isVariable: boolean, name: string, notes?: string) {
         this.name = name;
@@ -41,6 +42,7 @@ class CharacterElement extends StoryElement {
         super(isVariable, name, notes);
         this.bio = bio ?? "";
         this.objective = objective ?? "";
+        this.type = StoryElementType.character;
     }
 }
 
@@ -50,6 +52,7 @@ class ObjectElement extends StoryElement{
     constructor(isVariable: boolean, name: string, use?: string, notes?: string) {
         super(isVariable, name, notes);
         this.use = use ?? "";
+        this.type = StoryElementType.object;
     }
 }
 
@@ -59,6 +62,7 @@ class LocationElement extends StoryElement{
     constructor(isVariable: boolean, name: string, purpose?: string, notes?: string) {
         super(isVariable, name, notes);
         this.purpose = purpose ?? "";
+        this.type = StoryElementType.location;
     }
 }
 
