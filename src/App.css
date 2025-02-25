@@ -225,3 +225,12 @@
     background: #00000020;
   }
 }
+
+.prompt-area-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 15em;
+  z-index: 1500;
+  font-size: small;
+}

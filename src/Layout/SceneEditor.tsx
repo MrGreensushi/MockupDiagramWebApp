@@ -117,15 +117,17 @@ function SceneEditor(props: {
 								<BlocklyCanvas
 									blocklyRef={blocklyRef} />
 							</div>
-							<PromptArea
-								initialText={
-									blocks.map(block => {
-										if (block[1] === null) return block[0] ?? "";
-										return `@${block[0]}`;
-									}).join("")
-								}
-								story={props.story}
-								setBlocks={handleBlockChange} />
+							<div className="h-25">
+								<PromptArea
+									initialText={
+										blocks.map(block => {
+											if (block[1] === null) return block[0] ?? "";
+											return `@${block[0]}`;
+										}).join("")
+									}
+									story={props.story}
+									setBlocks={handleBlockChange} />
+							</div>
 						</Card.Body>
 					</Card>
 				</Col>

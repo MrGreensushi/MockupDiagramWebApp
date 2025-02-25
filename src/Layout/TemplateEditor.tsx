@@ -158,7 +158,8 @@ function TemplateEditor(props: {
 								{node.type === NodeType.choice &&
 									<ChoiceEditor 
 										choices={node.data.choices as ChoiceDetails[]}
-										setChoices={newChoice => onChoiceEdited(nodeId, newChoice)} />}
+										setChoices={newChoice => onChoiceEdited(nodeId, newChoice)}
+										story={localStory} />}
 							</Tab>
 							)}
 						)}

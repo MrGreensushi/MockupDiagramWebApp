@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Card, Col, Collapse, Form, InputGroup, ListGroup, Row } from "react-bootstrap";
-import { ChoiceDetails } from "../Flow/StoryNode";
+import { ChoiceDetails } from "../Flow/StoryNode.tsx";
+import PromptArea from "./PromptArea.tsx";
+import Story from "../StoryElements/Story.tsx";
 
 function ChoiceEditor(props: {
     choices: ChoiceDetails[],
     setChoices: (choices: ChoiceDetails[]) => void,
+    story: Story,
 }) {
     const [localChoices, setLocalChoices] = useState(props.choices);
     const [timer, setTimer] = useState<NodeJS.Timeout>();
@@ -76,13 +79,15 @@ function ChoiceEditor(props: {
                                         {choice.wrong ? <i className="bi bi-x-lg"/> : <i className="bi bi-check-lg"/>}
                                     </Button>
                                 </InputGroup>
-                                <InputGroup>
+                                <div style={{height:"5em"}}>
+                                    <PromptArea
+                                        initialText={choice.choice}
+                                        story={props.story}
+                                        onBlur={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})} />
+                                </div>
+                                {/*<InputGroup>
                                     <InputGroup.Text style={{width:textWidth}}>Testo scelta:</InputGroup.Text>
-                                    <Form.Control
-                                        as="textarea"
-                                        value={choice.choice}
-                                        onChange={e => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: e.target.value})} />
-                                </InputGroup>
+                                </InputGroup>*/}
                                 <Collapse in={choice.wrong}>
                                     <InputGroup>
                                         <InputGroup.Text style={{width:textWidth}}>Conseguenza:</InputGroup.Text>

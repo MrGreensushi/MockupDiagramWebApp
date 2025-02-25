@@ -1,49 +1,58 @@
-import React from "react";
-import { StoryElementEnum, StoryElementEnumString, StoryElementType } from "../StoryElements/StoryElement.ts";
-import { ListGroup } from "react-bootstrap";
+import React, { useMemo } from "react";
+import { StoryElementEnum, StoryElementEnumString, StoryElement } from "../StoryElements/StoryElement.ts";
+import { ListGroup, Tab, Tabs } from "react-bootstrap";
+
+const maxElementsShown = 8;
 
 function PromptAreaMenu(props: {
-  elements: [StoryElementType, StoryElementEnum][];
+  elements: [StoryElement, StoryElementEnum][];
   noElements: boolean;
   index: number;
-  setIndex: React.Dispatch<React.SetStateAction<number>>
   top: number;
   left: number;
+  setIndex: React.Dispatch<React.SetStateAction<number>>
   complete: (index: number) => void;
 }) {
-  return (
-    <ListGroup
-      className="prompt-area"
-      style={{
-        position: "fixed",
-        top: props.top,
-        left: props.left,
-        border: "solid 1px gray",
-        borderRadius: "3px",
-        background: "white",
-        cursor: "pointer",
-        maxWidth: "15em",
-        zIndex: "1500"
-      }} >
-      {props.noElements ?
-        <PromptAreaMenuElement
+  const elements = useMemo(() => {
+    if (props.noElements) {
+      return <PromptAreaMenuElement
         value={"Non sono presenti elementi nella storia attuale"}
         className={"no-mention"} />
-      :
-        props.elements.length === 0 ?
-          <PromptAreaMenuElement
-          value={"Nessuna corrispondenza"}
-          className={"no-mention"} />
-        :
-          props.elements.map((element, idx) =>
+    }
+    if (props.elements.length === 0) {
+      return <PromptAreaMenuElement
+        value={"Nessuna corrispondenza"}
+        className={"no-mention"} />
+    }
+    if (props.elements.length <= maxElementsShown) {
+      return props.elements.map((element, idx) =>
+        <PromptAreaMenuElement
+          value={element[0].name}
+          className={`${StoryElementEnumString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
+          onEnter={() => props.setIndex(idx)}
+          onClick={() => props.complete(idx)}
+          key={idx} />);
+    }
+    return <Tabs defaultActiveKey={StoryElementEnum.character}>
+      {[StoryElementEnum.character, StoryElementEnum.object, StoryElementEnum.location].map(type => 
+        <Tab eventKey={type} title={type} key={type}>
+          {props.elements.filter(element => element[1] === type).map((element, idx) => 
             <PromptAreaMenuElement
               value={element[0].name}
-              className={`${StoryElementEnumString[props.elements[idx][1]]}-mention ${props.index === idx ? "selected" : ""}`}
+              className={`${StoryElementEnumString[element[1]]}-mention ${props.index === idx ? "selected" : ""}`}
               onEnter={() => props.setIndex(idx)}
               onClick={() => props.complete(idx)}
-              key={idx} />)
+              key={idx} />)}
+        </Tab>
+      )}
+    </Tabs>
+  }, [props.noElements, props.elements, props.index]);
 
-      }
+  return (
+    <ListGroup
+      className="prompt-area-menu"
+      style={{transform: `translate(min(${props.left}px, calc(100vw - 100%)), max(${props.top}px - 100%, 0px))`}}>
+      {elements}
     </ListGroup>
   );
 }
@@ -57,11 +66,10 @@ function PromptAreaMenuElement(props: {
 }) {
   return (
     <ListGroup.Item
-      action
+      action={!!props.onClick}
       className={props.className}
-      style={{padding: "4px"}}
       onMouseEnter={e => {e.preventDefault(); props.onEnter?.()}}
-      onMouseDown={e => {e.preventDefault(); props.onClick?.()}} >
+      onMouseDown={e => {e.preventDefault(); props.onClick?.()}}>
       {props.value}
     </ListGroup.Item>
   );

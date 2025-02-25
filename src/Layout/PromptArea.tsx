@@ -13,13 +13,12 @@ type Position = {
 
 const MENTION_REGEX = /\B@([\-+\w]*)$/;
 
-const MAX_LIST_LENGTH = 10;
-
 function PromptArea(props: {
 	initialText?: string,
 	story: Story,
-	setBlocks: (blocks: [string, StoryElementEnum | null][]) => void,
-	onBlur?: () => void
+	setBlocks?: (blocks: [string, StoryElementEnum | null][]) => void,
+	setText?: (text: string) => void,
+	onBlur?: (text: string) => void
 }) {
 	const ref = useRef<RichTextareaHandle>(null);
 	const refApp = useRef(document.getElementsByClassName("App").item(0));
@@ -38,7 +37,6 @@ function PromptArea(props: {
 			.filter(element =>
 				element[0].name.toLowerCase()
 					.startsWith(name.toLowerCase()))
-					.slice(0, MAX_LIST_LENGTH)
 			.map(element => element[0].name)
 		, [elements, name]);
 	const filteredMap = useMemo(() =>
@@ -46,7 +44,6 @@ function PromptArea(props: {
 			.filter(element =>
 				element[0].name.toLowerCase()
 					.startsWith(name.toLowerCase()))
-					.slice(0, MAX_LIST_LENGTH)
 		, [elements, name]);
 	
 	const highlight_all = useMemo(() => {
@@ -76,9 +73,9 @@ function PromptArea(props: {
 		if (!ref.current || !pos) return;
 		const selected = filtered[index];
 		ref.current.setRangeText(
-			`@${selected}`,
+			`@${selected} `,
 			pos.caret - name.length - 1,
-			pos.caret,
+			pos.caret + 1,
 			"end");
 		setPos(null);
 		setIndex(0);
@@ -121,15 +118,17 @@ function PromptArea(props: {
 	}, [textSplitter, mentionMatcher]);
 
 	return (
-		<div className="prompt-area w-100 h-25">
+		<div className="prompt-area h-100 w-100">
 			<RichTextarea
 				ref={ref}
 				value={text}
-				style={{width:"100%", height:"100%", left:"0px"}}
-				onBlur={props.onBlur}
+				className="form-control"
+				style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
+				onBlur={() => props.onBlur?.(text)}
 				onChange={e => {
 					setText(e.target.value);
-					props.setBlocks(
+					props.setText?.(e.target.value);
+					props.setBlocks?.(
 						textSplitter(e.target.value, false)
 						.filter(s => !s.match(/^ +$/))
 						.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
@@ -165,7 +164,7 @@ function PromptArea(props: {
 				onSelectionChange={r => {
 					if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
 						setPos({
-							top: r.top + r.height,
+							top: r.top/* + r.height*/,
 							left: r.left,
 							caret: r.selectionStart
 						});
