@@ -24,6 +24,7 @@ import {
 import { ActiveLanguage, ChangeActiveLanguage } from "../App.tsx";
 import { LANGUAGES } from "../Procedure/Languages.ts";
 import axios from "axios";
+import { ExtractXML } from "./ExtractXML.tsx";
 
 function OperationMenu(props: {
   addNode: () => void;
@@ -158,9 +159,10 @@ function OperationMenu(props: {
         >
           Save Procedure
         </Button>
-        <Button variant="outline-primary" onClick={extractXMLs}>
+        {/* <Button variant="outline-primary" onClick={extractXMLs}>
           Extract XMLs
-        </Button>
+        </Button> */}
+        <ExtractXML getJSONFile={props.getJSONFile} />
         <LoadModal onLoad={importNodesFromXML}>Import Nodes</LoadModal>
         <ConfirmModal onClick={() => props.resetEditor()}>
           Start new Project
