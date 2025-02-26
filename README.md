@@ -101,6 +101,8 @@ La classe gestisce la rappresentazione grafica degli edges. Per far cambiare il 
 
 ## UML Class Diagram
 
+![Activity Procedure class Diagram](.\immagini\UML.png) 
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
