@@ -39,12 +39,31 @@ function OperationMenu(props: {
   const rfInstance = props.rfInstance;
   const procedureTitle = props.procedureTitle;
 
+  /**
+   * Callback function to handle the download operation.
+   * It retrieves a JSON string of the project
+   * and then saves it to disk with the specified procedure title and a ".procedure" extension.
+   *
+   * @async
+   * @returns {Promise<void>} A promise that resolves when the save operation is complete.
+   */
   const onSave = useCallback(async () => {
     const jsonString = props.getJSONFile();
     //downloadXML(jsonString);
     saveToDisk(jsonString, procedureTitle + ".procedure", "json");
   }, [rfInstance, procedureTitle, props.getJSONFile]);
 
+  /**
+   * Downloads a .zip file with all the xmls by sending the JSON of the project to the backend.
+   *
+   * @param {string} jsonProcedure - The JSON string representing the project to be sent to the backend.
+   * @returns {Promise<void>} A promise that resolves when the download is complete.
+   *
+   * The function sends a POST request to the "/procedure" endpoint with the provided JSON procedure.
+   * If the response is successful, it creates a blob from the response, generates a download link,
+   * and triggers the download of the file named "xml_files.zip".
+   * If the response is not successful, it logs an error message to the console.
+   */
   async function downloadXML(jsonProcedure: string) {
     const response = await fetch("/procedure", {
       method: "POST",
@@ -72,6 +91,15 @@ function OperationMenu(props: {
     downloadXML(jsonString);
   };
 
+  /**
+   * Loads a JSON file of a project to load and processes its content.
+   *
+   * @param {File} [file] - The file to be loaded. If no file is provided, the function will return early.
+   *
+   * @returns {Promise<void>} A promise that resolves when the file content is processed.
+   *
+   * @throws Will log an error to the console if there is an issue reading the file.
+   */
   const onLoad = useCallback(async (file?: File) => {
     if (!file) return;
 
@@ -83,6 +111,14 @@ function OperationMenu(props: {
     }
   }, []);
 
+  /**
+   * Imports Activity nodes from a .procedure file and updates categorized descriptions in the parent component.
+   *
+   * @param {File} [file] - The .procedure file to import. If no file is provided, the function will return early.
+   * @returns {Promise<void>} A promise that resolves when the file has been processed and descriptions have been updated.
+   *
+   * @throws Will not throw an error, but will silently fail if an error occurs during file processing.
+   */
   const importNodesFromXML = async (file?: File) => {
     if (!file) return;
     try {
@@ -213,6 +249,16 @@ function LanguageSelectionDropdown(props: {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false); // Stato per il loading
 
+  /**
+   * Handles the selection of a language for translation.
+   *
+   * This function sets the loading state to true, sends a POST request to the server
+   * to translate the project to the selected language. If an error occurs during the request, an alert is shown.
+   * The loading state is set to false once the request is completed, regardless of success or failure.
+   *
+   * @param {string} langCode - The language code for the selected language.
+   * @returns {Promise<void>} A promise that resolves when the translation process is complete.
+   */
   const onLanguageSelected = async (langCode: string) => {
     setLoading(true); // Mostra il loading
     try {

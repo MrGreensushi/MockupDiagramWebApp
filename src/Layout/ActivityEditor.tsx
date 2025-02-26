@@ -25,6 +25,13 @@ function ActivityEditor(props: {
   const [details, setDetails] = useState(props.activity?.details ?? "");
   const [notes, setNotes] = useState(props.activity?.notes ?? "");
 
+  /**
+   * Updates the activity in the parent ccmponent with the new phrases, details, and notes.
+   *
+   * @param {Phrase[]} [newPhrases] - Optional new phrases to update the activity with. If not provided, the current phrases are used.
+   * @param {string} [newDetails] - Optional new details to update the activity with. If not provided, the current details are used.
+   * @param {string} [newNotes] - Optional new notes to update the activity with. If not provided, the current notes are used.
+   */
   const handleSave = (
     newPhrases?: Phrase[],
     newDetails?: string,
@@ -40,6 +47,16 @@ function ActivityEditor(props: {
     );
   };
 
+  /**
+   * Updates the phrases for a given clip ID with the provided text for the different levels.
+   * After the update is done, it sends the new phrases to the parent component.
+   *
+   * @param {string} clipId - The ID of the clip to update.
+   * @param {string} noviceText - The text for the novice level.
+   * @param {string} [intermediateText] - The text for the intermediate level (optional).
+   * @param {string} [expertText] - The text for the expert level (optional).
+   * @param {string} [newClipId] - A new clip ID to replace the original clip ID (optional).
+   */
   const handlePhraseUpdate = (
     clipId: string,
     noviceText: string,
@@ -70,6 +87,14 @@ function ActivityEditor(props: {
     });
   };
 
+  /**
+   * Updates or adds a new phrase to the array of phrases.
+   *
+   * @param {Phrase[]} arr - The array of phrases.
+   * @param {string} clipId - The clip ID to match the phrase.
+   * @param {Phrase} [newPhrase] - The new phrase to add or update.
+   * @returns {Phrase[]} A new array with the updated or added phrase.
+   */
   const updateOrAdd = (arr: Phrase[], clipId: string, newPhrase?: Phrase) => {
     if (!newPhrase) return [...arr];
 
@@ -82,17 +107,32 @@ function ActivityEditor(props: {
     return [...copy];
   };
 
+  /**
+   * Updates the details state and triggers the save handler with the new details.
+   *
+   * @param {string} newNotes - The new notes to be set and saved.
+   */
   const handleDetailsUpdate = (newDet: string) => {
     setDetails(newDet);
     handleSave(undefined, newDet);
-    // handleSave(undefined, newDet, undefined);
   };
 
+  /**
+   * Updates the notes state and triggers the save handler with the new notes.
+   *
+   * @param {string} newNotes - The new notes to be set and saved.
+   */
   const handleNotesUpdate = (newNotes: string) => {
     setNotes(newNotes);
     handleSave(undefined, undefined, newNotes);
   };
 
+  /**
+   * Removes a phrase from the list of phrases based on the provided clipId.
+   *
+   * @param {string} clipId - The unique identifier of the clip to be removed.
+   * @returns {void}
+   */
   const removePhrase = (clipId: string) => {
     setPhrases((oldPhrases) => {
       const filtered = oldPhrases.filter((x) => x.clipId !== clipId);
@@ -101,6 +141,16 @@ function ActivityEditor(props: {
     });
   };
 
+  /**
+   * Instantiates an ActivityPhrases component with the provided parameters.
+   *
+   * @param {string} clipId - The unique identifier for the clip.
+   * @param {number} indexOfNovicePhrase - The index of the novice phrase.
+   * @param {string} noviceText - The text for the novice level.
+   * @param {string} [intermediateText] - The text for the intermediate level (optional).
+   * @param {string} [advanceText] - The text for the advanced level (optional).
+   * @returns {JSX.Element} The instantiated ActivityPhrases component.
+   */
   const instantiateActivityPhrase = (
     clipId: string,
     indexOfNovicePhrase: number,
@@ -124,6 +174,16 @@ function ActivityEditor(props: {
     );
   };
 
+  /**
+   * Groups phrases by their clipId and instantiate an ActivityPhrases component containing information about each level of that clipId.
+   *
+   * @returns An array of ActivityPhrases components, each containing information about the novice, intermediate, and expert levels of a clipId.
+   *
+   * The function performs the following steps:
+   * 1. Groups all the phrases based on their clipId and stores the index in the array for checking the clipId.
+   * 2. For each group, it creates an object containing all the information about each level of that clipId.
+   * 3. Uses the `instantiateActivityPhrase` function to create an ActivityPhrases component for each object.
+   */
   const instantiateActivityPhrases = () => {
     //group all the prases based on their clipId (store the index in the array to use for checking the clipId)
     const groupedByClipId: Record<string, { index: number; phrase: Phrase }[]> =
@@ -165,6 +225,15 @@ function ActivityEditor(props: {
     });
   };
 
+  /**
+   * Adds a new phrase to the list of phrases.
+   *
+   * This function generates a new phrase with a unique ID based on the current length of the phrases array,
+   * sets its level to novice, and initializes it with an empty string. The new phrase is then added to the
+   * existing list of phrases, and the updated list is saved using the handleSave function.
+   *
+   * @returns {void}
+   */
   const addNewPhrase = () => {
     setPhrases((prePhrases) => {
       const newClipId = "New Phrase" + prePhrases.length;
@@ -178,6 +247,13 @@ function ActivityEditor(props: {
     });
   };
 
+  /**
+   * Checks if a given clip ID are associated other novice level phrases.
+   *
+   * @param clip - The clip ID to check.
+   * @param indexOfNovicePhrase - The index of the novice phrase to exclude from the check.
+   * @returns `true` if there is another novice level phrase with the same clip ID, `false` otherwise.
+   */
   const checkClipIdName = (clip: string, indexOfNovicePhrase: number) => {
     return phrases.some(
       (x, index) =>

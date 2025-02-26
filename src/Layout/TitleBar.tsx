@@ -23,6 +23,15 @@ function TitleBar(props: {
     props.handleSubmitTitle(name);
   };
 
+  /**
+   * Generates an array of breadcrumb titles for the active procedure and its parent procedures.
+   *
+   * This function creates an array of procedures starting from the active procedure and traversing
+   * up through its parent procedures until there are no more parents. The array is then reversed
+   * to ensure the breadcrumb order is from the root procedure to the active procedure.
+   *
+   * @returns {JSX.Element[]} An array of breadcrumb titles as JSX elements.
+   */
   const instantiateBreadcrums = () => {
     //create an array with all the parentId
     const procedures = [props.activeProcedure];
@@ -37,6 +46,14 @@ function TitleBar(props: {
     );
   };
 
+  /**
+   * Renders a breadcrumb title component.
+   *
+   * @param {Procedure} sub - The procedure object containing the title.
+   * @param {number} index - The index of the breadcrumb item.
+   * @param {boolean} isActive - Indicates if the breadcrumb item is active.
+   * @returns {JSX.Element} The breadcrumb item or a modifiable title component.
+   */
   const BreadrcrumTitle = (
     sub: Procedure,
     index: number,

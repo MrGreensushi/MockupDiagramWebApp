@@ -66,7 +66,6 @@ def extract_XML_from_procedure():
             zip_folder=writeXml.zipAllActivitiesXmls(data)
 
             return send_file(zip_folder, as_attachment=True, download_name='xml_files.zip', mimetype='application/zip')
-           # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -80,7 +79,6 @@ def translate_project(language_code):
 
             translation=translate_procedure(data,dest_lang=language_code)
             return translation
-           # return jsonify({"message": "Data received successfully", "received": data,"xmls": xmls}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -152,11 +152,23 @@ function ProcedureFlowDiagram(props: {
     setSelectedNodeId(undefined);
   }, []);
 
+  /**
+   * Update the procedure in the ProcedureEditor component by copying the rfInstance component.
+   *
+   * @remarks
+   * This function assumes that `rfInstance` is not null or undefined.
+   */
   const saveActiveProcedure = () => {
     console.log("SaveActiveProcedure");
     props.handleActiveProcedureUpdate(rfInstance!.toObject());
   };
 
+  /**
+   * Update the procedure in the ProcedureEditor component based on the input node array.
+   *
+   * @param {Node[]} newNodes - An array of new nodes to be saved.
+   * @returns {void}
+   */
   const saveNewNodes = (newNodes: Node[]) => {
     console.log("saveNewNodes");
     const viewport: Viewport = rfInstance
@@ -170,6 +182,16 @@ function ProcedureFlowDiagram(props: {
     props.handleActiveProcedureUpdate(reactJSONObject);
   };
 
+  /**
+   * Changes the active procedure in the ProcedureEditor component to the specified procedure ID.
+   *
+   * This function performs the following actions:
+   * 1. Saves the current active procedure.
+   * 2. Resets the selected node ID to undefined.
+   * 3. Sets the new active procedure using the provided procedure ID.
+   *
+   * @param procedureId - The ID of the procedure to set as active.
+   */
   const changeActiveProcedure = (procedureId: string) => {
     saveActiveProcedure();
     setSelectedNodeId(undefined);
@@ -182,6 +204,7 @@ function ProcedureFlowDiagram(props: {
       const activity = node.data.activity as Activity;
       if (!activity) return;
 
+      // if the node is an activity node set the active procedure to the subProcedureId
       changeActiveProcedure(activity.subProcedureId);
     },
     [changeActiveProcedure]
@@ -189,6 +212,14 @@ function ProcedureFlowDiagram(props: {
 
   //#region ActivityNode
 
+  /**
+   * Creates a new procedure with the given title and parent procedure ID.
+   * Generates a unique ID for the new procedure and adds it to the list of procedures.
+   *
+   * @param title - The title of the new procedure.
+   * @param parentProcedureId - The ID of the parent procedure.
+   * @returns The newly created procedure.
+   */
   const createNewProcedure = (title: string, parentProcedureId: string) => {
     //create new subProcedure and update the activity
     const id = uuidv4();
@@ -197,6 +228,20 @@ function ProcedureFlowDiagram(props: {
     return procedure;
   };
 
+  /**
+   * Updates an activity by its ID with new phrases, details, name, and notes.
+   *
+   * @param {string} id - The ID of the activity to update.
+   * @param {Phrase[]} [newPhrases] - Optional new phrases to update the activity with.
+   * @param {string} [details] - Optional new details to update the activity with.
+   * @param {string} [newName] - Optional new name to update the activity with.
+   * @param {string} [newNotes] - Optional new notes to update the activity with.
+   *
+   * @returns {void}
+   *
+   * @throws Will log an error if no activity with the given ID is found.
+   * @throws Will log an error if the node with the given ID is not an activity.
+   */
   const updateActivityById = (
     id: string,
     newPhrases?: Phrase[],
@@ -239,6 +284,18 @@ function ProcedureFlowDiagram(props: {
     props.updateActivitiesWithSameName(updatedActivity);
   };
 
+  /**
+   * Creates a new activity node with a unique ID, label, position, and associated sub-procedure.
+   *
+   * @param {ActivityDescription} [activityDescription] - Optional description of the activity.
+   * @returns {ActivityNodeObject} The newly created activity node object.
+   *
+   * @remarks
+   * - Generates a unique ID for the node using `uuidv4()`.
+   * - The label is either the name from `activityDescription` or a default "Procedure" label with an incremented number.
+   * - Creates a new sub-procedure associated with the node.
+   * - Calculates the position of the node based on the center of the flow diagram or defaults to (0, 0).
+   */
   const createNewActivityNode = useCallback(
     (activityDescription?: ActivityDescription) => {
       const id = uuidv4();
@@ -276,24 +333,25 @@ function ProcedureFlowDiagram(props: {
     [rfInstance, nodes.length, changeActiveProcedure]
   );
 
+  /**
+   * Instantiates a new activity node.
+   * Then saves the new list of nodes using the `saveNewNodes` function.
+   *
+   */
   const addNode = useCallback(() => {
     const newNode = createNewActivityNode();
     saveNewNodes([...nodes, newNode]);
-    // setNodes((nodes) => {
-    //   const newNodes = [...nodes, newNode];
-    //   saveNewNodes(newNodes);
-    //   return newNodes;
-    // });
   }, [createNewActivityNode, nodes, saveNewNodes]);
 
+  /**
+   * Instantiates a new activity node based on the provided activity description.
+   * Then saves the new list of nodes using the `saveNewNodes` function.
+   *
+   * @param {ActivityDescription} activityDescription - The description of the activity to instantiate.
+   */
   const instantiateActivity = (activityDescription: ActivityDescription) => {
     const newNode = createNewActivityNode(activityDescription);
     saveNewNodes([...nodes, newNode]);
-    // setNodes((nodes) => {
-    //   const newNodes = [...nodes, newNode];
-    //   saveNewNodes(newNodes);
-    //   return newNodes;
-    // });
   };
 
   //#endregion
@@ -309,6 +367,12 @@ function ProcedureFlowDiagram(props: {
 
   const edgeTypes = useMemo(() => ({ customEdge: CustomEdge }), []);
 
+  /**
+   * Retrieves the type of a node based on its ID.
+   *
+   * @param {string} id - The ID of the node to find.
+   * @returns {string} The type of the node with the specified ID.
+   */
   const getTypeNodeFromId = (id: string) => {
     var node = nodes[0];
     //setNodes has always the updated value
@@ -321,6 +385,13 @@ function ProcedureFlowDiagram(props: {
 
   //#region EventNode & DecisionNode
 
+  /**
+   * Callback function to handle changes to an event or decision node.
+   *
+   * @param id - The unique identifier of the node to be updated.
+   * @param newName - (Optional) The new name for the node. If not provided, the existing name will be retained.
+   * @param newDetails - (Optional) The new details for the node. If not provided, the existing details will be retained.
+   */
   const onEventOrDecisionChanged = useCallback(
     (id: string, newName?: string, newDetails?: string) => {
       setNodes((nodes) =>
@@ -350,6 +421,12 @@ function ProcedureFlowDiagram(props: {
     [selectedNodeId, onEventOrDecisionChanged]
   );
 
+  /**
+   * Creates a new event node object with a unique ID, label, data, and position.
+   * The position is calculated based on the center of the flow reference element.
+   *
+   * @returns {EventNodeObject} The newly created event node object.
+   */
   const createNewEventNode = useCallback(() => {
     const id = uuidv4();
     const label = "Event " + nodes.length;
@@ -373,11 +450,22 @@ function ProcedureFlowDiagram(props: {
     return obj;
   }, [rfInstance, nodes.length]);
 
+  /**
+   * Adds a new event node to the existing list of nodes.
+   */
   const addEventNode = () => {
     const newNode = createNewEventNode();
     saveNewNodes([...nodes, newNode]);
   };
 
+  /**
+   * Creates a new decision node object with a unique ID, label, data, and position.
+   * The position is calculated based on the center of the current flow diagram.
+   *
+   * @returns {DecisionNodeObject} The newly created decision node object.
+   *
+   * @callback
+   */
   const createNewDecisionNode = useCallback(() => {
     const id = uuidv4();
     const label = "Decision " + nodes.length;
@@ -401,12 +489,18 @@ function ProcedureFlowDiagram(props: {
     return obj;
   }, [rfInstance, nodes.length]);
 
+  /**
+   * Adds a new decision node to the existing list of nodes.
+   */
   const addDecisionNode = () => {
     const newNode = createNewDecisionNode();
     saveNewNodes([...nodes, newNode]);
   };
   //#endregion
 
+  /**
+   * Adds a new CategorizedDescription to the existing list of CategorizedDescriptions.
+   */
   const updateCategorizedDescriptions = (toAdd: CategorizedDescriptions) => {
     setCategorizedDescriptions((previous) => [...previous, toAdd]);
   };

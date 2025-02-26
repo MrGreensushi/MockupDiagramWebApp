@@ -29,6 +29,11 @@ function ActivityPhrases(props: {
   const [selectedLevel, setSelectedLevel] = useState(LevelsEnum.novice);
   const [showModal, setShowModal] = useState(false);
 
+  /**
+   * Memoized function that returns the appropriate text based on the selected level.
+   *
+   * @returns {string} The text corresponding to the selected level.
+   */
   const activeText = useMemo(() => {
     switch (selectedLevel) {
       case LevelsEnum.novice:
@@ -40,6 +45,12 @@ function ActivityPhrases(props: {
     }
   }, [selectedLevel, noviceText, intermediateText, advanceText]);
 
+  /**
+   * Handles the change of the clip ID, by updating the clipId Value
+   * for each phrase with same ClipId but different Level
+   *
+   * @param {string} value - The new clip ID value.
+   */
   const handleChangeClipId = (value: string) => {
     console.log(value);
     setClipId(value);
@@ -51,6 +62,15 @@ function ActivityPhrases(props: {
     return value === "" ? undefined : value;
   };
 
+  /**
+   * Updates, in the parent component all phrases with the same clipId
+   *  with the provided new values or defaults to existing values.
+   *
+   * @param {string} [newClipId=clipId] - The new clip ID. Defaults to the existing clip ID.
+   * @param {string} [newNovText=noviceText] - The new novice text. Defaults to the existing novice text.
+   * @param {string} [newIntText=intermediateText] - The new intermediate text. Defaults to the existing intermediate text.
+   * @param {string} [newAdvText=advanceText] - The new advanced text. Defaults to the existing advanced text.
+   */
   const updateAllPhrases = (
     newClipId = clipId,
     newNovText = noviceText,
@@ -66,6 +86,11 @@ function ActivityPhrases(props: {
     );
   };
 
+  /**
+   * Updates the text for the selected level and propagates the changes to the parent component.
+   *
+   * @param newText - The new text to be set for the selected level.
+   */
   const onTextUpdate = (newText: string) => {
     switch (selectedLevel) {
       case LevelsEnum.novice:

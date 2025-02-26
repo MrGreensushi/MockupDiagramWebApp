@@ -14,10 +14,6 @@ function ActivityDetails(props: {
     setText(props.text);
   }, [props.text]);
 
-  const handleOnBlur = useCallback(() => {
-    props.handleValueUpdate(text);
-  }, [text]);
-
   return (
     <CollapsibleCard defaultOpen={true}>
       <CollapsibleCard.Header>{props.title}</CollapsibleCard.Header>
