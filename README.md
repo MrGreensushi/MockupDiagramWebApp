@@ -99,9 +99,39 @@ Gestisce la rappresentazione sul grafico di un Nodo legato ad un evento.
 
 La classe gestisce la rappresentazione grafica degli edges. Per far cambiare il colore dell'edge modifico il ClassName del componente in base alla tipologia di nodo in Input.
 
+## Layout Elements
+Descrizione di quei componenti riutilizzati nel codice che servono per dare una forma specifica
+
+### CollapsibleCard
+Carta richiudibile cliccando sull'header della carta. Esempio di utilizzo
+
+    <CollapsibleCard>
+	    <CollapsibleCard.Header> Header </CollapsibleCard.Header>
+	    <CollapsibleCard.Body> Body</CollapsibleCard.Body>
+	    <CollapsibleCard.Footer> Footer</CollapsibleCard.Footer>
+    </CollapsibleCard>
+
+### DynamicTextField
+Componente per modificare un testo cliccandoci sopra.  Bisogna passare come props la funziona da chiamare quando il testo viene cambiato o inviato.
+In aggiunta è possibile disattivare l'editing.
+Quando il componente è editabile l'icona di una matita compare.
+
+### SideBar
+Questo componente può essere inserito a Destra o a Sinistra della pagina. 
+Si assicura che i suoi figli non superino la fine della pagina web (in questo modo non dovrebbe essere possibile scrollare la pagina). Quest è un esempio di utilizzo
+
+    <SideBar header={<Componenti a Scelta />}>
+	   <Componennti a scelta >
+	   </Componennti a scelta >
+    </SideBar>
+
+### Layout grid
+
+![Layout](./Immagini/SchemaSemplificatApp.png)
+
 ## UML Class Diagram
 
-![Activity Procedure class Diagram](.\immagini\UML.png) 
+![Activity Procedure class Diagram](./Immagini/UML.png) 
 
 # Getting Started with Create React App
 
