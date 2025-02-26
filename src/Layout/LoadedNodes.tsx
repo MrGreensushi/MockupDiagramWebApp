@@ -48,6 +48,12 @@ function LoadNodes(props: {
     fetchNodes();
   }, []);
 
+  /**
+   * Handle the server response. The server sends a
+   * list of ActivityDescription of the BLSD Nodes as a JSON string.
+   * It parses the response and add the nodes to the nodes state
+   * @param response - Server Response with the node lista as a JSON string
+   */
   const handleResponse = (response: any) => {
     const data = response.data;
 
@@ -63,16 +69,26 @@ function LoadNodes(props: {
     setNodes(processData);
   };
 
+  /**
+   * Process the data (JSON string) in an ActivityDescription object.
+   * @param data - JSON string with node description
+   * @returns An instance of ActivityDescription of the data.
+   */
   const getPhraseActivity = (data: any) => {
     const eng = getPhraseActivityOneLanguage(data.ENG);
-    const ita = getPhraseActivityOneLanguage(data.ITA);
-    const languages = new Map();
-    languages.set("ITA", ita);
-    languages.set("ENG", eng);
+    // const ita = getPhraseActivityOneLanguage(data.ITA);
+    // const languages = new Map();
+    // languages.set("ITA", ita);
+    // languages.set("ENG", eng);
 
     return new ActivityDescription(data.Name, eng);
   };
 
+  /**
+   * Processes activity information to create the ActivityContent
+   * @param data - The activity data
+   * @returns An instance of ActivityContent.
+   */
   const getPhraseActivityOneLanguage = (data: any) => {
     if (!data) {
       return new ActivityContent();
@@ -106,6 +122,11 @@ function LoadNodes(props: {
     return new ActivityContent(allPhrases, details);
   };
 
+  /**
+   * Filters the array of nodes based on the user's search query.
+   * @param array - The array of activities to filter.
+   * @returns A filtered array of activities.
+   */
   const filterArray = (array: ActivityDescription[] | undefined) => {
     if (!array) return [];
     return array.filter((node) =>
@@ -171,12 +192,17 @@ function LoadNodes(props: {
     </SideBar>
   );
 }
-
+/**
+ * Component that displays a list of activities in a collapsible card.
+ */
 function CollapsibleNodeList(props: {
   activityDescriptions: ActivityDescription[];
   instantiateActvity: (activityDescription: ActivityDescription) => void;
   children: any;
 }) {
+  /**
+   * Loading spinner displayed when there are no activities.
+   */
   const spinner = useMemo(() => {
     return (
       <div className="text-center p-1" style={{ width: "100%" }}>

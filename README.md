@@ -1,3 +1,106 @@
+# GraphApp
+
+Documentazione dell'app.
+
+## Main Components
+
+### ProcedureEditor
+
+ProcedureEditor è la classe principale del progetto. Al suo interno sono salvate tutte quante le procedure e l'Id della procedura attiva.  
+Tutte le funzioni per modificare le procedure sono scritte all'interno di questa classe.
+
+### ProcedureFlowDiagram
+
+Contiene i Nodi e gli Edges della procedura attiva.  
+All'interno sono presenti tutte le funzioni per modificare gli elementi del grafico attivo (i quali poi invocherranno le funzioni di ProcedureEditor per applicare i cambiamenti).  
+Quando le informazioni di un'Attività vengono aggiornate vengono aggiornati anche tutte le Attività con lo stesso nome in tutte le procedure.  
+In Aggiunta la classe contiene come figli i seguenti componenti:
+
+- TitleBar
+- OperationMenu
+- LoadNodes
+- NodeEditor
+
+### TitleBar
+
+Mostra il titolo della procedura Attiva e delle Procedure Padri. Cliccando sulle procedure pardri è possibile modificare la procedura attiva. Mentre se non ci sono procedure padri il titolo può essere cliccato per modificarne il valore.
+
+### OperationMenu
+
+Corrisponde alla lista di bottoni presenti in alto nell'applicazione. Ogni bottone corrisponde ad una diversa operazione.  
+Queste sono tutte le funzionalità (in ordine) eseguibili dai bottoni: 1. Aggiungere un Nodo Attività  
+2. Aggiungere un Nodo Evento  
+3. Aggiungere un Nodo Decisione  
+4. Scaricare il file .procedure del Progetto  
+5. Creare una cartella .zip con gli XML di tutti i nodi Attività presenti nel progetto  
+6. Importa tutte le Attività da un file .procedure caricato  
+7. Cancella il progetto corrente e ne inizializza uno nuovo  
+8. Carica un progetto da un file .procedure caricato  
+9. Traduce tutti i testi di ogni nodo in una nuova lingua (I testi originali non vengono tenuti)
+
+### LoadedNodes
+
+Questo componente raggruppa in una Card Collapsible i vari nodi Attività importati. In particolare abbiamo che i nodi del BLSD vengono caricati automaticamente recuperandoli dal Backend. Mentre altri nodi possono essere importati tramite l'OperationMenu=>Import XMLs (Corrisponde all'ingresso numero 6 della lista di OperationMenu).
+Infine sono presenti anche tutti i nodi della procedura corrente così.
+Quando si clicca su un Attività verrà istanziato un nodo nella procedura corrente.
+
+Inoltre è possibile filtrare i dati in base al loro nome nella barra di ricerca.
+
+### NodeEditor
+
+NodeEditor gestisce la colonna destra del sito. Quando un Nodo viene cliccato tutte le sue informazioni vengono mostrate dal seguente componente. Ed è NodeEditor che gestire le modifiche effettuate sul nodo selezionato (inoltrandole a ProcedureFlowDiagram).In base a quale nodo viene selezionato due diversi componenti possono essere renderizzati:
+
+- ActivityEditor: responsabile per i nodi di tipo Activity
+- EventDecisionEditor: responsabile per eventi e decisioni.
+
+### ActivityEditor
+
+Componente responsabile per mostrare e modificare le informazioni di un nodo Activity.  
+In particolare raggruppa ogni frase in base al suo clipId e istanzia per ogni clipId il componente ActivityPhrases dove sono presenti le informazioni riguardanti tutte e tre i livelli (Novice, Intermediate, Advance).  
+Inoltre istanzia il componente ActivityDetails per mostrare e modificare i campio "Detail" e "Notes" dell'Attività.
+
+### ActivityPhrases
+
+Istanzia una Card richiudibile dove mostra e rende possibile la modifica delle Phrases di un attività. In particolare mostra i seguenti campi:
+
+- ClipId
+- Testo relativo al livello Novice
+- Testo relativo al livello Intermediate
+- Testo relativo al livello Advance
+
+### ActivityDetails
+
+Il componente semplicemente mostra una Card richiudibile.  
+Il titolo e il testo vengono passati come props così come la funzione da chiamare per aggiornare il valore del testo nel caso in cui venga modificato.  
+Seppur si chiama ActivityDetails il componente data la sua generalità viene anche usato per mostrare e modificare le "note" delle attività e per gli eventi e decisioni.
+
+### EventDecisionEditor
+
+Componente responsabile per mostrare e modificare il campo "Notes" associato agli eventi e/o decisioni.
+
+## Nodes
+
+### ActivityNode
+
+Gestisce la rappresentazione sul grafico di un Nodo legato ad un'attività.  
+Utilizza il Contex `Procedures` per controllare se la procedura figlia dell'attività associata sia vuota o meno.
+
+### DecisionNode
+
+Gestisce la rappresentazione sul grafico di un Nodo legato ad una decisione. Per rappresentare il rombo viene usato un quadrato e girandolo su se stesso di 45°. Di conseguenza il testo viene ruotato nel senso opposto per non risultare ruotato. Questo comportamento è gestito dal file CSS Nodes.css
+
+### EventNode
+
+Gestisce la rappresentazione sul grafico di un Nodo legato ad un evento.
+
+## Edge
+
+### Custom Edge
+
+La classe gestisce la rappresentazione grafica degli edges. Per far cambiare il colore dell'edge modifico il ClassName del componente in base alla tipologia di nodo in Input.
+
+## UML Class Diagram
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
