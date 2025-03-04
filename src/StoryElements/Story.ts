@@ -112,11 +112,17 @@ class Story {
     }
 
     getAll(): StoryElement[] {
-        const entries = new Array<StoryElement>().concat(
+        return new Array<StoryElement>().concat(
             [...this.characters.values()],
             [...this.objects.values()],
             [...this.locations.values()]);
-        return entries;
+    }
+
+    getAllMap(): Map<string, StoryElement> {
+        return new Map(new Array<[string, StoryElement]>().concat(
+            [...this.getTypeMap(StoryElementType.character)],
+            [...this.getTypeMap(StoryElementType.object)],
+            [...this.getTypeMap(StoryElementType.location)]));
     }
   
     getTypeMap(type: StoryElementType): Map<string, StoryElement> {

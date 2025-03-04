@@ -43,7 +43,7 @@ function ChoiceEditor(props: {
             clearTimeout(timer);
         }
         setTimer(setTimeout(() => handleSave(localChoices), 250));
-    }, [localChoices]);
+    }, [localChoices, handleSave]);
 
     return (
         <Col>
@@ -83,7 +83,7 @@ function ChoiceEditor(props: {
                                     <PromptArea
                                         initialText={choice.choice}
                                         story={props.story}
-                                        onBlur={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})} />
+                                        setText={(text: string) => setChoice(choiceIndex, {...localChoices[choiceIndex], choice: text})} />
                                 </div>
                                 {/*<InputGroup>
                                     <InputGroup.Text style={{width:textWidth}}>Testo scelta:</InputGroup.Text>

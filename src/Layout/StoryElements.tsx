@@ -5,6 +5,12 @@ import React from "react";
 import ElementModal from "./AddElementModal.tsx";
 import Story from "../StoryElements/Story.ts";
 
+const storyElementTabsArray = [
+  {type: StoryElementType.character, className: "character-mention", tabText: "🙋", buttonText: "Personaggi " },
+  {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", buttonText: "Oggetti " },
+  {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", buttonText: "Luoghi " }
+]
+
 function StoryElements (props: {
   story: Story,
   setStory?: React.Dispatch<React.SetStateAction<Story>>,
@@ -76,7 +82,7 @@ function StoryElements (props: {
 
   const elementList = useCallback((type: StoryElementType, readOnly: boolean, className?: string) => {
     return (
-      <ListGroup style={{maxHeight: "90%", overflowY: "auto"}}>
+      <ListGroup style={{maxHeight: "90%", overflowY: "auto"}} className="story-elements">
         {[...props.story.getTypeMap(type)].map(([id, elem]) => (
           <OverlayTrigger
             key={id}
@@ -103,11 +109,7 @@ function StoryElements (props: {
       </ListGroup>);
   }, [props]);
 
-  const tabArray = useMemo(() => [
-    {type: StoryElementType.character, className: "character-mention", tabText: "🙋", badgeContent: props.story.characters.size, buttonText: "Personaggi " },
-    {type: StoryElementType.object, className: "object-mention", tabText: "⚱️", badgeContent: props.story.objects.size, buttonText: "Oggetti " },
-    {type: StoryElementType.location, className: "location-mention", tabText: "🏛️", badgeContent: props.story.locations.size, buttonText: "Luoghi " }
-  ], [props.story])
+  const badges = useMemo(() => [props.story.characters.size, props.story.objects.size, props.story.locations.size], [props.story]);
 
   return (
     <>
@@ -115,8 +117,8 @@ function StoryElements (props: {
       <Tabs
         activeKey={key}
         onSelect={k => setKey(Number.parseInt(k ?? "0"))}
-        className="mb-2 story-elements">
-        {tabArray.map(tab =>
+        className="mb-2">
+        {storyElementTabsArray.map((tab, idx) =>
           <Tab
             eventKey={tab.type}
             key={tab.type}
@@ -128,7 +130,7 @@ function StoryElements (props: {
                   {tab.tabText}
                 </span>
                 <Badge className={tab.className + " selected"} bg="" pill>
-                  {tab.badgeContent}
+                  {badges[idx]}
                 </Badge>
               </>}>
             {!readOnly && 
@@ -145,3 +147,4 @@ function StoryElements (props: {
 };
 
 export default StoryElements;
+export {storyElementTabsArray};

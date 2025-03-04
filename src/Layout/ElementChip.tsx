@@ -4,13 +4,12 @@ import { StoryElement } from "../StoryElements/StoryElement.ts";
 
 function ElementChip(props: {
     name: string,
-    key?: string,
     onRemove?: () => void,
     className?: string,
     style?: React.CSSProperties
 }) {
     return (
-        <Card className={props.className} key={props.key} style={props.style}>
+        <Card className={props.className} style={props.style}>
             {props.name}
             {props.onRemove && 
                 <i className="bi bi-x-lg close-button" onClick={props.onRemove}></i>

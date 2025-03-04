@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ListGroup, Tab, Tabs } from "react-bootstrap";
 import { createPortal } from "react-dom";
 import { RichTextarea, RichTextareaHandle } from "rich-textarea"
-import PromptAreaMenu from "./PromptAreaMenu.tsx";
 import Story from "../StoryElements/Story.ts";
 import { StoryElementType, StoryElementTypeString } from "../StoryElements/StoryElement.ts";
+import { storyElementTabsArray } from "./StoryElements.tsx";
 
 type Position = {
 	top: number;
@@ -11,78 +12,149 @@ type Position = {
 	caret: number;
 };
 
-const MENTION_REGEX = /\B@([\-+\w]*)$/;
+const MENTION_REGEX = /\B@([\w]*)$/;
+const maxElementsShown = 8;
 
 function PromptArea(props: {
-	initialText?: string,
 	story: Story,
+	initialText?: string,
 	setBlocks?: (blocks: [string, StoryElementType | null][]) => void,
 	setText?: (text: string) => void,
 	onBlur?: (text: string) => void
 }) {
 	const ref = useRef<RichTextareaHandle>(null);
 	const refApp = useRef(document.getElementsByClassName("App").item(0));
+	const selectedRef = useRef<HTMLAnchorElement>(null);
+
 	const [text, setText] = useState(props.initialText ?? "");
 	const [pos, setPos] = useState<Position | null>(null);
-	const [index, setIndex] = useState<number>(0);
+	const [showMenu, setShowMenu] = useState(false);
+	const [menuSelected, setMenuSelected] = useState<string | undefined>();
+	const [menuTabKey, setMenuTabKey] = useState(StoryElementType.character);
 
-	const targetText = pos ? text.slice(0, pos.caret) : text;
-	const match = pos && targetText.match(MENTION_REGEX);
-	const name = match?.[1] ?? "";
+	const allMap = useMemo(() => props.story.getAllMap(), [props.story]);
+	const allArray = useMemo(() => [...allMap.entries()], [allMap]);
 	
-	const elements = useMemo(() => props.story.getAll(), [props.story]);
-	
-	const filtered = useMemo(() =>
-		elements
-			.filter(element =>
-				element.name.toLowerCase()
-					.startsWith(name.toLowerCase()))
-			.map(element => element.name)
-		, [elements, name]);
-	const filteredMap = useMemo(() =>
-		elements
-			.filter(element =>
-				element.name.toLowerCase()
-					.startsWith(name.toLowerCase()))
-		, [elements, name]);
+	const [match, name] = useMemo(() => {
+		const targetText = pos ? text.slice(0, pos.caret) : text;
+		const match = pos && targetText.match(MENTION_REGEX);
+		return [match, match?.[1] ?? ""];
+	}, [pos, text]);
 	
 	const highlight_all = useMemo(() => {
-		if (elements.length === 0) return /^$/;
-		else return new RegExp("(" + elements.map(element => `@${element.name}`).join("|") + ")", "g")
-	}, [elements]);
-	
-	const highlight_characters = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element.type === StoryElementType.character)
-			.map(element => `@${element.name}`)
-			.join("|")}$)`
-	), [elements])
-	const highlight_objects = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element.type === StoryElementType.object)
-			.map(element => `@${element.name}`)
-			.join("|")}$)`
-	), [elements])
-	const highlight_locations = useMemo(() => new RegExp(
-		`(^${elements.filter(element => element.type === StoryElementType.location)
-			.map(element => `@${element.name}`)
-			.join("|")}$)`
-	), [elements])
+		if (allArray.length === 0) return /^$/;
+		else return new RegExp("(" + allArray.map(([_, element]) => `@${element.name}`).sort((a, b) => b.length - a.length).join("|") + ")", "g");
+	}, [allArray]);
 
-	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
+	const [highlight_characters, highlight_objects, highlight_locations] = useMemo(() => 
+		[StoryElementType.character, StoryElementType.object, StoryElementType.location].map(type => new RegExp(
+			`(^${allArray.filter(([_, element]) => element.type === type)
+				.map(([_, element]) => `@${element.name}`)
+				.join("|")}$)`)
+	), [allArray]);
 
-	const complete = (index: number) => {
-		if (!ref.current || !pos) return;
-		const selected = filtered[index];
+	const filtered = useMemo(() =>
+		allArray.filter(([_, element]) =>
+			element.name.toLowerCase()
+				.startsWith(name.toLowerCase()))
+	, [allArray, name]);
+
+	const elements = useMemo(() => {
+		if (allArray.length === 0) {
+		  return <ListGroup>
+			  <PromptAreaMenuElement
+			  value={"Non sono presenti elementi nella storia attuale"}
+			  type={null} />
+		  </ListGroup>
+		}
+		if (filtered.length === 0) {
+		  return <ListGroup>
+			  <PromptAreaMenuElement
+			  value={"Nessuna corrispondenza"}
+			  type={null} />
+		  </ListGroup>
+		}
+		if (filtered.length <= maxElementsShown) {
+		  return <ListGroup className="story-elements">
+			{filtered.map(([id, element]) =>
+			  <PromptAreaMenuElement
+				key={id} 
+				value={element.name}
+				type={element.type}
+				selected={id === menuSelected}
+				onMouseEnter={() => setMenuSelected(id)}
+				onClick={() => complete(id)} />)}
+		  </ListGroup>
+		}
+		return (
+		  <Tabs
+			activeKey={menuTabKey}
+			onSelect={k => changeTab(k)}
+			onMouseDown={e => {e.preventDefault(); ref?.current?.focus()}}
+			className="custom-tabs">
+			{storyElementTabsArray.map(tab => 
+			  <Tab eventKey={tab.type} title={tab.tabText} key={tab.type} tabClassName={tab.className}>
+				<ListGroup style={{height:"100%", overflowY:"auto"}} className="story-elements">
+				  {filtered.filter(([_, element]) => element.type === tab.type).map(([id, element], idx) => 
+					<PromptAreaMenuElement
+					  key={idx}
+					  selectedRef={id === menuSelected ? selectedRef : null}
+					  value={element.name}
+					  type={element.type}
+					  selected={id === menuSelected}
+					  id={id}
+					  onMouseEnter={() => setMenuSelected(id)}
+					  onClick={() => complete(id)} />)}
+				</ListGroup>
+			  </Tab>
+			)}
+		</Tabs>
+	)}, [allArray, filtered, menuTabKey, menuSelected, selectedRef]);
+
+	const complete = useCallback((id: string | undefined) => {
+		if (!ref.current || !pos || !id) return;
+		const previousWord = [...text.matchAll(highlight_all)].find(m => m.index === match?.index)?.[0];
+		const wordStart = pos.caret - name.length - 1;
+		const wordEnd = previousWord ? wordStart + previousWord.length : pos.caret; 
 		ref.current.setRangeText(
-			`@${selected} `,
-			pos.caret - name.length - 1,
-			pos.caret + 1,
+			`@${allMap.get(id)!.name}`,
+			wordStart,
+			wordEnd,
 			"end");
-		setPos(null);
-		setIndex(0);
-	};
+		setShowMenu(false);
+	},[ref.current, pos, text, name, match, highlight_all, allMap]);
+
+	const onKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (!pos || !filtered.length || !showMenu || allArray.length === 0) return;
+		switch (e.code) {
+			case "ArrowUp":
+			case "ArrowDown":
+				e.preventDefault();
+				setMenuSelected(selected => {
+					const list = filtered.length > maxElementsShown ? filtered.filter(([_, element]) => element.type === menuTabKey) : filtered;
+					const idx = list.findIndex(([id, _]) => id === selected);
+					if (e.code === "ArrowUp") return list[idx <= 0 ? list.length - 1 : idx - 1][0];
+					if (e.code === "ArrowDown") return list[idx >= list.length - 1 ? 0 : idx + 1][0];
+				});
+			break;
+			case "Enter":
+				e.preventDefault();
+				complete(menuSelected);
+			case "Tab":
+				e.preventDefault();
+				changeTab();
+			break;
+			case "Escape":
+				e.preventDefault();
+				closeMenu();
+			break;
+			default:
+			break;
+		}
+	}, [pos, filtered, showMenu, allArray, complete, refApp, menuSelected, menuTabKey]);
 
 	const textSplitter = useCallback((text: string, spaces: boolean) => {
-		const split = elements.length > 0 ? text.split(highlight_all) : [text];
+		const split = allArray.length > 0 ? text.split(highlight_all) : [text];
 		let retArr: string[];
 		if (!spaces) retArr = split;
 		else {
@@ -92,10 +164,10 @@ function PromptArea(props: {
 						return acc.concat(spl);
 					else
 						return acc.concat(spl.split(/(\s)/g));
-				}, new Array<string>())
+				}, new Array<string>());
 		}
-		return retArr.filter(s => !s.match(/^$/));
-	}, [elements, highlight_all]);
+		return retArr.filter(s => s !== "");
+	}, [allArray, highlight_all]);
 
 	const mentionMatcher = useCallback((mention: string) => {
 		if (mention.match(highlight_characters)) return StoryElementType.character;
@@ -117,6 +189,24 @@ function PromptArea(props: {
 		);
 	}, [textSplitter, mentionMatcher]);
 
+	const closeMenu = useCallback(() => {
+		setShowMenu(false);
+		setMenuTabKey(StoryElementType.character);
+	}, []);
+
+	const changeTab = useCallback((key?: string | null) => {
+		if (key !== undefined) {
+			setMenuTabKey(Number.parseInt(key ?? "0"));
+		} else {
+			setMenuTabKey(key => (key+1)%StoryElementTypeString.length);
+		}
+		setMenuSelected(undefined);
+	}, [])
+
+	useEffect(() => setText(props.initialText ?? ""), [props.initialText]);
+	useEffect(() => {if (filtered.length > 0) setMenuSelected(filtered[0][0])}, [filtered]);
+	useEffect(() => selectedRef.current?.scrollIntoView({block:"end"}), [selectedRef.current]);
+
 	return (
 		<div className="prompt-area h-100 w-100">
 			<RichTextarea
@@ -124,72 +214,72 @@ function PromptArea(props: {
 				value={text}
 				className="form-control"
 				style={{width:"100%", height:"100%", left:"0px", background:"white", maxHeight:"100%"}}
-				onBlur={() => props.onBlur?.(text)}
+				onBlur={e => {
+					e.preventDefault();
+					if (!e.relatedTarget?.closest(".prompt-area-menu")) {
+						props.onBlur?.(text);
+						closeMenu();
+					}
+				}}
 				onChange={e => {
 					setText(e.target.value);
 					props.setText?.(e.target.value);
 					props.setBlocks?.(
 						textSplitter(e.target.value, false)
-						.filter(s => !s.match(/^ +$/))
 						.map(s => s.startsWith("@") && s.match(highlight_all) ? [s.slice(1), mentionMatcher(s)] : [s, null])
 					);
 				}}
-				onKeyDown={e => {
-					if (!pos || !filtered.length) return;
-					switch (e.code) {
-						case "ArrowUp":
-							e.preventDefault();
-							const nextIndex = index <= 0 ? filtered.length - 1 : index - 1;
-							setIndex(nextIndex);
-						break;
-						case "ArrowDown":
-							e.preventDefault();
-							const prevIndex = index >= filtered.length - 1 ? 0 : index + 1;
-							setIndex(prevIndex);
-						break;
-						case "Enter":
-						case "Tab":
-							e.preventDefault();
-							complete(index);
-						break;
-						case "Escape":
-							e.preventDefault();
-							setPos(null);
-							setIndex(0);
-						break;
-						default:
-							break;
-					}
-				}}
+				onKeyDown={onKeyDown}
 				onSelectionChange={r => {
-					if (r.focused && MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
-						setPos({
-							top: r.top/* + r.height*/,
-							left: r.left,
-							caret: r.selectionStart
-						});
-						setIndex(0);
-					} else {
-						setPos(null);
-						setIndex(0);
+					if (r.focused) {
+						if (MENTION_REGEX.test(text.slice(0, r.selectionStart))) {
+							setPos({
+								top: r.top/* + r.height*/,
+								left: r.left,
+								caret: r.selectionStart
+							});
+							setShowMenu(true);
+						} else {
+							closeMenu();
+						}
 					}
 				}}>
 				{renderer}
 			</RichTextarea>
-			{pos && refApp.current &&
+			{refApp.current && showMenu &&
 				createPortal(
-					<PromptAreaMenu
-						top={pos.top}
-						left={pos.left}
-						elements={filteredMap}
-						noElements={elements.length === 0}
-						index={index}
-						setIndex={setIndex}
-						complete={complete} />,
+					<div
+						className="prompt-area-menu d-flex flex-column"
+						onBlur={closeMenu}
+						style={{height: filtered.length > maxElementsShown ? "15em" : "", transform: `translate(min(${pos?.left ?? 0}px, calc(100vw - 100%)), max(${pos?.top ?? 0}px - 100%, 0px))`}}>
+						{elements}
+					</div>,
 					refApp.current)
 			}
 		</div>
 	);
+}
+
+function PromptAreaMenuElement(props: {
+  value: string,
+  type: StoryElementType | null,
+  selected?: boolean,
+  selectedRef?: React.Ref<HTMLAnchorElement> | null,
+  id?: string,
+  onMouseEnter?: () => void,
+  onClick?: () => void
+}) {
+  return (
+	<ListGroup.Item
+		action={!!props.onClick}
+		id={"id-"+props.id}
+		ref={props.selectedRef ?? undefined}
+		className={`${props.type === null ? "no" : StoryElementTypeString[props.type]}-mention ${props.selected ? "selected" : ""}`}
+		onMouseEnter={props.onMouseEnter}
+		onClick={props.onClick}>
+		{props.value}
+	</ListGroup.Item>
+  );
 }
 
 export default PromptArea;

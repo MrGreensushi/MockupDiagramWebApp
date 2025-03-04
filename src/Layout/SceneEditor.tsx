@@ -51,7 +51,7 @@ function SceneEditor(props: {
 
 	const handleSave = useCallback((scene: Scene) => {
 		props.setScene(scene);
-	}, [props.setScene]);
+	}, []);
 
 	const handleEditDetails = useCallback((newDetails: SceneDetailsType) => {
 		setLocalScene(scene => new Scene(scene.workspace, newDetails));
@@ -62,12 +62,12 @@ function SceneEditor(props: {
 		setModal(true);
 	}, []);
 
-	const onSubmitNewElement = (newElement: StoryElement): boolean => {
+	const onSubmitNewElement = useCallback((newElement: StoryElement): boolean => {
 		if (!props.story.canAddElement(newElement)) return false;
 		props.setStory(story => story.cloneAndAddElement(newElement))
 		workspace?.refreshToolboxSelection();
 		return true;
-	}
+	}, [props.story, props.setStory, workspace]);
 
 	const handleBlockChange = useCallback((blocks: [string, StoryElementType | null][]) => {
 		setBlocks(blocks);
