@@ -169,6 +169,7 @@ function OperationMenu(props: {
         </ConfirmModal>
         <LoadModal onLoad={onLoad}>Load Procedure</LoadModal>
         <LanguageSelectionDropdown
+          saveProject={onSave}
           getJSONFile={props.getJSONFile}
           loadJSONFile={props.loadJSONFile}
         />
@@ -247,6 +248,7 @@ function LoadModal(props: {
 function LanguageSelectionDropdown(props: {
   getJSONFile: () => string;
   loadJSONFile: (json: string) => void;
+  saveProject: () => void;
 }) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false); // Stato per il loading
@@ -263,6 +265,7 @@ function LanguageSelectionDropdown(props: {
    */
   const onLanguageSelected = async (langCode: string) => {
     setLoading(true); // Mostra il loading
+    props.saveProject(); //salva il progetto prima di tradurlo
     try {
       const jsonString = props.getJSONFile();
       const response = await axios.post(

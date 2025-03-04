@@ -14,11 +14,11 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
    * and triggers the download of the file named "xml_files.zip".
    * If the response is not successful, it logs an error message to the console.
    */
-  async function downloadXML(jsonProcedure: string) {
+  async function downloadXML(jsonData: string) {
     const response = await fetch("/procedure", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: jsonProcedure, // I dati da inviare al backend
+      body: jsonData, // I dati da inviare al backend
     });
 
     if (response.ok) {
@@ -36,8 +36,16 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
     }
   }
   const extractXMLs = () => {
-    const jsonString = props.getJSONFile();
-    downloadXML(jsonString);
+    const jsonProcedure = props.getJSONFile();
+
+    // Creiamo l'oggetto JSON da inviare
+    const requestData = JSON.stringify({
+      jsonProcedure,
+      selectedLanguages,
+    });
+
+    downloadXML(requestData);
+    setShowModal(false); // Chiude il modal dopo il click
   };
 
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
@@ -98,7 +106,9 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
-          <Button variant="success">Extract XMLs</Button>
+          <Button variant="success" onClick={extractXMLs}>
+            Extract XMLs
+          </Button>
         </Modal.Footer>
       </Modal>
     </>

@@ -1,10 +1,11 @@
 import sys
-from translateProcedure import translate_procedure
+from translateProcedure import get_language_code_3letters, translate_procedure
 import parseXml
 import writeXml
 import os
 from flask import Flask,jsonify,request,send_file,render_template
 from io import BytesIO
+import json
 
 # Determina il percorso base (supporta modalità PyInstaller)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -63,7 +64,27 @@ def extract_XML_from_procedure():
             if not data:
                 return jsonify({"error": "No data provided"}), 400
 
-            zip_folder=writeXml.zipAllActivitiesXmls(data)
+            # Estrai jsonProcedure e selectedLanguages dal body
+            json_procedure = data.get("jsonProcedure", None)
+            selected_languages = data.get("selectedLanguages",[])
+
+            # Verifica che entrambi i campi siano presenti
+            if not json_procedure or not isinstance(selected_languages, list):
+                return jsonify({"error": "Invalid input data"}), 400
+            
+            # Se data è una stringa, convertila in un oggetto Python
+            if isinstance(json_procedure, str):
+                try:
+                    json_procedure = json.loads(json_procedure)
+                except json.JSONDecodeError:
+                    return jsonify({"error": "Errore: il JSON fornito non è valido."+ json_procedure}), 400
+           
+            # Converti selected_languages in array di oggetti {"code":, "name"}
+            selected_languages = [
+                get_language_code_3letters(lang_code) for lang_code in selected_languages
+            ]
+
+            zip_folder=writeXml.zipAllActivitiesXmls(json_procedure,selected_languages)
 
             return send_file(zip_folder, as_attachment=True, download_name='xml_files.zip', mimetype='application/zip')
     except Exception as e:

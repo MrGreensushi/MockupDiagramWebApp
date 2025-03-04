@@ -5,56 +5,54 @@ from xml.dom.minidom import parseString
 from io import BytesIO
 import zipfile
 
+from translateProcedure import translate_activity
+
 # Funzione per creare l'XML
-def create_activity_xml(activity):
+def create_activity_xml(activity,languages):
     root = Element('node')
-    # Lingua italiana
-    language_xml(root,activity.ita,'ITA')
-    language_xml(root,activity.eng,'ENG')
+    
+    # Assicura che l'inglese (ENG) sia sempre presente
+    if not any(lang["code"] == "en" for lang in languages):
+        languages.insert(0, {"code": "en", "name": "ENG"})  # Aggiunge ENG all'inizio
+
+    # Genera le traduzioni per ogni lingua specificata
+    for lang in languages:
+        translated_activity = translate_activity(activity, lang["code"])  # Traduci nella lingua specificata
+        language_xml(root, translated_activity, lang["name"])  # Aggiungi all'XML con il nome della lingua
 
     # Convertire l'albero XML in una stringa formattata
     xml_str = parseString(tostring(root, encoding="unicode")).toprettyxml(indent="   ").replace("&quot;","\"")
 
     return xml_str
 
-def language_xml(root,activityLang,lang):
+def language_xml(root,activity,lang):
     # Lingua italiana
-    ita = SubElement(root, 'language', value=lang)
-    for phrase in activityLang.node_phrases:
+    language = SubElement(root, 'language', value=lang)
+    for phrase in activity.node_phrases:
         if phrase['clipId'] == 'Description':
-            desc = SubElement(ita, 'description', level=phrase['level'])
+            desc = SubElement(language, 'description', level=phrase['level'])
             desc.text = phrase.get('text', phrase['level'])
         else:
-            node_phrase = SubElement(ita, 'nodePhrase', clipId=phrase['clipId'], level=phrase['level'])
+            node_phrase = SubElement(language, 'nodePhrase', clipId=phrase['clipId'], level=phrase['level'])
             node_phrase.text = phrase.get('text', phrase['clipId'])
-    details=SubElement(ita,'details',level='Novice')
-    details.text=activityLang.details
+    details=SubElement(language,'details',level='Novice')
+    details.text=activity.details
 
 def retrieveAllActivitiesFromProcedure(data):
     activities = []
 
     for node in data.get('flow', {}).get('nodes', []):
         #retrieve the single activity
+       
         activity = node.get('data', {}).get('activity', None)
         if not activity: 
             continue
         
+
         #activity contains aslo subProcedure but we are interested only in the name e phrases
-        slimActivity= Activity(activity.get('name',""), activity.get('languages',{}))
+        slimActivity= Activity(activity.get('name',""), activity.get('content',{}))
         activities.append(slimActivity)
-
-        #Retrieve all the activities present in the subProcedure
-        # subProcedure=activity.get('subProcedure',None)
-        # if not subProcedure:
-        #     continue
-
-        # subProcedureActivities=retrieveAllActivities(subProcedure)
-        # if not subProcedureActivities:
-        #     continue
-        # #append each sub-activities
-        # for subProcedureActivity in subProcedureActivities:
-        #     activities.append(subProcedureActivity)
-
+    
     return activities
 
 def retrieveAllActivities(data):
@@ -65,16 +63,11 @@ def retrieveAllActivities(data):
     return activities
 
 class Activity:
-    def __init__(self, name, languages):
+    def __init__(self, name, content):
         self.name = name  
-        itaLang=languages.get('itaActivity',None)
-        itaPhrase=itaLang.get('nodePhrases',[])
-        itaDetails=itaLang.get('details',"")
-        self.ita = LanguageActivity(itaPhrase,itaDetails)
-        engLang=languages.get('engActivity',None)
-        engPhrase=engLang.get('nodePhrases',[])
-        engDetails=engLang.get('details',"")
-        self.eng = LanguageActivity(engPhrase,engDetails)
+        self.node_phrases=content.get('nodePhrases',[])
+        self.details=content.get('details',"")
+        self.notes=content.get('notes',"")
     
     def printSinglePhrase(self,phrase):
         return f"{phrase['clipId']} {phrase['level']}: {phrase['text']}"
@@ -84,19 +77,13 @@ class Activity:
         for phrase in self.node_phrases:
             phrases +="  "+ self.printSinglePhrase(phrase)+"\n"
 
-        return f"Start\n {self.name}\n NodePhrases:\n{phrases}END"  # Correct: Returning a string
+        return f"Start\n {self.name}\n NodePhrases:\n{phrases}\n Details: {self.details}\nEND"  # Correct: Returning a string
 
-class LanguageActivity:
-    def __init__(self,node_phrases,details):
-        self.details = details  
-        self.node_phrases = node_phrases
-
-
-def zipAllActivitiesXmls(data):
+def zipAllActivitiesXmls(data,languages):
     activities=retrieveAllActivities(data)
     xmls=[]
     for activity in activities:
-        xml_content=create_activity_xml(activity)
+        xml_content=create_activity_xml(activity,languages)
         #writeXMLFile(output_dir,xml_content,activity.name)
         xmls.append((f"{activity.name}.xml", xml_content))
     # Preparare un archivio ZIP contenente tutti i file XML
