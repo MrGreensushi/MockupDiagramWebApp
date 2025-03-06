@@ -10,9 +10,17 @@ function ActivityDetails(props: {
 }) {
   const [text, setText] = useState(props.text);
 
-  useEffect(() => {
-    setText(props.text);
-  }, [props.text]);
+  // useEffect(() => {
+  //   setText(props.text);
+  // }, [props.text]);
+
+  const handleTextUpdate = useCallback(
+    (value: string) => {
+      setText(value);
+      props.handleValueUpdate(value);
+    },
+    [text]
+  );
 
   return (
     <CollapsibleCard defaultOpen={true}>
@@ -24,7 +32,8 @@ function ActivityDetails(props: {
             rows={7}
             value={text}
             onChange={(e) => {
-              props.handleValueUpdate(e.target.value);
+              // props.handleValueUpdate(e.target.value);
+              handleTextUpdate(e.target.value);
             }}
           />
         </Form>

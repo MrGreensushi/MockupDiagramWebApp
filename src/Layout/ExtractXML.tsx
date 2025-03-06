@@ -1,8 +1,17 @@
 import React, { useState } from "react";
-import { Button, Col, Container, Form, Modal, Row } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { LANGUAGES } from "../Procedure/Languages.ts";
 
 export function ExtractXML(props: { getJSONFile: () => string }) {
+  const [loading, setLoading] = useState(false);
   /**
    * Downloads a .zip file with all the xmls by sending the JSON of the project to the backend.
    *
@@ -34,6 +43,7 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
     } else {
       console.error("Errore nel download dei file XML");
     }
+    setLoading(false);
   }
   const extractXMLs = () => {
     const jsonProcedure = props.getJSONFile();
@@ -44,11 +54,12 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
       selectedLanguages,
     });
 
+    setLoading(true);
     downloadXML(requestData);
     setShowModal(false); // Chiude il modal dopo il click
   };
 
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(["en"]);
   const [showModal, setShowModal] = useState(false);
   const [filterTarget, setFilterTarget] = useState("");
 
@@ -91,6 +102,7 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
                       label={name.charAt(0).toUpperCase() + name.slice(1)}
                       checked={selectedLanguages.includes(code)}
                       onChange={() => toggleLanguage(code)}
+                      disabled={code === "en"}
                     />
                   </Col>
                 ))}
@@ -98,8 +110,13 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
           </Container>
           <div className="mt-4">
             <strong>Selected:</strong>{" "}
-            {selectedLanguages.map((code) => LANGUAGES[code]).join(", ") ||
-              "None"}
+            {selectedLanguages
+              .map(
+                (code) =>
+                  LANGUAGES[code].charAt(0).toUpperCase() +
+                  LANGUAGES[code].slice(1)
+              )
+              .join(", ") || "None"}
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -110,6 +127,13 @@ export function ExtractXML(props: { getJSONFile: () => string }) {
             Extract XMLs
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      <Modal show={loading} centered>
+        <Modal.Header>Extracting XMLs...</Modal.Header>
+        <Modal.Body style={{ textAlign: "center" }}>
+          <Spinner animation="border" />
+        </Modal.Body>
       </Modal>
     </>
   );
